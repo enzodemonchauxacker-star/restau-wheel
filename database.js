@@ -49,13 +49,14 @@ initSetting.run('admin_password', 'admin123');
 initSetting.run('restaurant_name', 'Mon Restaurant');
 initSetting.run('restaurant_url', 'http://localhost:3000');
 
+// probability = nombre de cases sur la roue (total = 12 cases)
 const prizesCount = db.prepare('SELECT COUNT(*) as count FROM prizes').get();
 if (prizesCount.count === 0) {
   const ins = db.prepare('INSERT INTO prizes (name, description, probability, deadline_days, color) VALUES (?, ?, ?, ?, ?)');
-  ins.run('10% sur votre note', "Réduction de 10% sur l'addition totale", 15, 30, '#FF6B6B');
-  ins.run('Dessert offert', 'Un dessert au choix offert', 10, 30, '#4ECDC4');
-  ins.run('Café offert', 'Un café ou thé offert', 15, 30, '#45B7D1');
-  ins.run('Rien', 'Pas de chance cette fois !', 60, 0, '#95A5A6');
+  ins.run('Rien',             'Pas de chance cette fois… Retentez à la prochaine visite !', 6, 0,  '#374151');
+  ins.run('10% sur la note',  "Réduction de 10% sur l'addition totale",                    2, 30, '#DC2626');
+  ins.run('Dessert offert',   'Un dessert au choix offert',                                 2, 30, '#059669');
+  ins.run('Boisson offerte',  'Une boisson au choix offerte',                               2, 30, '#2563EB');
 }
 
 module.exports = db;
