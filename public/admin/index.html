@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Restau Wheel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: rgba(255,255,255,0.08);
+      --text: #e2e8f0;
+      --muted: #718096;
+      --accent: #e94560;
+      --green: #68d391;
+      --yellow: #fbd38d;
+      --red: #fc8181;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Login ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+    .login-box .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .login-box h2 { font-size: 1.4rem; margin-bottom: 4px; }
+    .login-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 28px; }
+    .login-box input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    #login-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; display: none; }
+
+    /* ── App shell ── */
+    #app { display: none; flex-direction: column; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 22px 20px 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo span { font-size: 1.5rem; }
+    .sidebar-name { font-size: 0.75rem; color: var(--muted); padding: 10px 20px 6px; text-transform: uppercase; letter-spacing: 1px; }
+    .nav-item {
+      padding: 11px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 2px 10px;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(233,69,96,0.15); color: var(--accent); font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 14px; }
+    .btn-logout {
+      width: 100%;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* Main content */
+    .main { margin-left: 220px; padding: 30px 28px; flex: 1; }
+    .page { display: none; animation: fadeIn .3s ease; }
+    .page.active { display: block; }
+
+    h2.page-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .page-desc { color: var(--muted); font-size: 0.88rem; margin-bottom: 26px; }
+
+    /* Stats cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 16px;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 2rem; font-weight: 800; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+
+    /* Recherche client */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 16px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-bar input:focus { border-color: var(--accent); }
+    .btn-search {
+      padding: 11px 22px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn-search:hover { opacity: 0.88; }
+
+    .customer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+    .customer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .customer-name { font-size: 1.1rem; font-weight: 700; }
+    .customer-email { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+    .customer-date { font-size: 0.78rem; color: var(--muted); }
+
+    .spin-list { display: flex; flex-direction: column; gap: 8px; }
+    .spin-item {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .spin-prize { font-weight: 600; font-size: 0.95rem; }
+    .spin-meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 50px;
+      white-space: nowrap;
+    }
+    .badge-pending { background: rgba(251,211,141,0.15); color: var(--yellow); }
+    .badge-used { background: rgba(104,211,145,0.15); color: var(--green); }
+    .badge-expired { background: rgba(252,129,129,0.15); color: var(--red); }
+    .btn-use {
+      padding: 6px 14px;
+      background: var(--green);
+      border: none;
+      border-radius: 8px;
+      color: #1a1d27;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-use:hover { opacity: 0.82; }
+
+    .no-results { color: var(--muted); text-align: center; padding: 40px 0; font-size: 0.95rem; }
+
+    /* Lots */
+    .prizes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .prize-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 18px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .prize-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--prize-color, #FF6B6B);
+    }
+    .prize-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .prize-card-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; min-height: 20px; }
+    .prize-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .prize-meta span { display: flex; align-items: center; gap: 4px; }
+    .prize-actions { display: flex; gap: 8px; }
+    .btn-edit {
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .btn-edit:hover { border-color: var(--accent); }
+    .btn-del {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--red);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .btn-del:hover { border-color: var(--red); }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      margin-bottom: 22px;
+    }
+    .btn-add:hover { opacity: 0.88; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 28px;
+      width: 100%;
+      max-width: 440px;
+      animation: popIn .25s ease;
+    }
+    .modal h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; }
+    .field input, .field select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--accent); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn-save {
+      flex: 2;
+      padding: 11px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn-save:hover { opacity: 0.88; }
+
+    /* QR Code */
+    .qr-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      max-width: 460px;
+      text-align: center;
+    }
+    .qr-section img { width: 260px; height: 260px; border-radius: 12px; margin: 16px auto; display: block; background: #fff; padding: 8px; }
+    .qr-url {
+      font-size: 0.82rem;
+      color: var(--muted);
+      word-break: break-all;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 12px 0 18px;
+    }
+    .btn-dl {
+      display: inline-block;
+      padding: 10px 22px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+      text-decoration: none;
+    }
+
+    /* Paramètres */
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 22px;
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+    .settings-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .settings-card .field input { margin-bottom: 0; }
+    .settings-card .field { margin-bottom: 14px; }
+    .btn-save-settings {
+      padding: 11px 24px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.92rem;
+      margin-top: 6px;
+    }
+    .save-notice { color: var(--green); font-size: 0.85rem; margin-top: 10px; display: none; }
+
+    /* Color picker */
+    .color-row { display: flex; align-items: center; gap: 12px; }
+    .color-row input[type="color"] {
+      width: 44px; height: 38px;
+      padding: 2px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .color-row input[type="text"] { flex: 1; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .sidebar { width: 100%; height: 56px; flex-direction: row; align-items: center; bottom: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 0 12px; }
+      .sidebar-logo { padding: 0 8px; font-size: 1rem; border-bottom: none; }
+      .sidebar-name { display: none; }
+      .nav-item { padding: 8px 10px; margin: 0 2px; font-size: 0.78rem; }
+      .sidebar-bottom { display: none; }
+      .main { margin-left: 0; margin-top: 56px; padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="icon">🍽️</div>
+    <h2>Espace Restaurateur</h2>
+    <p>Connectez-vous pour gérer votre roue de fortune</p>
+    <input type="password" id="login-pwd" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+    <p id="login-error">Mot de passe incorrect.</p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="sidebar-logo"><span>🍽️</span><span id="resto-name">Mon Restaurant</span></div>
+    <div class="sidebar-name">Menu</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">📊 Tableau de bord</div>
+    <div class="nav-item" onclick="showPage('search')" data-page="search">🔍 Rechercher client</div>
+    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes">🎁 Gérer les lots</div>
+    <div class="nav-item" onclick="showPage('qrcode')" data-page="qrcode">📱 QR Code</div>
+    <div class="nav-item" onclick="showPage('settings')" data-page="settings">⚙️ Paramètres</div>
+    <div class="sidebar-bottom">
+      <button class="btn-logout" onclick="doLogout()">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <h2 class="page-title">Tableau de bord</h2>
+      <p class="page-desc">Vue d'ensemble de votre programme de fidélité</p>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- Recherche client -->
+    <div class="page" id="page-search">
+      <h2 class="page-title">Rechercher un client</h2>
+      <p class="page-desc">Tapez le nom d'un client pour voir ses gains</p>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Nom, prénom ou email…" onkeydown="if(event.key==='Enter') doSearch()">
+        <button class="btn-search" onclick="doSearch()">Rechercher</button>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Lots -->
+    <div class="page" id="page-prizes">
+      <h2 class="page-title">Gérer les lots</h2>
+      <p class="page-desc">Configurez les cases de la roue de fortune</p>
+      <button class="btn-add" onclick="openPrizeModal()">+ Ajouter un lot</button>
+      <div class="prizes-grid" id="prizes-grid"></div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="page" id="page-qrcode">
+      <h2 class="page-title">QR Code</h2>
+      <p class="page-desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
+      <div class="qr-section">
+        <p>Scannez pour accéder à la page client :</p>
+        <img id="qr-img" src="" alt="QR Code">
+        <div class="qr-url" id="qr-url"></div>
+        <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png">⬇ Télécharger le QR Code</a>
+      </div>
+    </div>
+
+    <!-- Paramètres -->
+    <div class="page" id="page-settings">
+      <h2 class="page-title">Paramètres</h2>
+      <p class="page-desc">Configurez votre restaurant</p>
+
+      <div class="settings-card">
+        <h3>Informations du restaurant</h3>
+        <div class="field">
+          <label>Nom du restaurant</label>
+          <input type="text" id="s-name" placeholder="Mon Restaurant">
+        </div>
+        <div class="field">
+          <label>URL publique (pour le QR code)</label>
+          <input type="text" id="s-url" placeholder="https://monrestaurant.com">
+        </div>
+        <button class="btn-save-settings" onclick="saveSettings()">Enregistrer</button>
+        <p class="save-notice" id="save-notice">✓ Enregistré !</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>Changer le mot de passe admin</h3>
+        <div class="field">
+          <label>Nouveau mot de passe (min. 4 caractères)</label>
+          <input type="password" id="s-pwd" placeholder="Nouveau mot de passe">
+        </div>
+        <button class="btn-save-settings" onclick="savePwd()">Changer le mot de passe</button>
+        <p class="save-notice" id="pwd-notice">✓ Mot de passe mis à jour !</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal lot -->
+<div class="modal-overlay" id="prize-modal">
+  <div class="modal">
+    <h3 id="modal-title">Nouveau lot</h3>
+    <div class="field">
+      <label>Nom du lot *</label>
+      <input type="text" id="m-name" placeholder="Ex: Dessert offert">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <input type="text" id="m-desc" placeholder="Ex: Un dessert au choix offert">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Probabilité (%)</label>
+        <input type="number" id="m-prob" min="1" max="100" placeholder="10">
+      </div>
+      <div class="field">
+        <label>Délai pour utiliser (jours)</label>
+        <input type="number" id="m-deadline" min="0" max="365" placeholder="30">
+        <small style="color:var(--muted);font-size:0.75rem">0 = case "Rien gagné"</small>
+      </div>
+    </div>
+    <div class="field">
+      <label>Couleur</label>
+      <div class="color-row">
+        <input type="color" id="m-color-picker" value="#FF6B6B" oninput="document.getElementById('m-color').value=this.value">
+        <input type="text" id="m-color" value="#FF6B6B" placeholder="#FF6B6B" oninput="document.getElementById('m-color-picker').value=this.value">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePrizeModal()">Annuler</button>
+      <button class="btn-save" onclick="savePrize()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let editingPrizeId = null;
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function checkAuth() {
+  const res = await fetch('/api/admin/me');
+  const data = await res.json();
+  if (data.isAdmin) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('resto-name').textContent = data.restaurant_name || 'Mon Restaurant';
+    initApp();
+  }
+}
+
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pwd })
+  });
+  if (res.ok) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const me = await (await fetch('/api/admin/me')).json();
+    document.getElementById('resto-name').textContent = me.restaurant_name || 'Mon Restaurant';
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('login-pwd').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogout() {
+  await fetch('/api/admin/logout', { method: 'POST' });
+  location.reload();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+
+  if (name === 'dashboard') loadStats();
+  if (name === 'prizes') loadPrizes();
+  if (name === 'qrcode') loadQR();
+  if (name === 'settings') loadSettings();
+}
+
+function initApp() {
+  loadStats();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const res = await fetch('/api/admin/stats');
+  const s = await res.json();
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total tirages</div>
+      <div class="stat-value">${s.totalSpins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gains distribués</div>
+      <div class="stat-value green">${s.totalWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gains utilisés</div>
+      <div class="stat-value green">${s.usedWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente</div>
+      <div class="stat-value yellow">${s.pendingWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Expirés</div>
+      <div class="stat-value red">${s.expiredWins}</div>
+    </div>
+  `;
+}
+
+// ── Recherche client ──────────────────────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (q.length < 2) return;
+
+  const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`);
+  const customers = await res.json();
+  const container = document.getElementById('search-results');
+
+  if (!customers.length) {
+    container.innerHTML = '<div class="no-results">Aucun client trouvé.</div>';
+    return;
+  }
+
+  container.innerHTML = customers.map(c => {
+    const spinsHtml = c.spins.length === 0
+      ? '<p style="color:var(--muted);font-size:0.85rem">Aucun gain pour ce client.</p>'
+      : c.spins.map(s => {
+          const isExpired = s.deadline && new Date(s.deadline) < new Date();
+          const wonDate = new Date(s.won_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+          const dlDate = s.deadline ? new Date(s.deadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
+          let badge, action;
+          if (s.used) {
+            const usedDate = new Date(s.used_at).toLocaleDateString('fr-FR');
+            badge = `<span class="badge badge-used">✓ Utilisé le ${usedDate}</span>`;
+            action = '';
+          } else if (isExpired) {
+            badge = `<span class="badge badge-expired">Expiré</span>`;
+            action = '';
+          } else {
+            badge = `<span class="badge badge-pending">En attente</span>`;
+            action = `<button class="btn-use" onclick="useSpin(${s.id}, this)">Valider l'utilisation</button>`;
+          }
+
+          return `
+            <div class="spin-item" id="spin-${s.id}">
+              <div>
+                <div class="spin-prize" style="color:${s.prize_color}">${s.prize_name}</div>
+                <div class="spin-meta">Gagné le ${wonDate}${dlDate ? ` · Valable jusqu'au ${dlDate}` : ''}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                ${badge}
+                ${action}
+              </div>
+            </div>`;
+        }).join('');
+
+    return `
+      <div class="customer-card">
+        <div class="customer-header">
+          <div>
+            <div class="customer-name">${escHtml(c.first_name)} ${escHtml(c.last_name)}</div>
+            <div class="customer-email">${escHtml(c.email)}</div>
+          </div>
+          <div class="customer-date">Client depuis le ${new Date(c.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <div class="spin-list">${spinsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+async function useSpin(spinId, btn) {
+  const res = await fetch(`/api/admin/spins/${spinId}/use`, { method: 'PUT' });
+  const data = await res.json();
+  if (data.success) {
+    const item = document.getElementById('spin-' + spinId);
+    const today = new Date().toLocaleDateString('fr-FR');
+    item.querySelector('.badge-pending')?.remove();
+    item.querySelector('.btn-use')?.remove();
+    const badgeWrap = item.querySelector('div[style]');
+    badgeWrap.innerHTML = `<span class="badge badge-used">✓ Utilisé le ${today}</span>`;
+    loadStats();
+  } else {
+    alert(data.error || 'Erreur');
+  }
+}
+
+// ── Lots ──────────────────────────────────────────────────────────────────────
+async function loadPrizes() {
+  const res = await fetch('/api/admin/prizes');
+  const prizes = await res.json();
+  document.getElementById('prizes-grid').innerHTML = prizes.map(p => `
+    <div class="prize-card" style="--prize-color:${p.color}">
+      <div class="prize-card-name">${escHtml(p.name)}</div>
+      <div class="prize-card-desc">${escHtml(p.description || '')}</div>
+      <div class="prize-meta">
+        <span>🎯 ${p.probability}% de chance</span>
+        <span>⏰ ${p.deadline_days === 0 ? 'Aucun gain' : p.deadline_days + ' jours'}</span>
+      </div>
+      <div class="prize-actions">
+        <button class="btn-edit" onclick="openPrizeModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">Modifier</button>
+        <button class="btn-del" onclick="deletePrize(${p.id})">Supprimer</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openPrizeModal(prize) {
+  editingPrizeId = prize ? prize.id : null;
+  document.getElementById('modal-title').textContent = prize ? 'Modifier le lot' : 'Nouveau lot';
+  document.getElementById('m-name').value = prize ? prize.name : '';
+  document.getElementById('m-desc').value = prize ? (prize.description || '') : '';
+  document.getElementById('m-prob').value = prize ? prize.probability : 10;
+  document.getElementById('m-deadline').value = prize ? prize.deadline_days : 30;
+  document.getElementById('m-color').value = prize ? prize.color : '#FF6B6B';
+  document.getElementById('m-color-picker').value = prize ? prize.color : '#FF6B6B';
+  document.getElementById('prize-modal').classList.add('open');
+}
+
+function closePrizeModal() {
+  document.getElementById('prize-modal').classList.remove('open');
+  editingPrizeId = null;
+}
+
+async function savePrize() {
+  const body = {
+    name: document.getElementById('m-name').value.trim(),
+    description: document.getElementById('m-desc').value.trim(),
+    probability: parseInt(document.getElementById('m-prob').value),
+    deadline_days: parseInt(document.getElementById('m-deadline').value),
+    color: document.getElementById('m-color').value
+  };
+
+  if (!body.name || isNaN(body.probability) || isNaN(body.deadline_days)) {
+    alert('Remplissez tous les champs obligatoires.');
+    return;
+  }
+
+  const url = editingPrizeId ? `/api/admin/prizes/${editingPrizeId}` : '/api/admin/prizes';
+  const method = editingPrizeId ? 'PUT' : 'POST';
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (res.ok) {
+    closePrizeModal();
+    loadPrizes();
+  } else {
+    const e = await res.json();
+    alert(e.error || 'Erreur');
+  }
+}
+
+async function deletePrize(id) {
+  if (!confirm('Supprimer ce lot ? Les gains déjà accordés restent valides.')) return;
+  await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' });
+  loadPrizes();
+}
+
+// ── QR Code ───────────────────────────────────────────────────────────────────
+async function loadQR() {
+  const res = await fetch('/api/admin/qrcode');
+  const data = await res.json();
+  const img = document.getElementById('qr-img');
+  img.src = data.qr;
+  document.getElementById('qr-url').textContent = data.url;
+  document.getElementById('qr-dl').href = data.qr;
+}
+
+// ── Paramètres ────────────────────────────────────────────────────────────────
+async function loadSettings() {
+  const res = await fetch('/api/admin/settings');
+  const s = await res.json();
+  document.getElementById('s-name').value = s.restaurant_name || '';
+  document.getElementById('s-url').value = s.restaurant_url || '';
+}
+
+async function saveSettings() {
+  const body = {
+    restaurant_name: document.getElementById('s-name').value.trim(),
+    restaurant_url: document.getElementById('s-url').value.trim()
+  };
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (res.ok) {
+    document.getElementById('resto-name').textContent = body.restaurant_name;
+    const n = document.getElementById('save-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+async function savePwd() {
+  const pwd = document.getElementById('s-pwd').value;
+  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ admin_password: pwd })
+  });
+  if (res.ok) {
+    document.getElementById('s-pwd').value = '';
+    const n = document.getElementById('pwd-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Fermer modal en cliquant dehors
+document.getElementById('prize-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('prize-modal')) closePrizeModal();
+});
+
+checkAuth();
+</script>
+</body>
+</html>

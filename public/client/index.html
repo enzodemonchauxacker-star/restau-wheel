@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tentez votre chance !</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .logo { font-size: 2.5rem; margin-bottom: 6px; }
+    h1 { font-size: 1.6rem; font-weight: 700; text-align: center; margin-bottom: 4px; }
+    .subtitle { color: #a0aec0; font-size: 0.9rem; text-align: center; margin-bottom: 30px; }
+
+    /* ── Formulaire ── */
+    #form-section {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 400px;
+      animation: fadeIn .4s ease;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.82rem; color: #a0aec0; margin-bottom: 6px; font-weight: 500; }
+    input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 1rem;
+      transition: border-color .2s;
+      outline: none;
+    }
+    input:focus { border-color: #e94560; }
+    input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .btn-spin {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-spin:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.4); }
+    .btn-spin:active { transform: translateY(0); }
+    .btn-spin:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Roue ── */
+    #wheel-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn .5s ease;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .wheel-container {
+      position: relative;
+      width: min(340px, 90vw);
+      height: min(340px, 90vw);
+      margin: 10px auto;
+    }
+
+    #wheel-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 30px rgba(233,69,96,0.5));
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 32px solid #e94560;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+      z-index: 10;
+    }
+
+    .wheel-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px; height: 44px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px #1a1a2e, 0 0 0 7px rgba(255,255,255,0.3);
+      z-index: 10;
+    }
+
+    .btn-go {
+      margin-top: 20px;
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #e94560, #c0392b);
+      border: none;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-go:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.4); }
+    .btn-go:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Résultat ── */
+    #result-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: popIn .5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .result-icon { font-size: 4rem; margin-bottom: 12px; }
+    .result-card {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 100%;
+    }
+    .result-prize {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #ffd700;
+    }
+    .result-desc { color: #a0aec0; font-size: 0.95rem; margin-bottom: 16px; }
+    .result-deadline {
+      background: rgba(233,69,96,0.15);
+      border: 1px solid rgba(233,69,96,0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      color: #fc8181;
+      margin-bottom: 20px;
+    }
+    .result-name {
+      font-size: 1rem;
+      color: #68d391;
+      font-weight: 600;
+    }
+    .no-prize { color: #a0aec0; font-size: 1.1rem; }
+
+    .confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+
+    .error-msg { color: #fc8181; font-size: 0.85rem; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="logo">🍽️</div>
+  <h1>Tentez votre chance !</h1>
+  <p class="subtitle">Remplissez vos informations pour faire tourner la roue</p>
+
+  <!-- Étape 1 : Formulaire -->
+  <div id="form-section">
+    <div class="form-group">
+      <label>Prénom</label>
+      <input type="text" id="first_name" placeholder="Votre prénom" autocomplete="given-name">
+    </div>
+    <div class="form-group">
+      <label>Nom</label>
+      <input type="text" id="last_name" placeholder="Votre nom" autocomplete="family-name">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <p class="error-msg" id="form-error">Veuillez remplir tous les champs.</p>
+    <button class="btn-spin" id="btn-next">Accéder à la roue →</button>
+  </div>
+
+  <!-- Étape 2 : Roue -->
+  <div id="wheel-section">
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheel-canvas" width="600" height="600"></canvas>
+      <div class="wheel-center"></div>
+    </div>
+    <button class="btn-go" id="btn-spin">🎰 Tourner la roue !</button>
+  </div>
+
+  <!-- Étape 3 : Résultat -->
+  <div id="result-section">
+    <div id="result-icon" class="result-icon">🎉</div>
+    <div class="result-card">
+      <div id="result-prize" class="result-prize"></div>
+      <div id="result-desc" class="result-desc"></div>
+      <div id="result-deadline" class="result-deadline" style="display:none"></div>
+      <div id="result-name" class="result-name"></div>
+    </div>
+    <div class="confetti-wrap" id="confetti-wrap"></div>
+  </div>
+
+<script>
+const API = '';
+let prizes = [];
+let formData = {};
+let angle = 0;
+let spinning = false;
+
+// ── Charger les lots ──────────────────────────────────────────────────────────
+async function loadPrizes() {
+  const res = await fetch(`${API}/api/prizes`);
+  prizes = await res.json();
+}
+
+// ── Dessiner la roue ──────────────────────────────────────────────────────────
+function drawWheel(currentAngle = 0) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const cx = size / 2, cy = size / 2;
+  const r = size / 2 - 8;
+
+  ctx.clearRect(0, 0, size, size);
+
+  const total = prizes.reduce((s, p) => s + p.probability, 0);
+  let start = currentAngle;
+
+  prizes.forEach((prize, i) => {
+    const slice = (prize.probability / total) * Math.PI * 2;
+    const end = start + slice;
+    const mid = start + slice / 2;
+
+    // Fond du segment
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = prize.color;
+    ctx.fill();
+
+    // Bordure
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Texte
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(mid);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+
+    const label = prize.name.length > 18 ? prize.name.substring(0, 16) + '…' : prize.name;
+    const fontSize = Math.max(14, Math.min(22, r * 0.09));
+    ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(label, r - 16, 6);
+    ctx.restore();
+
+    start = end;
+  });
+
+  // Cercle central
+  ctx.beginPath();
+  ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+
+// ── Animer et tirer le lot ───────────────────────────────────────────────────
+async function doSpin() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('btn-spin').disabled = true;
+
+  // Appel API pour obtenir le lot tiré
+  let spinResult = null;
+  try {
+    const res = await fetch('/api/spin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    spinResult = await res.json();
+    if (!res.ok) throw new Error(spinResult.error || 'Erreur');
+  } catch (err) {
+    alert('Erreur : ' + err.message);
+    spinning = false;
+    document.getElementById('btn-spin').disabled = false;
+    return;
+  }
+
+  // Calculer l'angle cible (case gagnante)
+  const wonPrize = spinResult.prize;
+  const total = prizes.reduce((s, p) => s + p.probability, 0);
+  let segStart = 0;
+  let segAngle = 0;
+
+  for (const p of prizes) {
+    const slice = (p.probability / total) * Math.PI * 2;
+    if (p.id === wonPrize.id) {
+      segAngle = segStart + slice / 2;
+      break;
+    }
+    segStart += slice;
+  }
+
+  // Le pointeur est en haut (−π/2). On veut que le centre du segment gagnant
+  // arrive en haut, donc on cible: targetAngle = −segAngle − π/2
+  const fullTurns = (5 + Math.floor(Math.random() * 4)) * Math.PI * 2;
+  const target = fullTurns - segAngle - Math.PI / 2;
+
+  const duration = 4000;
+  const start = performance.now();
+  const startAngle = angle;
+
+  function ease(t) {
+    // easeInOutQuart
+    return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+  }
+
+  function frame(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    angle = startAngle + (target - startAngle) * ease(t);
+    drawWheel(angle);
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      angle = angle % (Math.PI * 2);
+      spinning = false;
+      showResult(spinResult);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// ── Résultat ─────────────────────────────────────────────────────────────────
+function showResult(data) {
+  document.getElementById('wheel-section').style.display = 'none';
+  const section = document.getElementById('result-section');
+  section.style.display = 'flex';
+
+  const { prize, customer } = data;
+  document.getElementById('result-name').textContent =
+    `Bonne visite, ${customer.first_name} ${customer.last_name} !`;
+
+  if (prize.is_real_prize) {
+    document.getElementById('result-icon').textContent = '🎉';
+    document.getElementById('result-prize').textContent = prize.name;
+    document.getElementById('result-desc').textContent =
+      prize.description || 'Félicitations !';
+
+    const deadlineEl = document.getElementById('result-deadline');
+    if (prize.deadline) {
+      const d = new Date(prize.deadline);
+      deadlineEl.textContent = `⏰ Valable jusqu'au ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+      deadlineEl.style.display = 'block';
+    }
+
+    launchConfetti();
+  } else {
+    document.getElementById('result-icon').textContent = '😊';
+    document.getElementById('result-prize').textContent = prize.name;
+    document.getElementById('result-desc').textContent = 'Bonne chance la prochaine fois !';
+  }
+}
+
+// ── Confettis ─────────────────────────────────────────────────────────────────
+function launchConfetti() {
+  const wrap = document.getElementById('confetti-wrap');
+  const colors = ['#ffd700','#e94560','#4ecdc4','#45b7d1','#96ceb4','#ff6b6b'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    const size = Math.random() * 10 + 6;
+    el.style.cssText = `
+      position:absolute;
+      width:${size}px; height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      left:${Math.random()*100}%;
+      top:-20px;
+      animation: fall ${1.5+Math.random()*2}s linear ${Math.random()*0.5}s forwards;
+      opacity:0.9;
+    `;
+    wrap.appendChild(el);
+  }
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(${Math.random()*720}deg); opacity:0; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(() => { wrap.innerHTML = ''; }, 4000);
+}
+
+// ── Flux principal ────────────────────────────────────────────────────────────
+document.getElementById('btn-next').addEventListener('click', async () => {
+  const fn = document.getElementById('first_name').value.trim();
+  const ln = document.getElementById('last_name').value.trim();
+  const em = document.getElementById('email').value.trim();
+  const errEl = document.getElementById('form-error');
+
+  if (!fn || !ln || !em || !em.includes('@')) {
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  formData = { first_name: fn, last_name: ln, email: em };
+
+  await loadPrizes();
+
+  document.getElementById('form-section').style.display = 'none';
+  const ws = document.getElementById('wheel-section');
+  ws.style.display = 'flex';
+
+  drawWheel(0);
+});
+
+document.getElementById('btn-spin').addEventListener('click', doSpin);
+</script>
+</body>
+</html>
