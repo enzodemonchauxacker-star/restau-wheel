@@ -216,6 +216,13 @@
       color: #FFD700;
       margin-bottom: 18px;
     }
+    .result-next-visit {
+      color: #a0aec0;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 10px;
+    }
     .result-name { color: #68d391; font-weight: 700; font-size: 1rem; }
 
     /* Étincelles */
@@ -278,6 +285,9 @@
   <div id="result-card" class="result-card">
     <div id="result-prize" class="result-prize"></div>
     <div id="result-desc"  class="result-desc"></div>
+    <div id="result-next-visit" class="result-next-visit" style="display:none">
+      À présenter lors de votre prochaine visite
+    </div>
     <div id="result-deadline" class="result-deadline" style="display:none">
       ⏰ <span id="deadline-text"></span>
     </div>
@@ -336,18 +346,27 @@ async function loadPrizes() {
   slots  = [];
   prizes.forEach(p => {
     const baseRgb = hexToRgb(p.color);
-    const count   = p.probability;
-    for (let i = 0; i < count; i++) {
-      const offset = i % 2 === 1 ? -28 : 0;   // alternance claire/sombre
+    for (let i = 0; i < p.probability; i++) {
       slots.push({
         id:         p.id,
         name:       p.name,
         is_real:    p.deadline_days > 0,
         baseRgb,
-        offset,
+        offset:     0,
         shortLabel: shortLabel(p.name),
       });
     }
+  });
+  // Mélange Fisher-Yates
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [slots[i], slots[j]] = [slots[j], slots[i]];
+  }
+  // Alternance claire/sombre par lot pour distinguer les segments adjacents identiques
+  const seen = {};
+  slots.forEach(s => {
+    seen[s.id] = (seen[s.id] || 0) + 1;
+    s.offset = seen[s.id] % 2 === 0 ? -28 : 0;
   });
 }
 
@@ -604,6 +623,7 @@ function showResult(data) {
     document.getElementById('result-desc').textContent  =
       prize.description || 'Félicitations !';
 
+    document.getElementById('result-next-visit').style.display = 'block';
     if (prize.deadline) {
       const d = new Date(prize.deadline);
       document.getElementById('deadline-text').textContent =
