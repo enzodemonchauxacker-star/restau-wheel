@@ -577,6 +577,33 @@
       </div>
 
       <div class="settings-card">
+        <h3>📧 Notifications email</h3>
+        <p style="color:#8892a4;font-size:0.88rem;margin-bottom:16px;">Configurez les emails automatiques envoyés à vos clients après chaque tirage. La configuration SMTP doit être renseignée par l'opérateur.</p>
+        <div class="field">
+          <label>Nom expéditeur (affiché dans l'email)</label>
+          <input type="text" id="s-email-name" placeholder="Ex : Le Bistrot du Coin">
+        </div>
+        <div class="field">
+          <label>Email de réponse (reply-to)</label>
+          <input type="email" id="s-email-replyto" placeholder="contact@monrestaurant.fr">
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <input type="checkbox" id="s-send-win" style="width:auto;margin:0;">
+          <label for="s-send-win" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>gagne</strong></label>
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <input type="checkbox" id="s-send-lose" style="width:auto;margin:0;">
+          <label for="s-send-lose" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>ne gagne pas</strong></label>
+        </div>
+        <div class="field">
+          <label>Rappels toutes les 3 semaines — mettre 1 pour activer, 0 pour désactiver</label>
+          <input type="number" id="s-reminder-days" min="0" max="1" placeholder="1">
+        </div>
+        <button class="btn-save-settings" onclick="saveEmailSettings()">Enregistrer</button>
+        <p class="save-notice" id="email-notice">✓ Enregistré !</p>
+      </div>
+
+      <div class="settings-card">
         <h3>Changer le mot de passe admin</h3>
         <div class="field">
           <label>Nouveau mot de passe (min. 4 caractères)</label>
@@ -879,11 +906,37 @@ async function loadQR() {
 
 // ── Paramètres ────────────────────────────────────────────────────────────────
 async function loadSettings() {
-  const res = await fetch('/api/admin/settings');
+  const [res, resEmail] = await Promise.all([fetch('/api/admin/settings'), fetch('/api/admin/email-settings')]);
   const s = await res.json();
+  const e = await resEmail.json();
   document.getElementById('s-name').value = s.restaurant_name || '';
   document.getElementById('s-url').value = s.restaurant_url || '';
   if (s.theme_accent) setAccent(s.theme_accent, false);
+  document.getElementById('s-email-name').value = e.email_from_name || '';
+  document.getElementById('s-email-replyto').value = e.email_reply_to || '';
+  document.getElementById('s-send-win').checked = e.send_win_email !== 0;
+  document.getElementById('s-send-lose').checked = !!e.send_lose_email;
+  document.getElementById('s-reminder-days').value = e.reminder_days ?? 3;
+}
+
+async function saveEmailSettings() {
+  const body = {
+    email_from_name:  document.getElementById('s-email-name').value.trim(),
+    email_reply_to:   document.getElementById('s-email-replyto').value.trim(),
+    send_win_email:   document.getElementById('s-send-win').checked,
+    send_lose_email:  document.getElementById('s-send-lose').checked,
+    reminder_days:    parseInt(document.getElementById('s-reminder-days').value) || 0,
+  };
+  const res = await fetch('/api/admin/email-settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (res.ok) {
+    const n = document.getElementById('email-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
 }
 
 function setAccent(hex, updatePicker = true) {

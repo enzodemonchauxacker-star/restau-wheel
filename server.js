@@ -2,7 +2,9 @@ const express = require('express');
 const session = require('express-session');
 const QRCode  = require('qrcode');
 const path    = require('path');
+const cron    = require('node-cron');
 const { db, createDefaultPrizes } = require('./database');
+const { sendSpinEmail, sendReminderEmail } = require('./mailer');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -89,6 +91,17 @@ app.post('/api/spin', (req, res) => {
     spin_id: spin.lastInsertRowid,
     customer: { first_name: customer.first_name, last_name: customer.last_name }
   });
+
+  // Email asynchrone (n'impacte pas la réponse au client)
+  const restaurant = db.prepare('SELECT * FROM restaurants WHERE id=?').get(rid);
+  sendSpinEmail({ customer, prize: { ...prize, deadline }, restaurant, isWin: isReal }).catch(() => {});
+});
+
+// Opt-in rappels (public — le spin_id est renvoyé juste après le tirage)
+app.put('/api/spin/:id/reminders', (req, res) => {
+  const { allow } = req.body;
+  db.prepare('UPDATE spins SET allow_reminders=? WHERE id=?').run(allow ? 1 : 0, parseInt(req.params.id));
+  res.json({ success: true });
 });
 
 // ─── Inscription restaurant ───────────────────────────────────────────────────
@@ -202,6 +215,20 @@ app.put('/api/admin/settings', requireRestaurant, (req, res) => {
   res.json({ success: true });
 });
 
+// Paramètres email par restaurant
+app.get('/api/admin/email-settings', requireRestaurant, (req, res) => {
+  const r = db.prepare('SELECT email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  res.json(r || {});
+});
+
+app.put('/api/admin/email-settings', requireRestaurant, (req, res) => {
+  const { email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days } = req.body;
+  const rid = req.session.restaurantId;
+  db.prepare('UPDATE restaurants SET email_from_name=?, email_reply_to=?, send_win_email=?, send_lose_email=?, reminder_days=? WHERE id=?')
+    .run(email_from_name || null, email_reply_to || null, send_win_email ? 1 : 0, send_lose_email ? 1 : 0, parseInt(reminder_days) || 3, rid);
+  res.json({ success: true });
+});
+
 // QR code
 app.get('/api/admin/qrcode', requireRestaurant, async (req, res) => {
   const r   = db.prepare('SELECT url FROM restaurants WHERE id=?').get(req.session.restaurantId);
@@ -261,6 +288,31 @@ app.put('/api/superadmin/restaurants/:id', requireSuperAdmin, (req, res) => {
   res.json(db.prepare('SELECT * FROM restaurants WHERE id=?').get(id));
 });
 
+// Config SMTP globale
+app.get('/api/superadmin/smtp', requireSuperAdmin, (req, res) => {
+  const get = key => { const r = db.prepare('SELECT value FROM settings WHERE key=?').get(key); return r?.value || ''; };
+  res.json({ smtp_host: get('smtp_host'), smtp_port: get('smtp_port'), smtp_user: get('smtp_user'), smtp_pass: get('smtp_pass') });
+});
+
+app.put('/api/superadmin/smtp', requireSuperAdmin, (req, res) => {
+  const { smtp_host, smtp_port, smtp_user, smtp_pass } = req.body;
+  const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)');
+  if (smtp_host != null) set.run('smtp_host', smtp_host);
+  if (smtp_port != null) set.run('smtp_port', String(smtp_port));
+  if (smtp_user != null) set.run('smtp_user', smtp_user);
+  if (smtp_pass != null) set.run('smtp_pass', smtp_pass);
+  res.json({ success: true });
+});
+
+// Test d'envoi SMTP
+app.post('/api/superadmin/smtp/test', requireSuperAdmin, async (req, res) => {
+  const { to } = req.body;
+  if (!to) return res.status(400).json({ error: 'Adresse email requise' });
+  const { sendTestEmail } = require('./mailer');
+  const result = await sendTestEmail(to);
+  res.json(result);
+});
+
 app.put('/api/superadmin/password', requireSuperAdmin, (req, res) => {
   const { password } = req.body;
   if (!password || password.length < 4) return res.status(400).json({ error: 'Mot de passe trop court' });
@@ -274,6 +326,43 @@ app.get('/admin',       (req, res) => res.sendFile(path.join(__dirname, 'public'
 app.get('/register',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'register',   'index.html')));
 app.get('/superadmin',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'superadmin', 'index.html')));
 app.get('/',            (req, res) => res.redirect('/admin'));
+
+// ─── Cron : rappels toutes les 3 semaines jusqu'à la deadline (9h) ───────────
+cron.schedule('0 9 * * *', async () => {
+  const INTERVAL_DAYS = 21;
+  const now = new Date();
+
+  // Spins actifs (non utilisés, pas expirés, avec une vraie deadline)
+  // dont le dernier rappel date de plus de 21 jours (ou jamais envoyé + spin > 21 jours)
+  const spins = db.prepare(`
+    SELECT s.*, c.email, c.first_name, c.last_name, c.restaurant_id,
+           p.name as prize_name
+    FROM spins s
+    JOIN customers c ON s.customer_id=c.id
+    JOIN prizes   p ON s.prize_id=p.id
+    WHERE s.used=0
+      AND s.allow_reminders=1
+      AND s.deadline IS NOT NULL
+      AND datetime(s.deadline) > datetime('now')
+      AND (
+        (s.last_reminder_at IS NULL     AND datetime(s.won_at,       '+${INTERVAL_DAYS} days') <= datetime('now'))
+        OR
+        (s.last_reminder_at IS NOT NULL AND datetime(s.last_reminder_at, '+${INTERVAL_DAYS} days') <= datetime('now'))
+      )
+  `).all();
+
+  for (const row of spins) {
+    const restaurant = db.prepare('SELECT * FROM restaurants WHERE id=? AND active=1').get(row.restaurant_id);
+    if (!restaurant || !restaurant.reminder_days) continue;
+
+    const daysLeft = Math.ceil((new Date(row.deadline) - now) / 86400000);
+    const customer = { id: row.customer_id, email: row.email, first_name: row.first_name, last_name: row.last_name };
+    const prize    = { name: row.prize_name };
+
+    await sendReminderEmail({ customer, spin: row, prize, restaurant, daysLeft });
+    db.prepare('UPDATE spins SET last_reminder_at=CURRENT_TIMESTAMP WHERE id=?').run(row.id);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`\n🍽️  Restau Wheel démarré sur http://localhost:${PORT}`);

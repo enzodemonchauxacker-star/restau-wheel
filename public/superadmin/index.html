@@ -130,6 +130,32 @@
     </div>
 
     <div class="pwd-card">
+      <h3>📧 Configuration SMTP (emails)</h3>
+      <p style="color:#8892a4;font-size:.88rem;margin-bottom:16px;">Ces paramètres sont partagés entre tous les restaurants. Utilisez un compte Gmail avec un <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#fc8181;">mot de passe d'application</a> (pas votre vrai mot de passe Gmail).</p>
+      <div class="field">
+        <label>Serveur SMTP</label>
+        <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
+      </div>
+      <div class="field">
+        <label>Port</label>
+        <input type="number" id="smtp-port" placeholder="587" value="587">
+      </div>
+      <div class="field">
+        <label>Email (utilisateur SMTP)</label>
+        <input type="email" id="smtp-user" placeholder="moncompte@gmail.com">
+      </div>
+      <div class="field">
+        <label>Mot de passe d'application</label>
+        <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn-save-pwd" onclick="saveSMTP()">Enregistrer</button>
+        <button class="btn-save-pwd" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()">Envoyer email test</button>
+      </div>
+      <p class="notice" id="smtp-notice"></p>
+    </div>
+
+    <div class="pwd-card">
       <h3>🔑 Changer le mot de passe super-admin</h3>
       <div class="field">
         <label>Nouveau mot de passe (min. 4 caractères)</label>
@@ -185,7 +211,43 @@ async function doLogout() {
 async function showApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  await loadRestaurants();
+  await Promise.all([loadRestaurants(), loadSMTP()]);
+}
+
+async function loadSMTP() {
+  const res = await fetch('/api/superadmin/smtp');
+  if (!res.ok) return;
+  const s = await res.json();
+  document.getElementById('smtp-host').value = s.smtp_host || '';
+  document.getElementById('smtp-port').value = s.smtp_port || '587';
+  document.getElementById('smtp-user').value = s.smtp_user || '';
+  document.getElementById('smtp-pass').value = s.smtp_pass ? '••••••••' : '';
+}
+
+async function saveSMTP() {
+  const body = {
+    smtp_host: document.getElementById('smtp-host').value.trim(),
+    smtp_port: document.getElementById('smtp-port').value.trim(),
+    smtp_user: document.getElementById('smtp-user').value.trim(),
+  };
+  const rawPass = document.getElementById('smtp-pass').value;
+  if (rawPass && !rawPass.startsWith('•')) body.smtp_pass = rawPass;
+  const res = await fetch('/api/superadmin/smtp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const n = document.getElementById('smtp-notice');
+  if (res.ok) { n.textContent='✓ Configuration SMTP enregistrée !'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+  else        { n.style.color='#fc8181'; n.textContent='Erreur lors de la sauvegarde.'; n.style.display='block'; }
+}
+
+async function testSMTP() {
+  const to = prompt('Email de test (votre adresse) :');
+  if (!to) return;
+  const n = document.getElementById('smtp-notice');
+  n.style.color='#34d399'; n.textContent='Envoi en cours…'; n.style.display='block';
+  const res = await fetch('/api/superadmin/smtp/test', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to }) });
+  const d = await res.json();
+  if (d.ok) { n.textContent=`✓ Email envoyé à ${to} !`; }
+  else      { n.style.color='#fc8181'; n.textContent=`Erreur : ${d.reason}`; }
+  setTimeout(()=>n.style.display='none', 5000);
 }
 
 async function loadRestaurants() {

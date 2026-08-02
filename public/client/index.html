@@ -231,6 +231,31 @@
     }
     .result-name { color: #68d391; font-weight: 700; font-size: 1rem; }
 
+    /* Case rappel */
+    .reminder-opt {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      text-align: left;
+    }
+    .reminder-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .reminder-opt input[type="checkbox"] {
+      width: 20px; height: 20px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .reminder-opt-label { font-size: 0.88rem; color: #a0aec0; line-height: 1.4; }
+    .reminder-opt-label strong { color: #fff; }
+    .reminder-confirm { color: #68d391; font-size: 0.82rem; margin-top: 8px; display: none; }
+
     /* Étincelles */
     #sparkles { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
     .spark {
@@ -298,6 +323,14 @@
       ⏰ <span id="deadline-text"></span>
     </div>
     <div id="result-name" class="result-name"></div>
+    <label class="reminder-opt" id="reminder-opt" style="display:none">
+      <input type="checkbox" id="reminder-check" onchange="toggleReminder(this)">
+      <div class="reminder-opt-label">
+        <strong>✉️ Me rappeler par email</strong><br>
+        Recevoir un rappel toutes les 3 semaines jusqu'à expiration de mon gain
+      </div>
+    </label>
+    <div class="reminder-confirm" id="reminder-confirm">✓ Rappels activés !</div>
   </div>
 </div>
 
@@ -649,12 +682,16 @@ function flashSegment(idx, times, callback) {
 }
 
 // ─── Affichage résultat ───────────────────────────────────────────────────────
+let currentSpinId = null;
+
 function showResult(data) {
   document.getElementById('wheel-section').style.display = 'none';
   const section = document.getElementById('result-section');
   section.style.display = 'flex';
 
-  const { prize, customer } = data;
+  const { prize, customer, spin_id } = data;
+  currentSpinId = spin_id;
+
   document.getElementById('result-name').textContent =
     `Bonne visite, ${customer.first_name} ${customer.last_name} !`;
 
@@ -672,6 +709,12 @@ function showResult(data) {
         `Valable jusqu'au ${d.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}`;
       document.getElementById('result-deadline').style.display = 'inline-flex';
     }
+
+    // Checkbox rappels (seulement si vrai gain)
+    document.getElementById('reminder-check').checked = false;
+    document.getElementById('reminder-confirm').style.display = 'none';
+    document.getElementById('reminder-opt').style.display = 'flex';
+
     launchSparkles();
   } else {
     document.getElementById('result-icon').textContent = '😊';
@@ -679,8 +722,27 @@ function showResult(data) {
     document.getElementById('result-prize').textContent = 'Pas de chance !';
     document.getElementById('result-desc').textContent  =
       'La prochaine fois sera la bonne… Revenez nous voir !';
+    document.getElementById('reminder-opt').style.display = 'none';
   }
   spinning = false;
+}
+
+async function toggleReminder(checkbox) {
+  if (!currentSpinId) return;
+  await fetch(`/api/spin/${currentSpinId}/reminders`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ allow: checkbox.checked }),
+  });
+  const confirm = document.getElementById('reminder-confirm');
+  if (checkbox.checked) {
+    confirm.textContent = '✓ Rappels activés !';
+    confirm.style.display = 'block';
+  } else {
+    confirm.textContent = '✓ Rappels désactivés.';
+    confirm.style.display = 'block';
+    setTimeout(() => { confirm.style.display = 'none'; }, 2000);
+  }
 }
 
 // ─── Étincelles de victoire ───────────────────────────────────────────────────

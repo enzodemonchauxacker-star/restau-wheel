@@ -13,10 +13,15 @@ db.exec(`
     name         TEXT    NOT NULL,
     email        TEXT    NOT NULL UNIQUE,
     password     TEXT    NOT NULL,
-    theme_accent TEXT    NOT NULL DEFAULT '#FFD700',
-    url          TEXT    NOT NULL DEFAULT 'http://localhost:3000',
-    active       INTEGER NOT NULL DEFAULT 1,
-    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+    theme_accent      TEXT    NOT NULL DEFAULT '#FFD700',
+    url               TEXT    NOT NULL DEFAULT 'http://localhost:3000',
+    email_from_name   TEXT,
+    email_reply_to    TEXT,
+    send_win_email    INTEGER NOT NULL DEFAULT 1,
+    send_lose_email   INTEGER NOT NULL DEFAULT 0,
+    reminder_days     INTEGER NOT NULL DEFAULT 3,
+    active            INTEGER NOT NULL DEFAULT 1,
+    created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS prizes (
@@ -56,14 +61,26 @@ db.exec(`
   );
 `);
 
-// Super-admin password global
-db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run('superadmin_password', 'superadmin123');
+// Super-admin password + config SMTP globale
+const initSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
+initSetting.run('superadmin_password', 'superadmin123');
+initSetting.run('smtp_host', '');
+initSetting.run('smtp_port', '587');
+initSetting.run('smtp_user', '');
+initSetting.run('smtp_pass', '');
 
 // ─── Migration depuis l'ancienne base mono-restaurant ────────────────────────
-// Ajoute restaurant_id aux anciennes tables si absent
+// Ajoute les colonnes manquantes si absent
 for (const sql of [
   'ALTER TABLE prizes    ADD COLUMN restaurant_id INTEGER',
   'ALTER TABLE customers ADD COLUMN restaurant_id INTEGER',
+  'ALTER TABLE restaurants ADD COLUMN email_from_name TEXT',
+  'ALTER TABLE restaurants ADD COLUMN email_reply_to TEXT',
+  'ALTER TABLE restaurants ADD COLUMN send_win_email INTEGER NOT NULL DEFAULT 1',
+  'ALTER TABLE restaurants ADD COLUMN send_lose_email INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE restaurants ADD COLUMN reminder_days INTEGER NOT NULL DEFAULT 3',
+  'ALTER TABLE spins ADD COLUMN last_reminder_at DATETIME',
+  'ALTER TABLE spins ADD COLUMN allow_reminders INTEGER NOT NULL DEFAULT 0',
 ]) {
   try { db.exec(sql); } catch (_) { /* colonne déjà présente */ }
 }
