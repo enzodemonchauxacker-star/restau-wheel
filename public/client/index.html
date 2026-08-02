@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tentez votre chance !</title>
   <style>
+    :root {
+      --accent:      #FFD700;
+      --accent-dark: #FFA500;
+      --accent-glow: rgba(255,215,0,0.7);
+      --accent-soft: rgba(255,215,0,0.1);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -25,12 +31,12 @@
     .header .icon {
       font-size: 2.8rem;
       display: block;
-      filter: drop-shadow(0 0 14px rgba(255,215,0,0.7));
+      filter: drop-shadow(0 0 14px var(--accent-glow));
     }
     .header h1 {
       font-size: 2rem;
       font-weight: 900;
-      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 6px 0 4px;
@@ -69,7 +75,7 @@
       outline: none;
       transition: border-color .2s, background .2s;
     }
-    .field input:focus { border-color: #FFD700; background: rgba(255,215,0,0.06); }
+    .field input:focus { border-color: var(--accent); background: var(--accent-soft); }
     .field input::placeholder { color: rgba(255,255,255,0.22); }
     .err { color: #fc8181; font-size: 0.82rem; margin-top: 6px; display: none; }
 
@@ -77,17 +83,17 @@
       width: 100%;
       padding: 14px;
       margin-top: 8px;
-      background: linear-gradient(135deg, #FFD700, #FFA500);
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
       border: none;
       border-radius: 12px;
       color: #1a1a1a;
       font-size: 1.05rem;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(255,165,0,0.4);
+      box-shadow: 0 4px 20px var(--accent-soft);
       transition: transform .15s, box-shadow .15s;
     }
-    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,165,0,0.55); }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-soft); }
     .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
     /* ── Roue ── */
@@ -193,7 +199,7 @@
     .result-prize {
       font-size: 1.7rem;
       font-weight: 900;
-      background: linear-gradient(135deg, #FFD700, #FFA500);
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
@@ -208,12 +214,12 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255,215,0,0.1);
+      background: var(--accent-soft);
       border: 1px solid rgba(255,215,0,0.28);
       border-radius: 10px;
       padding: 9px 16px;
       font-size: 0.87rem;
-      color: #FFD700;
+      color: var(--accent);
       margin-bottom: 18px;
     }
     .result-next-visit {
@@ -321,6 +327,33 @@ function adjustRgb(src, amt) {
   return { r: cl(c.r), g: cl(c.g), b: cl(c.b) };
 }
 function rgbStr({ r, g, b }) { return `rgb(${r},${g},${b})`; }
+
+function darkenAccent(hex, ratio) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgb(${Math.round(r*ratio)},${Math.round(g*ratio)},${Math.round(b*ratio)})`;
+}
+function lightenAccent(hex, ratio) {
+  const { r, g, b } = hexToRgb(hex);
+  const blend = v => Math.round(v + (255 - v) * ratio);
+  return `rgb(${blend(r)},${blend(g)},${blend(b)})`;
+}
+
+async function applyTheme() {
+  try {
+    const theme = await fetch('/api/theme').then(r => r.json());
+    if (theme.theme_accent) {
+      const hex   = theme.theme_accent;
+      const { r, g, b } = hexToRgb(hex);
+      const dark  = `rgb(${Math.round(r*.75)},${Math.round(g*.75)},${Math.round(b*.75)})`;
+      const soft  = `rgba(${r},${g},${b},0.1)`;
+      const glow  = `rgba(${r},${g},${b},0.7)`;
+      document.documentElement.style.setProperty('--accent',      hex);
+      document.documentElement.style.setProperty('--accent-dark', dark);
+      document.documentElement.style.setProperty('--accent-soft', soft);
+      document.documentElement.style.setProperty('--accent-glow', glow);
+    }
+  } catch(e) { /* garde les valeurs par défaut */ }
+}
 
 function shortLabel(name) {
   const n = name.toLowerCase();
@@ -449,15 +482,18 @@ function drawWheel(currentAngle, flashSlot = -1) {
 
   ctx.restore(); // fin rotation
 
-  // ── 3. Anneau extérieur doré (fixe) ──────────────────────────────────────────
+  // ── 3. Anneau extérieur (couleur thème, fixe) ────────────────────────────────
+  const accentHex  = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#FFD700';
+  const accentDark = darkenAccent(accentHex, 0.45);
+  const accentLight = lightenAccent(accentHex, 0.6);
   const goldGrad = ctx.createLinearGradient(CX - OUTER_R, CY, CX + OUTER_R, CY);
-  goldGrad.addColorStop(0,    '#7A5800');
-  goldGrad.addColorStop(0.18, '#FFD700');
-  goldGrad.addColorStop(0.38, '#FFF4A0');
-  goldGrad.addColorStop(0.5,  '#FFD700');
-  goldGrad.addColorStop(0.62, '#FFF4A0');
-  goldGrad.addColorStop(0.82, '#FFD700');
-  goldGrad.addColorStop(1,    '#7A5800');
+  goldGrad.addColorStop(0,    accentDark);
+  goldGrad.addColorStop(0.18, accentHex);
+  goldGrad.addColorStop(0.38, accentLight);
+  goldGrad.addColorStop(0.5,  accentHex);
+  goldGrad.addColorStop(0.62, accentLight);
+  goldGrad.addColorStop(0.82, accentHex);
+  goldGrad.addColorStop(1,    accentDark);
 
   ctx.beginPath();
   ctx.arc(CX, CY, OUTER_R, 0, PI2, false);
@@ -662,6 +698,9 @@ function launchSparkles() {
   }
   setTimeout(() => { wrap.innerHTML = ''; }, 5000);
 }
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+applyTheme();
 
 // ─── Formulaire ───────────────────────────────────────────────────────────────
 document.getElementById('btn-next').addEventListener('click', async () => {

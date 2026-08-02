@@ -48,6 +48,7 @@ const initSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALU
 initSetting.run('admin_password', 'admin123');
 initSetting.run('restaurant_name', 'Mon Restaurant');
 initSetting.run('restaurant_url', 'http://localhost:3000');
+initSetting.run('theme_accent', '#FFD700');
 
 // probability = nombre de cases sur la roue (total = 12 cases)
 const prizesCount = db.prepare('SELECT COUNT(*) as count FROM prizes').get();

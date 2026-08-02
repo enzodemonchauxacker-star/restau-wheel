@@ -229,14 +229,23 @@ app.get('/api/admin/settings', requireAdmin, (req, res) => {
 });
 
 app.put('/api/admin/settings', requireAdmin, (req, res) => {
-  const { restaurant_name, restaurant_url, admin_password } = req.body;
+  const { restaurant_name, restaurant_url, admin_password, theme_accent } = req.body;
 
   const upsert = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
   if (restaurant_name) upsert.run('restaurant_name', restaurant_name);
-  if (restaurant_url) upsert.run('restaurant_url', restaurant_url);
+  if (restaurant_url)  upsert.run('restaurant_url',  restaurant_url);
   if (admin_password && admin_password.length >= 4) upsert.run('admin_password', admin_password);
+  if (theme_accent)    upsert.run('theme_accent', theme_accent);
 
   res.json({ success: true });
+});
+
+// Thème public (pas besoin d'être connecté — la page client l'utilise)
+app.get('/api/theme', (req, res) => {
+  const rows = db.prepare("SELECT key, value FROM settings WHERE key IN ('theme_accent', 'restaurant_name')").all();
+  const theme = {};
+  rows.forEach(r => { theme[r.key] = r.value; });
+  res.json(theme);
 });
 
 // Générer QR code
