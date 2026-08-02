@@ -340,7 +340,7 @@ function lightenAccent(hex, ratio) {
 
 async function applyTheme() {
   try {
-    const theme = await fetch('/api/theme').then(r => r.json());
+    const theme = await fetch(`/api/theme?r=${RESTAURANT_ID}`).then(r => r.json());
     if (theme.theme_accent) {
       const hex   = theme.theme_accent;
       const { r, g, b } = hexToRgb(hex);
@@ -365,6 +365,12 @@ function shortLabel(name) {
   return name.substring(0, 8);
 }
 
+// ─── Identifiant restaurant (param ?r=) ──────────────────────────────────────
+const RESTAURANT_ID = new URLSearchParams(window.location.search).get('r');
+if (!RESTAURANT_ID) {
+  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px;"><div><div style="font-size:4rem;margin-bottom:16px;">⚠️</div><h2 style="color:#FFD700;margin-bottom:8px;">Lien invalide</h2><p style="color:#8892a4;">Ce lien est incomplet. Veuillez scanner le QR code de votre restaurant.</p></div></div>';
+}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 let prizes   = [];
 let slots    = [];
@@ -374,7 +380,7 @@ let spinning = false;
 
 // ─── Chargement lots → 12 slots ──────────────────────────────────────────────
 async function loadPrizes() {
-  const res = await fetch('/api/prizes');
+  const res = await fetch(`/api/prizes?r=${RESTAURANT_ID}`);
   prizes = await res.json();
   slots  = [];
   prizes.forEach(p => {
@@ -569,7 +575,7 @@ async function doSpin() {
     const res = await fetch('/api/spin', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(formData),
+      body:    JSON.stringify({ ...formData, restaurant_id: RESTAURANT_ID }),
     });
     result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Erreur');

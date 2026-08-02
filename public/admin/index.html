@@ -469,9 +469,11 @@
     <div class="icon">🍽️</div>
     <h2>Espace Restaurateur</h2>
     <p>Connectez-vous pour gérer votre roue de fortune</p>
-    <input type="password" id="login-pwd" placeholder="Mot de passe" autocomplete="current-password">
+    <input type="email"    id="login-email" placeholder="Votre email" autocomplete="email" style="margin-bottom:10px;">
+    <input type="password" id="login-pwd"   placeholder="Mot de passe" autocomplete="current-password">
     <button class="btn-primary" onclick="doLogin()">Se connecter</button>
-    <p id="login-error">Mot de passe incorrect.</p>
+    <p id="login-error">Email ou mot de passe incorrect.</p>
+    <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);">Pas encore de compte ? <a href="/register" style="color:var(--accent);text-decoration:none;font-weight:600;">S'inscrire</a></p>
   </div>
 </div>
 
@@ -641,11 +643,12 @@ async function checkAuth() {
 }
 
 async function doLogin() {
-  const pwd = document.getElementById('login-pwd').value;
+  const email = document.getElementById('login-email').value.trim();
+  const pwd   = document.getElementById('login-pwd').value;
   const res = await fetch('/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: pwd })
+    body: JSON.stringify({ email, password: pwd })
   });
   if (res.ok) {
     document.getElementById('login-screen').style.display = 'none';
@@ -658,8 +661,8 @@ async function doLogin() {
   }
 }
 
-document.getElementById('login-pwd').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
+['login-email', 'login-pwd'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 });
 
 async function doLogout() {

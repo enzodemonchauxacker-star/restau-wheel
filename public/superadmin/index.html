@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin – Restau Wheel</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{min-height:100vh;background:radial-gradient(ellipse at top,#1a1a3e 0%,#0d0d1a 65%);font-family:'Segoe UI',system-ui,sans-serif;color:#fff;}
+    /* Login */
+    #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+    .logo{font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 14px rgba(255,50,50,0.7));}
+    #login-screen h1{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#fc8181,#f56565);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+    #login-screen p{color:#8892a4;font-size:.9rem;margin-bottom:28px;}
+    .login-card{background:rgba(255,255,255,.05);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:36px 32px;width:100%;max-width:380px;}
+    .field{margin-bottom:18px;}
+    .field label{display:block;font-size:.78rem;font-weight:700;color:#8892a4;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+    .field input{width:100%;padding:13px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;font-size:1rem;}
+    .field input:focus{outline:none;border-color:#fc8181;}
+    .field input::placeholder{color:#4a5568;}
+    .btn-red{width:100%;padding:14px;background:linear-gradient(135deg,#fc8181,#f56565);border:none;border-radius:12px;color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:8px;}
+    .btn-red:hover{opacity:.9;}
+    .err{color:#fc8181;font-size:.88rem;margin-top:10px;display:none;text-align:center;}
+    /* App */
+    #app{display:none;flex-direction:column;min-height:100vh;}
+    .topbar{background:rgba(0,0,0,.4);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
+    .topbar-left{display:flex;align-items:center;gap:12px;}
+    .topbar-logo{font-size:1.5rem;}
+    .topbar h2{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#fc8181,#f56565);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .topbar-badge{background:rgba(252,129,129,.15);border:1px solid rgba(252,129,129,.3);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:700;color:#fc8181;}
+    .btn-logout{padding:8px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#8892a4;cursor:pointer;font-size:.85rem;}
+    .btn-logout:hover{color:#fff;}
+    .main{padding:32px 28px;max-width:1000px;margin:0 auto;width:100%;}
+    .page-title{font-size:1.6rem;font-weight:900;margin-bottom:4px;}
+    .page-desc{color:#8892a4;font-size:.9rem;margin-bottom:28px;}
+    /* Stats */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;}
+    .stat-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;}
+    .stat-value{font-size:2rem;font-weight:900;color:#fc8181;}
+    .stat-label{color:#8892a4;font-size:.82rem;margin-top:4px;}
+    /* Section */
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .section-title{font-size:1.1rem;font-weight:800;}
+    .btn-add{padding:10px 20px;background:linear-gradient(135deg,#fc8181,#f56565);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;}
+    /* Table */
+    .table-wrap{overflow-x:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;}
+    table{width:100%;border-collapse:collapse;}
+    th{padding:12px 16px;text-align:left;font-size:.78rem;color:#8892a4;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid rgba(255,255,255,.08);}
+    td{padding:13px 16px;font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    tr:last-child td{border-bottom:none;}
+    .badge-active{background:rgba(52,211,153,.15);color:#34d399;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;}
+    .badge-inactive{background:rgba(252,129,129,.15);color:#fc8181;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;}
+    .action-btn{padding:6px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:transparent;color:#fff;cursor:pointer;font-size:.82rem;margin-right:6px;}
+    .action-btn:hover{background:rgba(255,255,255,.08);}
+    .action-btn.danger{color:#fc8181;border-color:rgba(252,129,129,.3);}
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px;}
+    .modal{background:#1e2235;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:32px;width:100%;max-width:440px;}
+    .modal h3{font-size:1.1rem;font-weight:800;margin-bottom:20px;}
+    .modal .field{margin-bottom:16px;}
+    .modal-footer{display:flex;gap:12px;margin-top:24px;}
+    .btn-save{flex:1;padding:12px;background:linear-gradient(135deg,#fc8181,#f56565);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;}
+    .btn-cancel{flex:1;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;cursor:pointer;}
+    /* Mot de passe */
+    .pwd-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px;max-width:440px;margin-top:32px;}
+    .pwd-card h3{font-size:1rem;font-weight:700;margin-bottom:16px;}
+    .pwd-card .field{margin-bottom:14px;}
+    .btn-save-pwd{padding:11px 24px;background:linear-gradient(135deg,#fc8181,#f56565);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;}
+    .notice{color:#34d399;font-size:.88rem;margin-top:10px;display:none;}
+  </style>
+</head>
+<body>
+
+<!-- Écran de connexion -->
+<div id="login-screen">
+  <div class="logo">🔐</div>
+  <h1>Super Admin</h1>
+  <p>Espace réservé à l'opérateur Restau Wheel</p>
+  <div class="login-card">
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-pwd" placeholder="Mot de passe super-admin" autocomplete="current-password">
+    </div>
+    <button class="btn-red" onclick="doLogin()">Accéder →</button>
+    <p class="err" id="login-err"></p>
+  </div>
+</div>
+
+<!-- Application -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">🔐</span>
+      <h2>Restau Wheel</h2>
+      <span class="topbar-badge">SUPER ADMIN</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+
+  <div class="main">
+    <div class="page-title">Tableau de bord</div>
+    <p class="page-desc">Gérez tous les restaurants inscrits sur la plateforme</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-value" id="st-total">–</div><div class="stat-label">Restaurants</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-active">–</div><div class="stat-label">Actifs</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-inactive">–</div><div class="stat-label">Suspendus</div></div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Restaurants inscrits</div>
+      <button class="btn-add" onclick="openModal()">+ Créer un compte</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Restaurant</th>
+            <th>Email</th>
+            <th>Clients</th>
+            <th>Tirages</th>
+            <th>Inscrit le</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="resto-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="pwd-card">
+      <h3>🔑 Changer le mot de passe super-admin</h3>
+      <div class="field">
+        <label>Nouveau mot de passe (min. 4 caractères)</label>
+        <input type="password" id="new-pwd" placeholder="Nouveau mot de passe">
+      </div>
+      <button class="btn-save-pwd" onclick="savePwd()">Changer</button>
+      <p class="notice" id="pwd-notice">✓ Mot de passe mis à jour !</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal création / édition -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Créer un compte restaurant</h3>
+    <div class="field">
+      <label>Nom du restaurant</label>
+      <input type="text" id="m-name" placeholder="Le Petit Bistrot">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="m-email" placeholder="contact@restaurant.fr">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="m-pwd" placeholder="Minimum 4 caractères">
+    </div>
+    <p class="err" id="modal-err"></p>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let editingId = null;
+let restaurants = [];
+
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  const res = await fetch('/api/superadmin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
+  if (res.ok) { showApp(); }
+  else { document.getElementById('login-err').style.display='block'; document.getElementById('login-err').textContent='Mot de passe incorrect'; }
+}
+document.getElementById('login-pwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+async function doLogout() {
+  await fetch('/api/superadmin/logout', { method:'POST' });
+  location.reload();
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  await loadRestaurants();
+}
+
+async function loadRestaurants() {
+  const res = await fetch('/api/superadmin/restaurants');
+  if (!res.ok) return;
+  restaurants = await res.json();
+  const active   = restaurants.filter(r => r.active).length;
+  const inactive = restaurants.length - active;
+  document.getElementById('st-total').textContent   = restaurants.length;
+  document.getElementById('st-active').textContent  = active;
+  document.getElementById('st-inactive').textContent = inactive;
+
+  const tbody = document.getElementById('resto-tbody');
+  tbody.innerHTML = restaurants.map(r => `
+    <tr>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td>${esc(r.email)}</td>
+      <td>${r.total_customers}</td>
+      <td>${r.total_spins}</td>
+      <td>${new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
+      <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? 'Actif' : 'Suspendu'}</span></td>
+      <td>
+        <button class="action-btn" onclick="editResto(${r.id})">Modifier</button>
+        <button class="action-btn ${r.active ? 'danger' : ''}" onclick="toggleActive(${r.id}, ${r.active})">
+          ${r.active ? 'Suspendre' : 'Réactiver'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function openModal(id) {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Créer un compte restaurant';
+  document.getElementById('m-name').value  = '';
+  document.getElementById('m-email').value = '';
+  document.getElementById('m-pwd').value   = '';
+  document.getElementById('modal-err').style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function editResto(id) {
+  editingId = id;
+  const r = restaurants.find(x => x.id === id);
+  document.getElementById('modal-title').textContent = 'Modifier le compte';
+  document.getElementById('m-name').value  = r.name;
+  document.getElementById('m-email').value = r.email;
+  document.getElementById('m-pwd').value   = '';
+  document.getElementById('modal-err').style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('modal').style.display='none'; }
+
+async function saveModal() {
+  const name     = document.getElementById('m-name').value.trim();
+  const email    = document.getElementById('m-email').value.trim();
+  const password = document.getElementById('m-pwd').value;
+  const errEl    = document.getElementById('modal-err');
+  errEl.style.display = 'none';
+
+  if (editingId) {
+    const body = {};
+    if (name)               body.name     = name;
+    if (email)              body.email    = email;
+    if (password.length>=4) body.password = password;
+    const res = await fetch(`/api/superadmin/restaurants/${editingId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
+  } else {
+    if (!name || !email || !password) { errEl.textContent='Tous les champs sont requis'; errEl.style.display='block'; return; }
+    const res = await fetch('/api/superadmin/restaurants', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password }) });
+    if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
+  }
+  closeModal();
+  loadRestaurants();
+}
+
+async function toggleActive(id, currentlyActive) {
+  const msg = currentlyActive ? 'Suspendre ce restaurant ? Il ne pourra plus se connecter.' : 'Réactiver ce restaurant ?';
+  if (!confirm(msg)) return;
+  await fetch(`/api/superadmin/restaurants/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active: !currentlyActive }) });
+  loadRestaurants();
+}
+
+async function savePwd() {
+  const pwd = document.getElementById('new-pwd').value;
+  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  const res = await fetch('/api/superadmin/password', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
+  if (res.ok) { const n=document.getElementById('pwd-notice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2500); document.getElementById('new-pwd').value=''; }
+}
+
+// Vérifier si déjà connecté
+(async () => {
+  const res = await fetch('/api/superadmin/me');
+  const d   = await res.json();
+  if (d.isSuperAdmin) showApp();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription – Restau Wheel</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height:100vh;
+      background: radial-gradient(ellipse at top, #1a1a3e 0%, #0d0d1a 65%);
+      font-family:'Segoe UI', system-ui, sans-serif;
+      color:#fff;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:24px 16px;
+    }
+    .logo { font-size:3rem; margin-bottom:8px; filter:drop-shadow(0 0 14px rgba(255,215,0,0.7)); }
+    h1 {
+      font-size:1.9rem; font-weight:900; margin-bottom:4px;
+      background:linear-gradient(135deg,#FFD700,#FFA500);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .subtitle { color:#8892a4; font-size:0.9rem; margin-bottom:32px; }
+    .card {
+      background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:22px;
+      padding:36px 32px;
+      width:100%; max-width:420px;
+    }
+    .field { margin-bottom:20px; }
+    .field label { display:block; font-size:0.78rem; font-weight:700; color:#8892a4; letter-spacing:.06em; text-transform:uppercase; margin-bottom:7px; }
+    .field input {
+      width:100%; padding:13px 16px;
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:12px; color:#fff; font-size:1rem;
+      transition:border-color .2s;
+    }
+    .field input:focus { outline:none; border-color:#FFD700; background:rgba(255,215,0,0.06); }
+    .field input::placeholder { color:#4a5568; }
+    .btn {
+      width:100%; padding:14px; margin-top:8px;
+      background:linear-gradient(135deg,#FFD700,#FFA500);
+      border:none; border-radius:12px; color:#1a1a1a;
+      font-size:1.05rem; font-weight:800; cursor:pointer;
+      box-shadow:0 4px 20px rgba(255,165,0,0.4);
+      transition:transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,165,0,0.55); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .err { color:#fc8181; font-size:0.88rem; margin-top:12px; display:none; text-align:center; }
+    .login-link { text-align:center; margin-top:20px; color:#8892a4; font-size:0.88rem; }
+    .login-link a { color:#FFD700; text-decoration:none; font-weight:600; }
+    .login-link a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="logo">🍽️</div>
+  <h1>Restau Wheel</h1>
+  <p class="subtitle">Créez votre compte restaurant gratuit</p>
+
+  <div class="card">
+    <div class="field">
+      <label>Nom du restaurant</label>
+      <input type="text" id="name" placeholder="Ex: Le Petit Bistrot" autocomplete="organization">
+    </div>
+    <div class="field">
+      <label>Email (identifiant de connexion)</label>
+      <input type="email" id="email" placeholder="contact@monrestaurant.fr" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="password" placeholder="Minimum 4 caractères" autocomplete="new-password">
+    </div>
+    <button class="btn" id="btn" onclick="register()">Créer mon compte →</button>
+    <p class="err" id="err"></p>
+    <p class="login-link">Déjà un compte ? <a href="/admin">Se connecter</a></p>
+  </div>
+
+  <script>
+    async function register() {
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const err      = document.getElementById('err');
+      const btn      = document.getElementById('btn');
+
+      err.style.display = 'none';
+      if (!name || !email || !password) { showErr('Tous les champs sont obligatoires.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Création…';
+      try {
+        const res  = await fetch('/api/register', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr(data.error || 'Erreur'); btn.disabled=false; btn.textContent='Créer mon compte →'; return; }
+        window.location.href = '/admin';
+      } catch { showErr('Erreur réseau'); btn.disabled=false; btn.textContent='Créer mon compte →'; }
+    }
+
+    function showErr(msg) {
+      const e = document.getElementById('err');
+      e.textContent = msg; e.style.display = 'block';
+    }
+
+    document.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if (e.key==='Enter') register(); }));
+  </script>
+</body>
+</html>
