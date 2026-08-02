@@ -9,6 +9,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-store');
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: 'restau-wheel-secret-2024',
