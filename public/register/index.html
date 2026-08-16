@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription – Restau Wheel</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt-deep);
+      color: var(--ivory);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 20%, rgba(255,214,10,0.1), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 90% 90%, rgba(255,45,106,0.15), transparent 45%);
+      pointer-events: none;
+    }
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(2rem, 5vw, 4rem);
+      align-items: center;
+      width: 100%;
+      max-width: 920px;
+      animation: fadeUp 0.6s var(--ease) both;
+    }
+    .top-bar {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 2;
+    }
+    .intro .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--brass);
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      display: inline-block;
+      margin-bottom: 1.25rem;
+    }
+    .intro h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      line-height: 1.08;
+      margin-bottom: 1rem;
+      white-space: pre-line;
+    }
+    .intro p {
+      color: rgba(255,248,231,0.65);
+      line-height: 1.55;
+      font-size: 1rem;
+      max-width: 32ch;
+    }
+    .card {
+      background: var(--ivory);
+      color: var(--ink);
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 400px;
+      justify-self: end;
+      position: relative;
+      border: 3px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--wine);
+    }
+    .card::before,
+    .card::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 10px;
+      background: radial-gradient(circle at 8px 0, transparent 7px, var(--ivory) 8px) repeat-x;
+      background-size: 16px 10px;
+    }
+    .card::before { top: -10px; transform: scaleY(-1); }
+    .card::after { bottom: -10px; }
+    .card h2 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+    .btn-block { width: 100%; margin-top: 0.5rem; }
+    .login-link {
+      text-align: center;
+      margin-top: 1.1rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .login-link a { color: var(--wine); font-weight: 600; }
+    .back {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: rgba(255,248,231,0.45);
+    }
+    .back:hover { color: var(--ivory); }
+
+    @media (max-width: 760px) {
+      .shell { grid-template-columns: 1fr; }
+      .card { justify-self: stretch; max-width: none; }
+      .intro { text-align: center; }
+      .intro p { max-width: none; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" data-lang-btn="fr">FR</button>
+      <button type="button" data-lang-btn="en">EN</button>
+    </div>
+  </div>
+  <div class="shell">
+    <div class="intro">
+      <a href="/" class="brand">RESTAU WHEEL</a>
+      <h1 data-i18n="reg.h1" data-i18n-keep-br>Ouvrez la roue
+de votre salle.</h1>
+      <p data-i18n="reg.sub">Créez votre compte restaurant. Vous configurez les lots, le QR et la caisse en quelques minutes.</p>
+      <a class="back" href="/" data-i18n="cancel.back">← Retour à l’accueil</a>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="reg.card.title">Nouveau restaurant</h2>
+      <div class="field">
+        <label data-i18n="reg.name">Nom du restaurant</label>
+        <input type="text" id="name" data-i18n-placeholder="reg.ph.name" placeholder="Le Bistrot du Coin" autocomplete="organization">
+      </div>
+      <div class="field">
+        <label data-i18n="reg.email">Email</label>
+        <input type="email" id="email" data-i18n-placeholder="reg.ph.email" placeholder="vous@restaurant.fr" autocomplete="email">
+      </div>
+      <div class="field">
+        <label data-i18n="reg.password">Mot de passe</label>
+        <input type="password" id="password" data-i18n-placeholder="reg.ph.password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button class="btn btn-wine btn-block" id="btn" onclick="register()" data-i18n="reg.submit">Créer mon compte →</button>
+      <p class="err" id="err"></p>
+      <p class="login-link"><span data-i18n="reg.has">Déjà un compte ?</span> <a href="/admin" data-i18n="reg.login">Se connecter</a></p>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script>
+    document.title = window.RW_I18N.t('reg.title');
+    document.addEventListener('rw:lang', () => { document.title = window.RW_I18N.t('reg.title'); });
+
+    async function register() {
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const err      = document.getElementById('err');
+      const btn      = document.getElementById('btn');
+
+      err.style.display = 'none';
+      if (!name || !email || !password) { showErr(window.RW_I18N.getLang() === 'en' ? 'All fields are required.' : 'Tous les champs sont obligatoires.'); return; }
+
+      btn.disabled = true;
+      const submitLabel = window.RW_I18N.t('reg.submit');
+      btn.textContent = window.RW_I18N.getLang() === 'en' ? 'Creating…' : 'Création…';
+      try {
+        const res  = await fetch('/api/register', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr(data.error || 'Erreur'); btn.disabled=false; btn.textContent=submitLabel; return; }
+        window.location.href = '/checkout?email=' + encodeURIComponent(email);
+      } catch(e) {
+        showErr(window.RW_I18N.getLang() === 'en' ? 'Network error.' : 'Erreur réseau.');
+        btn.disabled=false; btn.textContent=submitLabel;
+      }
+    }
+    function showErr(msg) {
+      const err = document.getElementById('err');
+      err.textContent = msg; err.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

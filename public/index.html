@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="fr" data-i18n-title="land.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restau Wheel — Fidélisation par la chance</title>
+  <meta name="description" content="Une roue de fortune sur chaque table. Vos clients scannent, jouent, reviennent.">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      background: var(--felt);
+      color: var(--ivory);
+      overflow-x: hidden;
+    }
+
+    /* Atmosphere */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 45% at 15% 10%, rgba(255,214,10,0.28), transparent 55%),
+        radial-gradient(ellipse 55% 40% at 90% 75%, rgba(255,45,106,0.32), transparent 50%),
+        radial-gradient(ellipse 40% 30% at 70% 20%, rgba(0,194,255,0.18), transparent 50%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0,0,0,0.03) 3px,
+          rgba(0,0,0,0.03) 4px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; }
+
+    /* NAV */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem clamp(1.25rem, 4vw, 4rem);
+      max-width: 1440px;
+      margin: 0 auto;
+      animation: fadeUp 0.7s var(--ease) both;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+    }
+    .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(255,248,231,0.7);
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--ivory); }
+    .nav .btn { padding: 0.65rem 1.1rem; font-size: 0.82rem; }
+
+    /* HERO */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(2rem, 5vw, 4rem);
+      align-items: center;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 6rem);
+      min-height: calc(100vh - 80px);
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--brass);
+      color: var(--brass);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.05;
+      margin-bottom: 1.25rem;
+      max-width: 12ch;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      line-height: 1.55;
+      color: rgba(255,248,231,0.72);
+      max-width: 36ch;
+      margin-bottom: 2rem;
+    }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.9rem; }
+
+    /* Ticket visual */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+    }
+    .ticket {
+      --tilt: 2deg;
+      --lift: 0px;
+      width: min(100%, 400px);
+      background: var(--ivory);
+      color: var(--ink);
+      padding: 2rem 1.75rem;
+      position: relative;
+      border: 3px solid var(--ink);
+      box-shadow:
+        10px 10px 0 #ff2d6a,
+        0 30px 60px rgba(0,0,0,0.35);
+      transform: translateY(var(--lift)) rotate(var(--tilt));
+      transition: transform 0.45s var(--ease);
+    }
+    .ticket.is-in:hover {
+      --tilt: 0deg;
+      --lift: -4px;
+    }
+    .ticket::before,
+    .ticket::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 12px;
+      background:
+        radial-gradient(circle at 10px 0, transparent 9px, var(--ivory) 10px) repeat-x;
+      background-size: 20px 12px;
+    }
+    .ticket::before { top: -12px; transform: scaleY(-1); }
+    .ticket::after { bottom: -12px; }
+    .ticket-top {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px dashed var(--line);
+    }
+    .ticket-top .warn { color: var(--wine); }
+    .ticket h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      margin-bottom: 0.35rem;
+    }
+    .ticket-meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 1.4rem;
+    }
+    .wheel-mini {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 1.4rem;
+      border-radius: 50%;
+      border: 6px solid var(--brass);
+      background:
+        conic-gradient(
+          from 20deg,
+          #0a0a0a 0 45deg,
+          #ff2d6a 45deg 90deg,
+          #ffd60a 90deg 135deg,
+          #00c2ff 135deg 180deg,
+          #00e5c8 180deg 225deg,
+          #ff2d6a 225deg 270deg,
+          #ffd60a 270deg 315deg,
+          #fff8e7 315deg 360deg
+        );
+      position: relative;
+      animation: spinSlow 18s linear infinite;
+      box-shadow: inset 0 0 0 3px var(--ink);
+    }
+    .wheel-mini::after {
+      content: '';
+      position: absolute;
+      inset: 38%;
+      border-radius: 50%;
+      background: var(--brass);
+      box-shadow: 0 0 0 3px var(--ink);
+    }
+    @keyframes spinSlow { to { transform: rotate(360deg); } }
+    .ticket-note {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+    .stamp {
+      display: inline-block;
+      padding: 0.45rem 0.8rem;
+      border: 3px solid var(--wine);
+      color: var(--wine);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      transform: rotate(-8deg);
+      animation: stampIn 0.6s var(--ease) 0.8s both;
+      background: rgba(255,45,106,0.08);
+    }
+
+    /* HOW */
+    .how {
+      background: var(--ivory);
+      color: var(--ink);
+      padding: clamp(4rem, 8vw, 5.5rem) clamp(1.25rem, 4vw, 4rem);
+    }
+    .how-inner { max-width: 1200px; margin: 0 auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      color: var(--brass);
+      margin-bottom: 0.75rem;
+    }
+    .how h2,
+    .features h2,
+    .cta-band h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 2.5rem;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .step {
+      background: var(--ticket);
+      border: 3px solid var(--ink);
+      padding: 1.75rem 1.5rem;
+      transition: transform 0.35s var(--ease), box-shadow 0.35s, opacity 0.7s var(--ease);
+    }
+    .step.is-in:hover {
+      transform: translateY(-4px);
+      box-shadow: 6px 6px 0 #ff2d6a;
+    }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--wine);
+      margin-bottom: 0.9rem;
+    }
+    .step h3 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      margin-bottom: 0.7rem;
+    }
+    .step p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    /* FEATURES */
+    .features {
+      background: var(--felt-deep);
+      padding: clamp(4rem, 8vw, 5.5rem) clamp(1.25rem, 4vw, 4rem);
+    }
+    .features-inner { max-width: 1200px; margin: 0 auto; }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .feat {
+      border: 3px solid var(--brass);
+      background: #141414;
+      padding: 1.5rem 1.25rem;
+    }
+    .feat-bar {
+      width: 2rem;
+      height: 3px;
+      background: var(--brass);
+      margin-bottom: 1rem;
+    }
+    .feat h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin-bottom: 0.6rem;
+    }
+    .feat p {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: rgba(255,248,231,0.6);
+    }
+
+    /* CTA */
+    .cta-band {
+      background: var(--wine);
+      text-align: center;
+      padding: clamp(3.5rem, 7vw, 5rem) 1.5rem;
+    }
+    .cta-band p {
+      color: rgba(255,248,231,0.75);
+      margin: -1.5rem auto 1.75rem;
+      max-width: 40ch;
+    }
+
+    /* FOOTER */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 1.5rem clamp(1.25rem, 4vw, 4rem);
+      background: var(--felt-deep);
+      color: rgba(255,248,231,0.45);
+      font-size: 0.8rem;
+    }
+    .footer .brand {
+      font-size: 0.9rem;
+      color: rgba(255,248,231,0.55);
+    }
+
+    /* ── Scroll reveals ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition:
+        opacity 0.8s var(--ease),
+        transform 0.8s var(--ease);
+      transition-delay: var(--d, 0ms);
+      will-change: opacity, transform;
+    }
+    .reveal.from-left { transform: translateX(-40px); }
+    .reveal.from-right { transform: translateX(40px) rotate(4deg); }
+    .reveal.scale-up { transform: translateY(24px) scale(0.94); }
+    .reveal.clip-up {
+      transform: none;
+      clip-path: inset(0 0 100% 0);
+      transition:
+        opacity 0.7s var(--ease),
+        clip-path 0.9s var(--ease);
+      transition-delay: var(--d, 0ms);
+    }
+    .reveal.is-in {
+      opacity: 1;
+      transform: none;
+      clip-path: inset(0 0 0 0);
+    }
+    .ticket.reveal.from-right {
+      transform: translateX(48px) rotate(6deg);
+    }
+    .ticket.reveal.is-in {
+      transform: translateY(var(--lift)) rotate(var(--tilt));
+    }
+    .feat.reveal.is-in .feat-bar {
+      animation: barGrow 0.55s var(--ease) both;
+      animation-delay: var(--d, 0ms);
+    }
+    @keyframes barGrow {
+      from { width: 0; opacity: 0; }
+      to { width: 2rem; opacity: 1; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; text-align: left; }
+      .hero h1 { max-width: none; }
+      .steps, .feat-grid { grid-template-columns: 1fr; }
+      .ticket { --tilt: 0deg; margin-top: 0.5rem; }
+      .reveal.from-left,
+      .reveal.from-right { transform: translateY(28px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal,
+      .reveal.clip-up,
+      .reveal.from-left,
+      .reveal.from-right,
+      .reveal.scale-up {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+        transition: none !important;
+      }
+      .wheel-mini { animation: none; }
+      .feat.reveal.is-in .feat-bar { animation: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="/" class="brand">RESTAU WHEEL</a>
+    <div class="nav-actions">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang-btn="fr">FR</button>
+        <button type="button" data-lang-btn="en">EN</button>
+      </div>
+      <a class="nav-link" href="/admin" data-i18n="nav.login">Connexion</a>
+      <a class="btn btn-brass" href="/register" data-i18n="nav.start">Commencer</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="tag reveal" style="--d:0ms" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
+      <h1 class="reveal clip-up" style="--d:80ms" data-i18n="land.h1">Faites tourner la chance à table.</h1>
+      <p class="hero-sub reveal" style="--d:180ms" data-i18n="land.sub">Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.</p>
+      <div class="cta-row reveal" style="--d:280ms">
+        <a class="btn btn-wine" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
+        <a class="btn btn-ghost" href="#comment" data-i18n="land.how">Voir comment</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="ticket reveal from-right" style="--d:200ms" aria-hidden="true" id="hero-ticket">
+        <div class="ticket-top">
+          <span data-i18n="land.ticket.top">BON DE CHANCE</span>
+          <span class="warn" data-i18n="land.ticket.warn">VALABLE 7 J</span>
+        </div>
+        <h2 data-i18n="land.ticket.h2">Dessert offert</h2>
+        <p class="ticket-meta" data-i18n="land.ticket.meta">Gagné au tirage · Table 12</p>
+        <div class="wheel-mini"></div>
+        <p class="ticket-note" data-i18n="land.ticket.note">Présentez ce ticket à votre prochaine visite. Le restaurateur valide le lot.</p>
+        <span class="stamp" data-i18n="land.ticket.stamp">À RÉCLAMER</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="comment">
+    <div class="how-inner">
+      <p class="eyebrow reveal" style="--d:0ms" data-i18n="land.steps.eyebrow">03 ÉTAPES</p>
+      <h2 class="reveal clip-up" style="--d:60ms" data-i18n="land.steps.h2">Simple comme un ticket.</h2>
+      <div class="steps">
+        <article class="step reveal" style="--d:0ms">
+          <div class="step-num">01</div>
+          <h3 data-i18n="land.step1.h">Scannez</h3>
+          <p data-i18n="land.step1.p">QR code sur la table. Le client entre son nom et son email.</p>
+        </article>
+        <article class="step reveal" style="--d:120ms">
+          <div class="step-num">02</div>
+          <h3 data-i18n="land.step2.h">Tournez</h3>
+          <p data-i18n="land.step2.p">La roue s'anime. Un lot tombe — dessert, café, réduction…</p>
+        </article>
+        <article class="step reveal" style="--d:240ms">
+          <div class="step-num">03</div>
+          <h3 data-i18n="land.step3.h">Revenez</h3>
+          <p data-i18n="land.step3.p">Le gain est valable à la prochaine visite. Vous validez.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="features-inner">
+      <h2 class="reveal clip-up" data-i18n="land.feat.h2" data-i18n-keep-br>Tout ce qu'il faut<br>pour faire revenir.</h2>
+      <div class="feat-grid">
+        <article class="feat reveal" style="--d:0ms">
+          <div class="feat-bar"></div>
+          <h3 data-i18n="land.feat1.h">Lots & probabilités</h3>
+          <p data-i18n="land.feat1.p">Définissez chaque segment de la roue. Contrôlez exactement ce qui tombe.</p>
+        </article>
+        <article class="feat reveal" style="--d:100ms">
+          <div class="feat-bar"></div>
+          <h3 data-i18n="land.feat2.h">QR code table</h3>
+          <p data-i18n="land.feat2.p">Générez et téléchargez un QR unique pour votre salle.</p>
+        </article>
+        <article class="feat reveal" style="--d:200ms">
+          <div class="feat-bar"></div>
+          <h3 data-i18n="land.feat3.h">Validation en caisse</h3>
+          <p data-i18n="land.feat3.p">Recherchez le client, validez le gain en un clic.</p>
+        </article>
+        <article class="feat reveal" style="--d:300ms">
+          <div class="feat-bar"></div>
+          <h3 data-i18n="land.feat4.h">Email automatique</h3>
+          <p data-i18n="land.feat4.p">Le client reçoit son ticket avec la date limite.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2 class="reveal scale-up" data-i18n="land.cta.h2">Prêt à faire tourner ?</h2>
+    <p class="reveal" style="--d:100ms" data-i18n="land.cta.p">Abonnement 20 € / mois. Configuration en 5 minutes.</p>
+    <a class="btn btn-ivory reveal" style="--d:200ms" href="/register" data-i18n="land.cta.btn">Créer mon compte restaurant</a>
+  </section>
+
+  <footer class="footer">
+    <span class="brand">RESTAU WHEEL</span>
+    <span data-i18n="footer.tagline">Fidélisation · Roue de fortune · Restaurants</span>
+    <span style="display:flex;gap:1rem;flex-wrap:wrap;opacity:0.85">
+      <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
+      <a href="/mentions#privacy" data-i18n="footer.privacy">Confidentialité</a>
+      <a href="/cancel" data-i18n="footer.cancel">Résilier mon abonnement</a>
+    </span>
+  </footer>
+
+</div>
+<script src="/js/i18n.js"></script>
+<script>
+  // Sync document title
+  document.title = window.RW_I18N ? window.RW_I18N.t('land.title') : document.title;
+  document.addEventListener('rw:lang', () => {
+    document.title = window.RW_I18N.t('land.title');
+  });
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Scroll reveals
+  const reveals = document.querySelectorAll('.reveal');
+  if (reduce) {
+    reveals.forEach(el => el.classList.add('is-in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+    reveals.forEach(el => io.observe(el));
+  }
+
+  // Ticket parallax on scroll
+  const ticket = document.getElementById('hero-ticket');
+  if (ticket && !reduce) {
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const lift = Math.max(-28, -y * 0.08);
+        const tilt = 2 + Math.min(4, y * 0.01);
+        ticket.style.setProperty('--lift', `${lift}px`);
+        ticket.style.setProperty('--tilt', `${tilt}deg`);
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  // Smooth scroll for in-page anchors
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href');
+      const target = id && document.querySelector(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>

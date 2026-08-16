@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin – Restau Wheel</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt-deep);
+      font-family: var(--font-body);
+      color: var(--ivory);
+    }
+    #login-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+      position: relative;
+    }
+    #login-screen::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse 50% 40% at 50% 0%, rgba(255,45,106,0.25), transparent 55%);
+      pointer-events:none;
+    }
+    .logo {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: var(--brass);
+      margin-bottom: 0.75rem;
+      position: relative;
+      filter: none;
+    }
+    #login-screen h1 {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--ivory);
+      background: none;
+      -webkit-text-fill-color: unset;
+      margin-bottom: 4px;
+      position: relative;
+    }
+    #login-screen p { color: rgba(255,248,231,0.55); font-size: .9rem; margin-bottom: 28px; position: relative; }
+    .login-card {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      width: 100%; max-width: 380px;
+      position: relative;
+      animation: fadeUp .5s var(--ease) both;
+    }
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: .72rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%; padding: 13px 16px;
+      background: var(--ticket);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink); font-size: 1rem; font-family: var(--font-body);
+    }
+    .field input:focus { outline: none; border-color: var(--brass); }
+    .field input::placeholder { color: rgba(107,99,88,.5); }
+    .btn-red {
+      width: 100%; padding: 14px;
+      background: var(--wine); border: none; border-radius: var(--radius);
+      color: var(--ivory); font-size: 1.05rem; font-weight: 800;
+      font-family: var(--font-body); cursor: pointer; margin-top: 8px;
+    }
+    .btn-red:hover { background: #ff4d85; }
+    .err { color: var(--wine); font-size: .88rem; margin-top: 10px; display: none; text-align: center; }
+
+    #app { display: none; flex-direction: column; min-height: 100vh; background: var(--bg, #ffe566); color: var(--ink); }
+    .topbar {
+      background: var(--felt);
+      border-bottom: 1px solid rgba(255,214,10,.25);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo { display: none; }
+    .topbar h2 {
+      font-family: var(--font-display);
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--brass);
+      background: none; -webkit-text-fill-color: unset;
+    }
+    .topbar-badge {
+      background: rgba(255,214,10,.15);
+      border: 1px solid rgba(255,214,10,.35);
+      border-radius: var(--radius);
+      padding: 4px 12px;
+      font-size: .7rem; font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: .08em;
+      color: var(--brass);
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid rgba(255,248,231,.2);
+      border-radius: var(--radius);
+      color: rgba(255,248,231,.55);
+      cursor: pointer; font-size: .85rem; font-family: var(--font-body);
+    }
+    .btn-logout:hover { color: var(--ivory); }
+    .main { padding: 32px 28px; max-width: 1000px; margin: 0 auto; width: 100%; }
+    .page-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
+    .page-desc { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 14px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--ivory); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 20px; text-align: center;
+    }
+    .stat-value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--wine); }
+    .stat-label { color: var(--muted); font-size: .82rem; margin-top: 4px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-title { font-size: 1.1rem; font-weight: 700; font-family: var(--font-display); color: var(--ink); }
+    .btn-add {
+      padding: 10px 20px; background: var(--wine); border: none; border-radius: var(--radius);
+      color: var(--ivory); font-weight: 700; cursor: pointer; font-size: .9rem; font-family: var(--font-body);
+    }
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--ivory);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 12px 16px; text-align: left;
+      font-size: .7rem; color: var(--brass);
+      text-transform: uppercase; letter-spacing: .08em;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--line);
+      background: var(--felt);
+    }
+    td { padding: 13px 16px; font-size: .9rem; border-bottom: 1px solid var(--line); color: var(--ink); }
+    tr:last-child td { border-bottom: none; }
+    .badge-active {
+      background: rgba(0,229,200,.12); color: var(--green);
+      border-radius: var(--radius); padding: 3px 10px; font-size: .72rem; font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .badge-inactive {
+      background: rgba(255,45,106,.1); color: var(--wine);
+      border-radius: var(--radius); padding: 3px 10px; font-size: .72rem; font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .action-btn {
+      padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: transparent; color: var(--ink); cursor: pointer; font-size: .82rem;
+      margin-right: 6px; font-family: var(--font-body);
+    }
+    .action-btn:hover { background: var(--ticket); }
+    .action-btn.danger { color: var(--wine); border-color: rgba(255,45,106,.3); }
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal {
+      background: var(--ivory); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 32px; width: 100%; max-width: 440px; color: var(--ink);
+    }
+    .modal h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; }
+    .modal .field { margin-bottom: 16px; }
+    .modal-footer { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-save {
+      flex: 1; padding: 12px; background: var(--wine); border: none; border-radius: var(--radius);
+      color: var(--ivory); font-weight: 700; cursor: pointer; font-family: var(--font-body);
+    }
+    .btn-cancel {
+      flex: 1; padding: 12px; background: var(--ticket); border: 1px solid var(--line);
+      border-radius: var(--radius); color: var(--ink); cursor: pointer; font-family: var(--font-body);
+    }
+    .pwd-card {
+      background: var(--ivory); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 24px; max-width: 440px; margin-top: 32px; color: var(--ink);
+    }
+    .pwd-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; font-family: var(--font-display); }
+    .pwd-card .field { margin-bottom: 14px; }
+    .btn-save-pwd {
+      padding: 11px 24px; background: var(--wine); border: none; border-radius: var(--radius);
+      color: var(--ivory); font-weight: 700; cursor: pointer; font-family: var(--font-body);
+    }
+    .notice { color: var(--green); font-size: .88rem; margin-top: 10px; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Écran de connexion -->
+<div id="login-screen">
+  <div class="logo">SUPER ADMIN</div>
+  <h1>Super Admin</h1>
+  <p>Espace réservé à l'opérateur Restau Wheel</p>
+  <div class="login-card">
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="login-pwd" placeholder="Mot de passe super-admin" autocomplete="current-password">
+    </div>
+    <button class="btn-red" onclick="doLogin()">Accéder →</button>
+    <p class="err" id="login-err"></p>
+  </div>
+</div>
+
+<!-- Application -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">🔐</span>
+      <h2>Restau Wheel</h2>
+      <span class="topbar-badge">SUPER ADMIN</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+  </div>
+
+  <div class="main">
+    <div class="page-title">Tableau de bord</div>
+    <p class="page-desc">Gérez tous les restaurants inscrits sur la plateforme</p>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-value" id="st-total">–</div><div class="stat-label">Restaurants</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-active">–</div><div class="stat-label">Actifs</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-inactive">–</div><div class="stat-label">Suspendus</div></div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Restaurants inscrits</div>
+      <button class="btn-add" onclick="openModal()">+ Créer un compte</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Restaurant</th>
+            <th>Email</th>
+            <th>Clients</th>
+            <th>Tirages</th>
+            <th>Inscrit le</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="resto-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="pwd-card">
+      <h3>📧 Configuration SMTP (emails)</h3>
+      <p style="color:#8892a4;font-size:.88rem;margin-bottom:16px;">Ces paramètres sont partagés entre tous les restaurants. Utilisez un compte Gmail avec un <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#fc8181;">mot de passe d'application</a> (pas votre vrai mot de passe Gmail).</p>
+      <div class="field">
+        <label>Serveur SMTP</label>
+        <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
+      </div>
+      <div class="field">
+        <label>Port</label>
+        <input type="number" id="smtp-port" placeholder="587" value="587">
+      </div>
+      <div class="field">
+        <label>Email (utilisateur SMTP)</label>
+        <input type="email" id="smtp-user" placeholder="moncompte@gmail.com">
+      </div>
+      <div class="field">
+        <label>Mot de passe d'application</label>
+        <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn-save-pwd" onclick="saveSMTP()">Enregistrer</button>
+        <button class="btn-save-pwd" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()">Envoyer email test</button>
+      </div>
+      <p class="notice" id="smtp-notice"></p>
+    </div>
+
+    <div class="pwd-card">
+      <h3>Configuration SMS (Twilio)</h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;">Relances SMS J-7 avant expiration du lot. Tu peux aussi mettre les clés en variables d'environnement Vercel (<code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM</code>).</p>
+      <div class="field">
+        <label>Account SID</label>
+        <input type="text" id="twilio-sid" placeholder="ACxxxxxxxx">
+      </div>
+      <div class="field">
+        <label>Auth Token</label>
+        <input type="password" id="twilio-token" placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label>Numéro expéditeur (From)</label>
+        <input type="text" id="twilio-from" placeholder="+337xxxxxxxx">
+      </div>
+      <button class="btn-save-pwd" onclick="saveTwilio()">Enregistrer Twilio</button>
+      <p class="notice" id="twilio-notice"></p>
+    </div>
+
+    <div class="pwd-card">
+      <h3>Changer le mot de passe super-admin</h3>
+      <div class="field">
+        <label>Nouveau mot de passe (min. 4 caractères)</label>
+        <input type="password" id="new-pwd" placeholder="Nouveau mot de passe">
+      </div>
+      <button class="btn-save-pwd" onclick="savePwd()">Changer</button>
+      <p class="notice" id="pwd-notice">✓ Mot de passe mis à jour !</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal création / édition -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Créer un compte restaurant</h3>
+    <div class="field">
+      <label>Nom du restaurant</label>
+      <input type="text" id="m-name" placeholder="Le Petit Bistrot">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="m-email" placeholder="contact@restaurant.fr">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="m-pwd" placeholder="Minimum 4 caractères">
+    </div>
+    <p class="err" id="modal-err"></p>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let editingId = null;
+let restaurants = [];
+
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  try {
+    const res = await fetch('/api/superadmin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ password: pwd }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      await showApp();
+    } else {
+      err.style.display = 'block';
+      err.textContent = data.error || 'Mot de passe incorrect';
+    }
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = 'Erreur réseau';
+  }
+}
+document.getElementById('login-pwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+async function doLogout() {
+  await fetch('/api/superadmin/logout', { method:'POST' });
+  location.reload();
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  await Promise.all([loadRestaurants(), loadSMTP(), loadTwilio()]);
+}
+
+async function loadTwilio() {
+  const res = await fetch('/api/superadmin/twilio');
+  if (!res.ok) return;
+  const s = await res.json();
+  document.getElementById('twilio-sid').value = s.twilio_sid || '';
+  document.getElementById('twilio-from').value = s.twilio_from || '';
+  document.getElementById('twilio-token').value = s.twilio_token || '';
+}
+
+async function saveTwilio() {
+  const body = {
+    twilio_sid: document.getElementById('twilio-sid').value.trim(),
+    twilio_from: document.getElementById('twilio-from').value.trim(),
+  };
+  const raw = document.getElementById('twilio-token').value;
+  if (raw && !raw.startsWith('•')) body.twilio_token = raw;
+  const res = await fetch('/api/superadmin/twilio', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const n = document.getElementById('twilio-notice');
+  if (res.ok) { n.textContent='Configuration Twilio enregistrée'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+  else { n.textContent='Erreur'; n.style.display='block'; }
+}
+
+async function loadSMTP() {
+  const res = await fetch('/api/superadmin/smtp');
+  if (!res.ok) return;
+  const s = await res.json();
+  document.getElementById('smtp-host').value = s.smtp_host || '';
+  document.getElementById('smtp-port').value = s.smtp_port || '587';
+  document.getElementById('smtp-user').value = s.smtp_user || '';
+  document.getElementById('smtp-pass').value = s.smtp_pass ? '••••••••' : '';
+}
+
+async function saveSMTP() {
+  const body = {
+    smtp_host: document.getElementById('smtp-host').value.trim(),
+    smtp_port: document.getElementById('smtp-port').value.trim(),
+    smtp_user: document.getElementById('smtp-user').value.trim(),
+  };
+  const rawPass = document.getElementById('smtp-pass').value;
+  if (rawPass && !rawPass.startsWith('•')) body.smtp_pass = rawPass;
+  const res = await fetch('/api/superadmin/smtp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const n = document.getElementById('smtp-notice');
+  if (res.ok) { n.textContent='✓ Configuration SMTP enregistrée !'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+  else        { n.style.color='#fc8181'; n.textContent='Erreur lors de la sauvegarde.'; n.style.display='block'; }
+}
+
+async function testSMTP() {
+  const to = prompt('Email de test (votre adresse) :');
+  if (!to) return;
+  const n = document.getElementById('smtp-notice');
+  n.style.color='#34d399'; n.textContent='Envoi en cours…'; n.style.display='block';
+  const res = await fetch('/api/superadmin/smtp/test', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to }) });
+  const d = await res.json();
+  if (d.ok) { n.textContent=`✓ Email envoyé à ${to} !`; }
+  else      { n.style.color='#fc8181'; n.textContent=`Erreur : ${d.reason}`; }
+  setTimeout(()=>n.style.display='none', 5000);
+}
+
+async function loadRestaurants() {
+  const res = await fetch('/api/superadmin/restaurants');
+  if (!res.ok) return;
+  restaurants = await res.json();
+  const active   = restaurants.filter(r => r.active).length;
+  const inactive = restaurants.length - active;
+  document.getElementById('st-total').textContent   = restaurants.length;
+  document.getElementById('st-active').textContent  = active;
+  document.getElementById('st-inactive').textContent = inactive;
+
+  const tbody = document.getElementById('resto-tbody');
+  tbody.innerHTML = restaurants.map(r => `
+    <tr>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td>${esc(r.email)}</td>
+      <td>${r.total_customers}</td>
+      <td>${r.total_spins}</td>
+      <td>${new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
+      <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? 'Actif' : 'Suspendu'}</span></td>
+      <td>
+        <button class="action-btn" onclick="editResto(${r.id})">Modifier</button>
+        <button class="action-btn ${r.active ? 'danger' : ''}" onclick="toggleActive(${r.id}, ${r.active})">
+          ${r.active ? 'Suspendre' : 'Réactiver'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function openModal(id) {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Créer un compte restaurant';
+  document.getElementById('m-name').value  = '';
+  document.getElementById('m-email').value = '';
+  document.getElementById('m-pwd').value   = '';
+  document.getElementById('modal-err').style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function editResto(id) {
+  editingId = id;
+  const r = restaurants.find(x => x.id === id);
+  document.getElementById('modal-title').textContent = 'Modifier le compte';
+  document.getElementById('m-name').value  = r.name;
+  document.getElementById('m-email').value = r.email;
+  document.getElementById('m-pwd').value   = '';
+  document.getElementById('modal-err').style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('modal').style.display='none'; }
+
+async function saveModal() {
+  const name     = document.getElementById('m-name').value.trim();
+  const email    = document.getElementById('m-email').value.trim();
+  const password = document.getElementById('m-pwd').value;
+  const errEl    = document.getElementById('modal-err');
+  errEl.style.display = 'none';
+
+  if (editingId) {
+    const body = {};
+    if (name)               body.name     = name;
+    if (email)              body.email    = email;
+    if (password.length>=4) body.password = password;
+    const res = await fetch(`/api/superadmin/restaurants/${editingId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
+  } else {
+    if (!name || !email || !password) { errEl.textContent='Tous les champs sont requis'; errEl.style.display='block'; return; }
+    const res = await fetch('/api/superadmin/restaurants', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password }) });
+    if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
+  }
+  closeModal();
+  loadRestaurants();
+}
+
+async function toggleActive(id, currentlyActive) {
+  const msg = currentlyActive ? 'Suspendre ce restaurant ? Il ne pourra plus se connecter.' : 'Réactiver ce restaurant ?';
+  if (!confirm(msg)) return;
+  await fetch(`/api/superadmin/restaurants/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active: !currentlyActive }) });
+  loadRestaurants();
+}
+
+async function savePwd() {
+  const pwd = document.getElementById('new-pwd').value;
+  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  const res = await fetch('/api/superadmin/password', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
+  if (res.ok) { const n=document.getElementById('pwd-notice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2500); document.getElementById('new-pwd').value=''; }
+}
+
+// Vérifier si déjà connecté
+(async () => {
+  const res = await fetch('/api/superadmin/me');
+  const d   = await res.json();
+  if (d.isSuperAdmin) showApp();
+})();
+</script>
+</body>
+</html>

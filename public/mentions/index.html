@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n-title="legal.title">Mentions légales – Restau Wheel</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt);
+      color: var(--ivory);
+      padding: 1.5rem 1.25rem 3rem;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 15% 0%, rgba(255,214,10,0.2), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 90% 85%, rgba(255,45,106,0.22), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .shell { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--brass);
+    }
+    .top-actions { display: flex; align-items: center; gap: 1rem; }
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      color: var(--brass);
+      border: 1px solid var(--brass);
+      display: inline-block;
+      padding: 0.35rem 0.65rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 4vw, 2.2rem);
+      line-height: 1.15;
+      margin-bottom: 0.85rem;
+    }
+    .sub {
+      color: rgba(255,248,231,0.68);
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+    }
+    .panel {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--wine);
+      padding: 1.75rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--ink);
+    }
+    .panel h3 {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      margin: 1.25rem 0 0.5rem;
+    }
+    .panel p, .panel li {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      margin-bottom: 0.55rem;
+    }
+    .panel ul { padding-left: 1.2rem; margin-bottom: 0.75rem; }
+    .panel dl {
+      display: grid;
+      grid-template-columns: minmax(8rem, 38%) 1fr;
+      gap: 0.45rem 1rem;
+      font-size: 0.95rem;
+    }
+    .panel dt {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-top: 0.15rem;
+    }
+    .panel dd { font-weight: 500; }
+    .nav-link { color: rgba(255,248,231,0.7); font-size: 0.9rem; }
+    .nav-link:hover { color: var(--ivory); }
+    .lang-toggle {
+      display: inline-flex;
+      border: 1px solid rgba(255,248,231,0.25);
+      overflow: hidden;
+    }
+    .lang-toggle button {
+      background: transparent;
+      border: 0;
+      color: rgba(255,248,231,0.55);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.65rem;
+      cursor: pointer;
+    }
+    .lang-toggle button[aria-pressed="true"] {
+      background: var(--brass);
+      color: var(--ink);
+    }
+    a.inline { color: var(--wine); text-decoration: underline; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <a class="brand" href="/">RESTAU WHEEL</a>
+      <div class="top-actions">
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button type="button" data-lang-btn="fr" aria-pressed="true">FR</button>
+          <button type="button" data-lang-btn="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="nav-link" href="/" data-i18n="nav.home">Accueil</a>
+      </div>
+    </div>
+
+    <span class="tag" data-i18n="legal.tag">MENTIONS LÉGALES</span>
+    <h1 data-i18n="legal.h1">Mentions légales</h1>
+    <p class="sub" data-i18n="legal.sub">Informations sur l’éditeur du service Restau Wheel.</p>
+
+    <section class="panel">
+      <h2 data-i18n="legal.editor.h">Éditeur du site</h2>
+      <dl>
+        <dt data-i18n="legal.editor.name">Nom</dt>
+        <dd>Enzo Demonchaux-Acker</dd>
+        <dt data-i18n="legal.editor.form">Forme juridique</dt>
+        <dd data-i18n="legal.editor.form.v">Entrepreneur individuel</dd>
+        <dt data-i18n="legal.editor.trade">Nom commercial</dt>
+        <dd>QuoteSaas</dd>
+        <dt>SIREN</dt>
+        <dd>106 921 182</dd>
+        <dt>SIRET</dt>
+        <dd>106 921 182 00015</dd>
+        <dt data-i18n="legal.editor.ape">Code APE</dt>
+        <dd>58.29C</dd>
+        <dt data-i18n="legal.editor.rne">Immatriculation RNE</dt>
+        <dd>03/07/2026</dd>
+        <dt data-i18n="legal.editor.addr">Adresse</dt>
+        <dd>33 C Avenue des Messeguières<br>84360 Lauris<br>France (84 — Vaucluse)</dd>
+        <dt data-i18n="legal.editor.pub">Directeur de publication</dt>
+        <dd>Enzo Demonchaux-Acker</dd>
+        <dt data-i18n="legal.editor.contact">Contact</dt>
+        <dd><a class="inline" href="mailto:contact@restauwheel.com">contact@restauwheel.com</a></dd>
+        <dt data-i18n="legal.editor.product">Service</dt>
+        <dd>Restau Wheel — <a class="inline" href="https://restauwheel.com">restauwheel.com</a></dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="legal.host.h">Hébergement</h2>
+      <p data-i18n="legal.host.p">Le site est hébergé par :</p>
+      <dl>
+        <dt data-i18n="legal.host.name">Hébergeur</dt>
+        <dd>Vercel Inc.</dd>
+        <dt data-i18n="legal.editor.addr">Adresse</dt>
+        <dd>440 N Barranca Ave #4133<br>Covina, CA 91723<br>United States</dd>
+        <dt>Site</dt>
+        <dd><a class="inline" href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a></dd>
+      </dl>
+      <h3 data-i18n="legal.db.h">Base de données</h3>
+      <p data-i18n="legal.db.p">Les données applicatives sont stockées sur Neon (Postgres serverless), connecté via l’intégration Vercel Marketplace.</p>
+    </section>
+
+    <section class="panel" id="privacy">
+      <h2 data-i18n="legal.privacy.h">Données personnelles</h2>
+      <p data-i18n="legal.privacy.p1">Restau Wheel traite des données nécessaires au service de fidélisation (identité du client restaurant, email, téléphone, historique de tirages et gains), ainsi que les données de compte restaurateur et de facturation.</p>
+      <p data-i18n="legal.privacy.p2">Base légale : exécution du contrat (abonnement / utilisation du service) et intérêt légitime (sécurité, anti-abus, statistiques d’usage anonymisées).</p>
+      <p data-i18n="legal.privacy.p3">Durée : conservation pendant la relation commerciale, puis archivage limité au besoin légal (comptabilité, preuves).</p>
+      <p data-i18n="legal.privacy.p4">Vos droits (accès, rectification, effacement, opposition, portabilité) : écrivez à <a class="inline" href="mailto:contact@restauwheel.com">contact@restauwheel.com</a>. Réclamation possible auprès de la CNIL (cnil.fr).</p>
+      <p data-i18n="legal.privacy.p5">Paiements : traités par Stripe ; Restau Wheel ne stocke pas les numéros de carte. SMS éventuels : Twilio.</p>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="legal.ip.h">Propriété intellectuelle</h2>
+      <p data-i18n="legal.ip.p">Le site Restau Wheel, sa marque, ses textes, visuels et logiciels sont protégés. Toute reproduction non autorisée est interdite.</p>
+    </section>
+
+    <p style="margin-top:1.5rem;opacity:0.55;font-size:0.85rem">
+      <a href="/cancel" data-i18n="footer.cancel" style="color:inherit">Résilier mon abonnement</a>
+      ·
+      <a href="/" data-i18n="nav.home" style="color:inherit">Accueil</a>
+    </p>
+  </div>
+  <script src="/js/i18n.js"></script>
+  <script>
+    document.title = window.RW_I18N ? window.RW_I18N.t('legal.title') : document.title;
+    document.addEventListener('rw:lang', () => {
+      document.title = window.RW_I18N.t('legal.title');
+    });
+  </script>
+</body>
+</html>

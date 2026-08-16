@@ -1,0 +1,18 @@
+node_modules/
+restau.db
+restau.db-shm
+restau.db-wal
+.env
+*.log
+.DS_Store
+.claude/
+.vercel/
+.vercel
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.env*.local
+.env.neon

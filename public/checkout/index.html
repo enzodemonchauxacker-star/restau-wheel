@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement – Restau Wheel</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt);
+      color: var(--ivory);
+      padding: 1.5rem 1.25rem 3rem;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 0%, rgba(255,214,10,0.22), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 80%, rgba(255,45,106,0.25), transparent 50%),
+        radial-gradient(ellipse 35% 25% at 60% 30%, rgba(0,194,255,0.15), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--brass);
+    }
+    .back {
+      font-size: 0.88rem;
+      color: rgba(255,248,231,0.55);
+    }
+    .back:hover { color: var(--ivory); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .plan {
+      border: 3px solid var(--brass);
+      background: #141414;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .plan-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      color: var(--brass);
+      margin-bottom: 0.6rem;
+    }
+    .plan h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      margin-bottom: 0.4rem;
+    }
+    .price {
+      font-family: var(--font-display);
+      font-size: 2.6rem;
+      color: var(--wine);
+      line-height: 1;
+      margin: 1rem 0 0.35rem;
+    }
+    .price span {
+      font-size: 1rem;
+      color: rgba(255,248,231,0.55);
+      font-family: var(--font-body);
+      font-weight: 500;
+    }
+    .plan ul {
+      list-style: none;
+      margin-top: 1.1rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+    .plan li {
+      font-size: 0.92rem;
+      color: rgba(255,248,231,0.75);
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .plan li::before {
+      content: '★';
+      position: absolute;
+      left: 0;
+      color: var(--cyan, #00c2ff);
+      font-size: 0.75rem;
+      top: 0.15rem;
+    }
+
+    /* Virtual card */
+    .card-stage {
+      perspective: 1000px;
+      margin-bottom: 1.5rem;
+    }
+    .vcard {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1.586;
+      border-radius: 16px;
+      border: 3px solid #0a0a0a;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s var(--ease);
+      margin: 0 auto;
+      box-shadow: 10px 10px 0 #ff2d6a;
+    }
+    .vcard.flipped { transform: rotateY(180deg); }
+    .vcard-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 13px;
+      padding: 1.35rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .vcard-front {
+      background:
+        linear-gradient(135deg, #ff2d6a 0%, #ff6b35 40%, #ffd60a 100%);
+      color: #0a0a0a;
+    }
+    .vcard-front::before {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(0,194,255,0.35);
+      top: -40px; right: -30px;
+    }
+    .vcard-front::after {
+      content: '';
+      position: absolute;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(10,10,10,0.12);
+      bottom: -20px; left: 40%;
+    }
+    .vcard-back {
+      background: linear-gradient(135deg, #0a0a0a, #222);
+      color: var(--ivory);
+      transform: rotateY(180deg);
+    }
+    .vcard-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      z-index: 1;
+    }
+    .chip {
+      width: 42px; height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ffe566, #c9a227 50%, #ffe566);
+      border: 1px solid rgba(0,0,0,0.25);
+      position: relative;
+      z-index: 1;
+    }
+    .chip::before {
+      content: '';
+      position: absolute;
+      inset: 6px 4px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 3px;
+    }
+    .brand-card {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      position: relative;
+      z-index: 1;
+    }
+    .pan {
+      font-family: var(--font-mono);
+      font-size: clamp(1rem, 3.2vw, 1.25rem);
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+      min-height: 1.4em;
+    }
+    .pan .digit { display: inline-block; transition: transform 0.15s var(--ease), color 0.15s; }
+    .pan .digit.fresh { color: #fff; transform: translateY(-2px); }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+      margin-top: 1rem;
+    }
+    .meta-label {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      opacity: 0.7;
+      margin-bottom: 0.2rem;
+    }
+    .meta-value {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      min-height: 1.2em;
+      word-break: break-all;
+    }
+    .stripe-mag {
+      height: 42px;
+      background: #111;
+      margin: 1.2rem -1.4rem 1rem;
+      border-top: 2px solid #ffd60a;
+      border-bottom: 2px solid #ff2d6a;
+    }
+    .cvv-box {
+      align-self: flex-end;
+      background: var(--ivory);
+      color: var(--ink);
+      padding: 0.55rem 0.9rem;
+      min-width: 70px;
+      text-align: center;
+      border: 2px solid var(--brass);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.15em;
+    }
+    .cvv-hint {
+      font-size: 0.7rem;
+      color: rgba(255,248,231,0.5);
+      margin-bottom: 0.4rem;
+      text-align: right;
+    }
+
+    .form-panel {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--cyan, #00c2ff);
+      padding: 1.5rem 1.35rem;
+    }
+    .form-panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      margin-bottom: 1.1rem;
+    }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+    .field input {
+      border: 2px solid var(--ink);
+      background: #fff;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+    .field input:focus {
+      border-color: var(--wine);
+      background: #fff;
+      box-shadow: 3px 3px 0 var(--wine);
+    }
+    .field label { color: var(--ink); }
+    .btn-pay {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.95rem;
+      background: var(--wine);
+      color: #fff;
+      border: 3px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-pay:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+    .btn-pay:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .secure {
+      text-align: center;
+      margin-top: 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .err { text-align: left; margin-top: 0.75rem; }
+    .success {
+      display: none;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    .success.show { display: block; }
+    .success .form-fields { display: none; }
+    .success-icon {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--wine);
+      margin-bottom: 0.5rem;
+    }
+    .success h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .demo-badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      background: var(--brass);
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      border: 2px solid var(--ink);
+    }
+
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      .vcard { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <a href="/" class="brand">RESTAU WHEEL</a>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang-btn="fr">FR</button>
+          <button type="button" data-lang-btn="en">EN</button>
+        </div>
+        <a href="/" class="back" data-i18n="chk.back">← Retour</a>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="plan">
+          <div class="plan-tag" data-i18n="chk.plan.tag">ABONNEMENT</div>
+          <h1 data-i18n="chk.plan.h1">Restau Wheel Pro</h1>
+          <div class="price"><span data-i18n="chk.plan.price">20€</span> <span data-i18n="chk.plan.per">/ mois</span></div>
+          <ul>
+            <li data-i18n="chk.plan.f1">Roue illimitée & QR tables</li>
+            <li data-i18n="chk.plan.f2">Lots & probabilités personnalisés</li>
+            <li data-i18n="chk.plan.f3">Validation des gains en caisse</li>
+            <li data-i18n="chk.plan.f4">Emails automatiques</li>
+          </ul>
+        </div>
+
+        <div class="card-stage">
+          <div class="vcard" id="vcard">
+            <div class="vcard-face vcard-front">
+              <div class="vcard-top">
+                <div class="chip"></div>
+                <div class="brand-card">RESTAU</div>
+              </div>
+              <div class="pan" id="card-pan">•••• •••• •••• ••••</div>
+              <div class="meta-row">
+                <div>
+                  <div class="meta-label">TITULAIRE</div>
+                  <div class="meta-value" id="card-name">TON NOM</div>
+                </div>
+                <div>
+                  <div class="meta-label">EXPIRE</div>
+                  <div class="meta-value" id="card-exp">MM/AA</div>
+                </div>
+              </div>
+            </div>
+            <div class="vcard-face vcard-back">
+              <div class="stripe-mag"></div>
+              <div>
+                <div class="cvv-hint">CVV</div>
+                <div class="cvv-box" id="card-cvv">•••</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-panel" id="panel">
+        <div id="form-wrap">
+          <h2 data-i18n="chk.pay.h2">Payer par carte</h2>
+          <form id="pay-form" autocomplete="on">
+            <div class="field">
+              <label data-i18n="chk.pay.name">Nom</label>
+              <input type="text" id="name" name="name" placeholder="CAMILLE DUPONT" maxlength="26" autocomplete="cc-name" required>
+            </div>
+            <div class="field">
+              <label>Numéro de carte</label>
+              <input type="text" id="number" name="number" inputmode="numeric" placeholder="4242 4242 4242 4242" maxlength="19" autocomplete="cc-number" required>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label>Expiration</label>
+                <input type="text" id="exp" name="exp" inputmode="numeric" placeholder="MM/AA" maxlength="5" autocomplete="cc-exp" required>
+              </div>
+              <div class="field">
+                <label>CVV</label>
+                <input type="text" id="cvv" name="cvv" inputmode="numeric" placeholder="123" maxlength="4" autocomplete="cc-csc" required>
+              </div>
+            </div>
+            <div class="field">
+              <label data-i18n="chk.pay.email">Email</label>
+              <input type="email" id="email" name="email" placeholder="toi@resto.fr" autocomplete="email" required style="font-family:var(--font-body);letter-spacing:0">
+            </div>
+            <button type="submit" class="btn-pay" id="btn" data-i18n="chk.pay.btn">Payer 20€ →</button>
+            <p class="err" id="err"></p>
+            <p class="secure">Stripe · PCI</p>
+            <p style="margin-top:1rem;text-align:center">
+              <a href="/cancel" style="color:var(--muted);font-size:0.85rem" data-i18n="chk.cancel.link">Résilier un abonnement existant</a>
+              <span style="color:var(--muted);font-size:0.85rem"> · </span>
+              <a href="/mentions" style="color:var(--muted);font-size:0.85rem" data-i18n="footer.legal">Mentions légales</a>
+            </p>
+          </form>
+        </div>
+        <div class="success" id="success">
+          <div class="success-icon">★</div>
+          <h3>Paiement validé</h3>
+          <p style="color:var(--muted);margin-bottom:1.25rem">Bienvenue dans Restau Wheel Pro.</p>
+          <a class="btn btn-wine" href="/admin" style="display:inline-flex">Accéder à mon dashboard →</a>
+          <div class="demo-badge" id="demo-badge" style="display:none">MODE DÉMO</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/i18n.js"></script>
+  <script>
+    document.title = window.RW_I18N.t('chk.title');
+    document.addEventListener('rw:lang', () => {
+      document.title = window.RW_I18N.t('chk.title');
+      const btn = document.getElementById('btn');
+      if (btn && !btn.disabled) btn.textContent = window.RW_I18N.t('chk.pay.btn');
+    });
+
+    const vcard = document.getElementById('vcard');
+    const panEl = document.getElementById('card-pan');
+    const nameEl = document.getElementById('card-name');
+    const expEl = document.getElementById('card-exp');
+    const cvvEl = document.getElementById('card-cvv');
+
+    const nameIn = document.getElementById('name');
+    const numberIn = document.getElementById('number');
+    const expIn = document.getElementById('exp');
+    const cvvIn = document.getElementById('cvv');
+    const emailIn = document.getElementById('email');
+    const err = document.getElementById('err');
+    const btn = document.getElementById('btn');
+
+    function onlyDigits(s) { return s.replace(/\D/g, ''); }
+
+    function formatPan(raw) {
+      const d = onlyDigits(raw).slice(0, 16);
+      return d.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    }
+
+    function displayPan(raw) {
+      const d = onlyDigits(raw).slice(0, 16);
+      const parts = [];
+      for (let i = 0; i < 16; i++) {
+        parts.push(i < d.length ? d[i] : '•');
+        if (i % 4 === 3 && i < 15) parts.push(' ');
+      }
+      return parts.join('');
+    }
+
+    function formatExp(raw) {
+      const d = onlyDigits(raw).slice(0, 4);
+      if (d.length <= 2) return d;
+      return d.slice(0, 2) + '/' + d.slice(2);
+    }
+
+    function flashDigits(el, text) {
+      el.textContent = text;
+    }
+
+    nameIn.addEventListener('input', () => {
+      const v = nameIn.value.trim().toUpperCase() || 'TON NOM';
+      nameEl.textContent = v.slice(0, 26);
+    });
+
+    numberIn.addEventListener('input', () => {
+      const formatted = formatPan(numberIn.value);
+      numberIn.value = formatted;
+      flashDigits(panEl, displayPan(formatted));
+    });
+
+    expIn.addEventListener('input', () => {
+      expIn.value = formatExp(expIn.value);
+      expEl.textContent = expIn.value.length ? expIn.value : 'MM/AA';
+    });
+
+    cvvIn.addEventListener('focus', () => vcard.classList.add('flipped'));
+    cvvIn.addEventListener('blur', () => {
+      if (!cvvIn.value) vcard.classList.remove('flipped');
+    });
+    cvvIn.addEventListener('input', () => {
+      vcard.classList.add('flipped');
+      const d = onlyDigits(cvvIn.value).slice(0, 4);
+      cvvIn.value = d;
+      if (!d.length) cvvEl.textContent = '•••';
+      else if (d.length <= 3) cvvEl.textContent = '•'.repeat(Math.max(0, 3 - d.length)) + d;
+      else cvvEl.textContent = d;
+    });
+
+    function luhnOk(num) {
+      const arr = onlyDigits(num).split('').reverse().map(Number);
+      if (arr.length < 13) return false;
+      const sum = arr.reduce((acc, n, i) => {
+        if (i % 2 === 1) { n *= 2; if (n > 9) n -= 9; }
+        return acc + n;
+      }, 0);
+      return sum % 10 === 0;
+    }
+
+    function detectBrand(n) {
+      if (/^4/.test(n)) return 'visa';
+      if (/^5[1-5]/.test(n)) return 'mastercard';
+      if (/^3[47]/.test(n)) return 'amex';
+      return 'card';
+    }
+
+    function showErr(msg) {
+      err.textContent = msg;
+      err.style.display = 'block';
+    }
+
+    const params = new URLSearchParams(location.search);
+    if (params.get('email')) {
+      emailIn.value = params.get('email');
+    }
+    if (params.get('success') === '1') {
+      document.getElementById('form-wrap').style.display = 'none';
+      document.getElementById('success').classList.add('show');
+    }
+    if (params.get('canceled') === '1') {
+      showErr('Paiement annulé. Tu peux réessayer.');
+    }
+
+    document.getElementById('pay-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.style.display = 'none';
+
+      const number = onlyDigits(numberIn.value);
+      const exp = onlyDigits(expIn.value);
+      const cvv = onlyDigits(cvvIn.value);
+      const name = nameIn.value.trim();
+      const email = emailIn.value.trim();
+
+      if (!name || !email) { showErr('Remplis tous les champs.'); return; }
+      if (number.length < 13 || !luhnOk(number)) { showErr('Numéro de carte invalide.'); return; }
+      if (exp.length !== 4) { showErr('Expiration invalide (MM/AA).'); return; }
+      const mm = parseInt(exp.slice(0, 2), 10);
+      if (mm < 1 || mm > 12) { showErr('Mois d\'expiration invalide.'); return; }
+      if (cvv.length < 3) { showErr('CVV invalide.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Traitement…';
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            demo: true,
+            last4: number.slice(-4),
+            brand: detectBrand(number),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur paiement');
+
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+          return;
+        }
+
+        document.getElementById('form-wrap').style.display = 'none';
+        document.getElementById('success').classList.add('show');
+        if (data.demo) document.getElementById('demo-badge').style.display = 'inline-block';
+        vcard.classList.remove('flipped');
+        setTimeout(() => { window.location.href = '/admin'; }, 1600);
+      } catch (ex) {
+        showErr(ex.message);
+        btn.disabled = false;
+        btn.textContent = window.RW_I18N ? window.RW_I18N.t('chk.pay.btn') : 'Payer 20€ →';
+      }
+    });
+  </script>
+</body>
+</html>

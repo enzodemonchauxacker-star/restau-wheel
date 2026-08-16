@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Restau Wheel</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    :root {
+      --bg: #f5f0e6;
+      --surface: #fffdf8;
+      --surface2: #f0e9dc;
+      --border: #0a0a0a;
+      --text: #0a0a0a;
+      --muted: #5c5c5c;
+      --accent: #ff2d6a;
+      --brass: #ffd60a;
+      --felt: #0a0a0a;
+      --green: #00a890;
+      --yellow: #c9a000;
+      --red: #e01140;
+      --cyan: #00a8d8;
+    }
+
+    ::selection {
+      background: var(--brass);
+      color: var(--ink);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+    }
+
+    input, button, select, textarea, a {
+      -webkit-tap-highlight-color: transparent;
+    }
+    input:focus, select:focus, textarea:focus, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    button:focus:not(:focus-visible) { outline: none; }
+
+    /* Login */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: var(--felt);
+    }
+    .login-box {
+      background: var(--surface);
+      border: 3px solid var(--border);
+      box-shadow: 8px 8px 0 var(--accent);
+      padding: 2rem 1.6rem;
+      width: 100%;
+      max-width: 380px;
+      text-align: left;
+    }
+    .login-box .icon {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+    .login-box h2 {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+    }
+    .login-box > p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .login-box input {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .login-box input:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 3px 3px 0 var(--accent);
+    }
+    .btn-primary {
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      border-radius: 0;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--border);
+    }
+    .btn-primary:hover { background: #ff4d85; }
+    #login-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; display: none; }
+
+    #app { display: none; flex-direction: column; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--felt);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      border-right: 3px solid var(--brass);
+    }
+    .sidebar-brand {
+      padding: 1.4rem 1.2rem 0.5rem;
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--brass);
+    }
+    .sidebar-resto {
+      font-size: 0.78rem;
+      color: rgba(255,248,231,0.55);
+      padding: 0 1.2rem 1.1rem;
+      border-bottom: 1px solid rgba(255,214,10,0.2);
+      font-weight: 500;
+    }
+    .nav-item {
+      padding: 0.7rem 1.2rem;
+      margin: 0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: rgba(255,248,231,0.6);
+      border-left: 3px solid transparent;
+      transition: color .15s, background .15s, border-color .15s;
+      font-weight: 500;
+      user-select: none;
+    }
+    .nav-item:hover { color: var(--ivory); background: rgba(255,255,255,0.04); }
+    .nav-item.active {
+      color: var(--brass);
+      background: transparent;
+      border-left-color: var(--brass);
+      font-weight: 700;
+      border: none;
+      border-left: 3px solid var(--brass);
+      border-radius: 0;
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 1rem 1.2rem;
+      border-top: 1px solid rgba(255,214,10,0.15);
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid rgba(255,248,231,0.25);
+      border-radius: 0;
+      color: rgba(255,248,231,0.55);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+    }
+    .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
+    .main { margin-left: 220px; padding: 2rem 2rem 3rem; flex: 1; max-width: 1100px; }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeUp .3s var(--ease); }
+
+    h2.page-title {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.02em;
+    }
+    .page-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: 1rem 0.9rem;
+      box-shadow: 3px 3px 0 var(--border);
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: var(--font-mono);
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+
+    .search-bar { display: flex; gap: 8px; margin-bottom: 18px; }
+    .search-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 0;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+    }
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 3px 3px 0 var(--accent);
+    }
+    .btn-search {
+      padding: 11px 18px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      border-radius: 0;
+      color: #fff;
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--border);
+    }
+    .btn-search:hover { background: #ff4d85; }
+
+    .customer-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+    .customer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .customer-name { font-size: 1.05rem; font-weight: 700; font-family: var(--font-display); }
+    .customer-email { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+    .customer-date { font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); }
+
+    .spin-list { display: flex; flex-direction: column; gap: 8px; }
+    .spin-item {
+      background: var(--surface2);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      border: 1px solid var(--border);
+    }
+    .spin-prize { font-weight: 600; font-size: 0.92rem; }
+    .spin-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+    .badge-pending { color: var(--yellow); }
+    .badge-used { color: var(--green); }
+    .badge-expired { color: var(--red); }
+    .badge-cooldown { color: #dd6b20; }
+    .badge-ok { color: var(--green); }
+    .badge-lose { color: var(--muted); }
+    .customer-stats {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin: 8px 0 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+    }
+    .customer-stats span {
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      background: var(--surface2);
+    }
+    .btn-use {
+      padding: 6px 12px;
+      background: var(--green);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+    }
+    .no-results { color: var(--muted); text-align: center; padding: 40px 0; font-size: 0.95rem; }
+
+    .prizes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .prize-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: 16px;
+      position: relative;
+      box-shadow: 4px 4px 0 var(--prize-color, var(--brass));
+    }
+    .prize-card::before { display: none; }
+    .prize-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; font-family: var(--font-display); }
+    .prize-card-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; min-height: 20px; }
+    .prize-meta {
+      display: flex; gap: 12px;
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 12px;
+      font-family: var(--font-mono);
+    }
+    .prize-actions { display: flex; gap: 8px; }
+    .btn-edit, .btn-del {
+      padding: 6px 12px;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .btn-del { background: transparent; color: var(--red); border-color: var(--red); }
+    .btn-edit:hover { background: var(--brass); }
+    .btn-del:hover { background: var(--red); color: #fff; }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 18px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      margin-bottom: 18px;
+      box-shadow: 3px 3px 0 var(--border);
+    }
+    .btn-add:hover { background: #ff4d85; }
+
+    .calc-box {
+      background: var(--surface);
+      border: 3px solid var(--border);
+      box-shadow: 5px 5px 0 var(--brass);
+      padding: 18px 18px 16px;
+      margin-bottom: 22px;
+      max-width: 640px;
+    }
+    .calc-box h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+    }
+    .calc-box .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .calc-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+    .calc-result {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: #fff8e7;
+      border: 2px solid var(--border);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      display: none;
+    }
+    .calc-result.show { display: block; }
+    .calc-result strong { font-family: var(--font-display); }
+    .btn-calc {
+      padding: 11px 16px;
+      background: var(--brass);
+      border: 2px solid var(--border);
+      color: var(--ink);
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 3px 3px 0 var(--border);
+    }
+    .btn-calc:hover { background: #ffe566; }
+    @media (max-width: 640px) {
+      .calc-row { grid-template-columns: 1fr; }
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 3px solid var(--border);
+      box-shadow: 8px 8px 0 var(--accent);
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+    }
+    .modal h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 0;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 3px 3px 0 var(--accent);
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-family: var(--font-body);
+    }
+    .btn-save {
+      flex: 2;
+      padding: 11px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-family: var(--font-body);
+      box-shadow: 3px 3px 0 var(--border);
+    }
+
+    .qr-section {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      box-shadow: 6px 6px 0 var(--cyan);
+      padding: 24px;
+      max-width: 420px;
+    }
+    .qr-section img {
+      width: 240px; height: 240px;
+      margin: 14px auto;
+      display: block;
+      background: #fff;
+      padding: 8px;
+      border: 2px solid var(--border);
+    }
+    .qr-url {
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      margin: 12px 0 16px;
+      font-family: var(--font-mono);
+    }
+    .btn-dl {
+      display: inline-block;
+      padding: 10px 18px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      box-shadow: 3px 3px 0 var(--border);
+      font-family: var(--font-body);
+    }
+
+    .settings-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: 20px;
+      max-width: 520px;
+      margin-bottom: 16px;
+    }
+    .settings-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      font-family: var(--font-display);
+    }
+    .color-preset {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      padding: 0;
+    }
+    .color-preset:hover { transform: scale(1.08); }
+    .color-preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .settings-card .field input { margin-bottom: 0; }
+    .settings-card .field { margin-bottom: 12px; }
+    .btn-save-settings {
+      padding: 10px 18px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      box-shadow: 3px 3px 0 var(--border);
+      margin-top: 4px;
+    }
+    .save-notice { color: var(--green); font-size: 0.85rem; margin-top: 10px; display: none; font-weight: 600; }
+
+    .color-row { display: flex; align-items: center; gap: 12px; }
+    .color-row input[type="color"] {
+      width: 44px; height: 38px;
+      padding: 2px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      background: #fff;
+    }
+    .color-row input[type="text"] { flex: 1; }
+
+    @media (max-width: 640px) {
+      .sidebar {
+        width: 100%; height: auto; min-height: 0;
+        flex-direction: row; flex-wrap: wrap; align-items: center;
+        bottom: auto; border-right: none; border-bottom: 3px solid var(--brass);
+        padding: 8px 10px; gap: 4px;
+      }
+      .sidebar-brand { padding: 0 8px; font-size: 0.7rem; }
+      .sidebar-resto { display: none; }
+      .nav-item { padding: 6px 8px; font-size: 0.72rem; border-left: none; border-bottom: 2px solid transparent; }
+      .nav-item.active { border-left: none; border-bottom-color: var(--brass); }
+      .sidebar-bottom { display: none; }
+      .main { margin-left: 0; margin-top: 72px; padding: 18px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="icon">RESTAU WHEEL</div>
+    <h2>Connexion</h2>
+    <p>Espace restaurateur</p>
+    <input type="email"    id="login-email" placeholder="Votre email" autocomplete="email" style="margin-bottom:10px;">
+    <input type="password" id="login-pwd"   placeholder="Mot de passe" autocomplete="current-password">
+    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+    <p id="login-error">Email ou mot de passe incorrect.</p>
+    <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);">Pas encore de compte ? <a href="/register" style="color:var(--accent);text-decoration:none;font-weight:600;">S'inscrire</a></p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="sidebar-brand">RESTAU WHEEL</div>
+    <div class="sidebar-resto" id="resto-name">Mon Restaurant</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">Tableau de bord</div>
+    <div class="nav-item" onclick="showPage('search')" data-page="search">Clients</div>
+    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes">Lots</div>
+    <div class="nav-item" onclick="showPage('qrcode')" data-page="qrcode">QR Code</div>
+    <div class="nav-item" onclick="showPage('settings')" data-page="settings">Paramètres</div>
+    <div class="sidebar-bottom">
+      <button class="btn-logout" onclick="doLogout()">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <h2 class="page-title">Tableau de bord</h2>
+      <p class="page-desc">Vue d'ensemble de votre programme de fidélité</p>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- Clients -->
+    <div class="page" id="page-search">
+      <h2 class="page-title">Clients</h2>
+      <p class="page-desc">Liste des joueurs et leurs gains — filtrez par nom, email ou téléphone</p>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Filtrer : nom, prénom, email, téléphone…" oninput="doSearch()" onkeydown="if(event.key==='Enter') doSearch()">
+        <button class="btn-search" onclick="doSearch()">Filtrer</button>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Lots -->
+    <div class="page" id="page-prizes">
+      <h2 class="page-title">Gérer les lots</h2>
+      <p class="page-desc">Configurez les cases de la roue de fortune</p>
+
+      <div class="calc-box">
+        <h3>Calculateur cadeaux / jour</h3>
+        <p class="hint">Exemple : 100 couverts prévus, mais seulement 15 cadeaux à distribuer. On règle automatiquement les chances de la roue.</p>
+        <div class="calc-row">
+          <div class="field" style="margin:0">
+            <label>Couverts / jour (spins estimés)</label>
+            <input type="number" id="calc-covers" min="1" value="100">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Cadeaux / jour (max)</label>
+            <input type="number" id="calc-gifts" min="0" value="15">
+          </div>
+          <button type="button" class="btn-calc" onclick="applyPrizeCalculator()">Appliquer →</button>
+        </div>
+        <div class="calc-result" id="calc-result"></div>
+      </div>
+
+      <button class="btn-add" onclick="openPrizeModal()">Ajouter un lot</button>
+      <div class="prizes-grid" id="prizes-grid"></div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="page" id="page-qrcode">
+      <h2 class="page-title">QR Code</h2>
+      <p class="page-desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
+      <div class="qr-section">
+        <p>Scannez pour accéder à la page client :</p>
+        <img id="qr-img" src="" alt="QR Code">
+        <div class="qr-url" id="qr-url"></div>
+        <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png">Télécharger</a>
+      </div>
+    </div>
+
+    <!-- Paramètres -->
+    <div class="page" id="page-settings">
+      <h2 class="page-title">Paramètres</h2>
+      <p class="page-desc">Configurez votre restaurant</p>
+
+      <div class="settings-card">
+        <h3>Informations du restaurant</h3>
+        <div class="field">
+          <label>Nom du restaurant</label>
+          <input type="text" id="s-name" placeholder="Mon Restaurant">
+        </div>
+        <div class="field">
+          <label>URL publique (pour le QR code)</label>
+          <input type="text" id="s-url" placeholder="https://monrestaurant.com">
+        </div>
+        <div class="field">
+          <label>Délai entre 2 tirages (heures)</label>
+          <input type="number" id="s-cooldown" min="1" max="720" value="24" placeholder="24">
+          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px">Anti-abus : un même email ou téléphone ne peut rejouer qu’après ce délai (défaut 24h).</small>
+        </div>
+        <button class="btn-save-settings" onclick="saveSettings()">Enregistrer</button>
+        <p class="save-notice" id="save-notice">Enregistré</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>Couleur du thème</h3>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Choisissez la couleur principale qui s'affiche sur la page client (boutons, titres, anneau de la roue).</p>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+          <input type="color" id="s-accent" value="#FFD700"
+            style="width:56px;height:48px;border:none;border-radius:10px;cursor:pointer;background:none;padding:0;">
+          <div>
+            <div style="font-weight:700;font-size:0.95rem;" id="accent-preview-label">Couleur sélectionnée</div>
+            <div style="color:var(--muted);font-size:0.82rem;" id="accent-hex-display">#FFD700</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          <button class="color-preset" style="background:#FFD700" onclick="setAccent('#FFD700')" title="Or (défaut)"></button>
+          <button class="color-preset" style="background:#E53E3E" onclick="setAccent('#E53E3E')" title="Rouge"></button>
+          <button class="color-preset" style="background:#38A169" onclick="setAccent('#38A169')" title="Vert"></button>
+          <button class="color-preset" style="background:#3182CE" onclick="setAccent('#3182CE')" title="Bleu"></button>
+          <button class="color-preset" style="background:#805AD5" onclick="setAccent('#805AD5')" title="Violet"></button>
+          <button class="color-preset" style="background:#DD6B20" onclick="setAccent('#DD6B20')" title="Orange"></button>
+          <button class="color-preset" style="background:#00B5D8" onclick="setAccent('#00B5D8')" title="Cyan"></button>
+          <button class="color-preset" style="background:#F687B3" onclick="setAccent('#F687B3')" title="Rose"></button>
+        </div>
+        <button class="btn-save-settings" onclick="saveAccent()">Appliquer la couleur</button>
+        <p class="save-notice" id="accent-notice">Couleur appliquée</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>Notifications email</h3>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Configurez les emails automatiques envoyés à vos clients après chaque tirage. La configuration SMTP doit être renseignée par l'opérateur.</p>
+        <div class="field">
+          <label>Nom expéditeur (affiché dans l'email)</label>
+          <input type="text" id="s-email-name" placeholder="Ex : Le Bistrot du Coin">
+        </div>
+        <div class="field">
+          <label>Email de réponse (reply-to)</label>
+          <input type="email" id="s-email-replyto" placeholder="contact@monrestaurant.fr">
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <input type="checkbox" id="s-send-win" style="width:auto;margin:0;">
+          <label for="s-send-win" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>gagne</strong></label>
+        </div>
+        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <input type="checkbox" id="s-send-lose" style="width:auto;margin:0;">
+          <label for="s-send-lose" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>ne gagne pas</strong></label>
+        </div>
+        <div class="field">
+          <label>Rappels email périodiques (1 = actif, 0 = off)</label>
+          <input type="number" id="s-reminder-days" min="0" max="1" placeholder="1">
+        </div>
+        <button class="btn-save-settings" onclick="saveEmailSettings()">Enregistrer</button>
+        <p class="save-notice" id="email-notice">Enregistré</p>
+      </div>
+
+      <div class="settings-card">
+        <h3>Changer le mot de passe admin</h3>
+        <div class="field">
+          <label>Nouveau mot de passe (min. 4 caractères)</label>
+          <input type="password" id="s-pwd" placeholder="Nouveau mot de passe">
+        </div>
+        <button class="btn-save-settings" onclick="savePwd()">Changer le mot de passe</button>
+        <p class="save-notice" id="pwd-notice">Mot de passe mis à jour</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal lot -->
+<div class="modal-overlay" id="prize-modal">
+  <div class="modal">
+    <h3 id="modal-title">Nouveau lot</h3>
+    <div class="field">
+      <label>Nom du lot *</label>
+      <input type="text" id="m-name" placeholder="Ex: Dessert offert">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <input type="text" id="m-desc" placeholder="Ex: Un dessert au choix offert">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Probabilité (%)</label>
+        <input type="number" id="m-prob" min="1" max="100" placeholder="10">
+      </div>
+      <div class="field">
+        <label>Délai pour utiliser (jours)</label>
+        <input type="number" id="m-deadline" min="0" max="365" placeholder="30">
+        <small style="color:var(--muted);font-size:0.75rem">0 = case "Rien gagné"</small>
+      </div>
+    </div>
+    <div class="field">
+      <label>Couleur</label>
+      <div class="color-row">
+        <input type="color" id="m-color-picker" value="#FF6B6B" oninput="document.getElementById('m-color').value=this.value">
+        <input type="text" id="m-color" value="#FF6B6B" placeholder="#FF6B6B" oninput="document.getElementById('m-color-picker').value=this.value">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePrizeModal()">Annuler</button>
+      <button class="btn-save" onclick="savePrize()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let editingPrizeId = null;
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function checkAuth() {
+  const res = await fetch('/api/admin/me');
+  const data = await res.json();
+  if (data.isAdmin) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('resto-name').textContent = data.restaurant_name || 'Mon Restaurant';
+    initApp();
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd   = document.getElementById('login-pwd').value;
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pwd })
+  });
+  if (res.ok) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const me = await (await fetch('/api/admin/me')).json();
+    document.getElementById('resto-name').textContent = me.restaurant_name || 'Mon Restaurant';
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+['login-email', 'login-pwd'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+});
+
+async function doLogout() {
+  await fetch('/api/admin/logout', { method: 'POST' });
+  location.reload();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+
+  if (name === 'dashboard') loadStats();
+  if (name === 'search') doSearch();
+  if (name === 'prizes') {
+    loadPrizes();
+    fetch('/api/admin/settings').then(r => r.json()).then(s => {
+      if (s.daily_covers) document.getElementById('calc-covers').value = s.daily_covers;
+      if (s.daily_gifts != null) document.getElementById('calc-gifts').value = s.daily_gifts;
+      updateCalcPreview();
+    }).catch(() => {});
+  }
+  if (name === 'qrcode') loadQR();
+  if (name === 'settings') loadSettings();
+}
+
+function initApp() {
+  loadStats();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const res = await fetch('/api/admin/stats');
+  const s = await res.json();
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total tirages</div>
+      <div class="stat-value">${s.totalSpins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gains distribués</div>
+      <div class="stat-value green">${s.totalWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Gains utilisés</div>
+      <div class="stat-value green">${s.usedWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente</div>
+      <div class="stat-value yellow">${s.pendingWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Expirés</div>
+      <div class="stat-value red">${s.expiredWins}</div>
+    </div>
+  `;
+}
+
+// ── Recherche client ──────────────────────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`);
+  const customers = await res.json();
+  const container = document.getElementById('search-results');
+
+  if (!Array.isArray(customers)) {
+    container.innerHTML = '<div class="no-results">Erreur de chargement.</div>';
+    return;
+  }
+
+  if (!customers.length) {
+    container.innerHTML = '<div class="no-results">Aucun client pour l’instant.</div>';
+    return;
+  }
+
+  container.innerHTML = customers.map(c => {
+    const lastSpinLabel = c.last_spin_at
+      ? new Date(c.last_spin_at.includes('T') ? c.last_spin_at : c.last_spin_at.replace(' ', 'T') + 'Z')
+          .toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    const cooldownBadge = c.in_cooldown
+      ? `<span class="badge badge-cooldown">Cooldown cooldown · peut rejouer après ${c.cooldown_hours}h</span>`
+      : `<span class="badge badge-ok">Peut rejouer</span>`;
+
+    const spinsHtml = (!c.spins || c.spins.length === 0)
+      ? '<p style="color:var(--muted);font-size:0.85rem">Aucun tirage pour ce client.</p>'
+      : c.spins.map(s => {
+          const isReal = s.deadline_days > 0;
+          const isExpired = s.deadline && new Date(s.deadline) < new Date();
+          const wonDate = new Date(s.won_at.includes('T') ? s.won_at : s.won_at.replace(' ', 'T') + 'Z')
+            .toLocaleString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const dlDate = s.deadline ? new Date(s.deadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
+          let badge, action = '';
+          if (!isReal) {
+            badge = `<span class="badge badge-lose">Pas de gain</span>`;
+          } else if (s.used) {
+            const usedDate = new Date(s.used_at).toLocaleDateString('fr-FR');
+            badge = `<span class="badge badge-used">Utilisé · ${usedDate}</span>`;
+          } else if (isExpired) {
+            badge = `<span class="badge badge-expired">Expiré</span>`;
+          } else {
+            badge = `<span class="badge badge-pending">En attente</span>`;
+            action = `<button class="btn-use" onclick="useSpin(${s.id}, this)">Valider l'utilisation</button>`;
+          }
+
+          return `
+            <div class="spin-item" id="spin-${s.id}">
+              <div>
+                <div class="spin-prize" style="color:${s.prize_color || 'inherit'}">${escHtml(s.prize_name || 'Lot')}</div>
+                <div class="spin-meta">Tirage le ${wonDate}${isReal && dlDate ? ` · Valable jusqu'au ${dlDate}` : ''}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                ${badge}
+                ${action}
+              </div>
+            </div>`;
+        }).join('');
+
+    return `
+      <div class="customer-card">
+        <div class="customer-header">
+          <div>
+            <div class="customer-name">${escHtml(c.first_name)} ${escHtml(c.last_name)}</div>
+            <div class="customer-email">${escHtml(c.email)}${c.phone ? ' · ' + escHtml(c.phone) : ''}</div>
+          </div>
+          <div class="customer-date">Depuis le ${new Date(c.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <div class="customer-stats">
+          <span>${c.spin_count || 0} tirage(s)</span>
+          <span>${c.win_count || 0} gain(s)</span>
+          <span>Dernier : ${lastSpinLabel}</span>
+          ${cooldownBadge}
+        </div>
+        <div class="spin-list">${spinsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+async function useSpin(spinId, btn) {
+  const res = await fetch(`/api/admin/spins/${spinId}/use`, { method: 'PUT' });
+  const data = await res.json();
+  if (data.success) {
+    const item = document.getElementById('spin-' + spinId);
+    const today = new Date().toLocaleDateString('fr-FR');
+    item.querySelector('.badge-pending')?.remove();
+    item.querySelector('.btn-use')?.remove();
+    const badgeWrap = item.querySelector('div[style]');
+    badgeWrap.innerHTML = `<span class="badge badge-used">Utilisé · ${today}</span>`;
+    loadStats();
+  } else {
+    alert(data.error || 'Erreur');
+  }
+}
+
+// ── Lots ──────────────────────────────────────────────────────────────────────
+let cachedPrizes = [];
+
+async function loadPrizes() {
+  const res = await fetch('/api/admin/prizes');
+  const prizes = await res.json();
+  cachedPrizes = prizes;
+  const total = prizes.reduce((s, p) => s + p.probability, 0) || 1;
+  document.getElementById('prizes-grid').innerHTML = prizes.map(p => {
+    const pct = Math.round((p.probability / total) * 1000) / 10;
+    return `
+    <div class="prize-card" style="--prize-color:${p.color}">
+      <div class="prize-card-name">${escHtml(p.name)}</div>
+      <div class="prize-card-desc">${escHtml(p.description || '')}</div>
+      <div class="prize-meta">
+        <span>${pct}% de chance</span>
+        <span>${p.deadline_days === 0 ? 'Aucun gain' : p.deadline_days + ' j'}</span>
+      </div>
+      <div class="prize-actions">
+        <button class="btn-edit" onclick="openPrizeModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">Modifier</button>
+        <button class="btn-del" onclick="deletePrize(${p.id})">Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateCalcPreview();
+}
+
+function updateCalcPreview() {
+  const covers = parseInt(document.getElementById('calc-covers')?.value, 10);
+  const gifts = parseInt(document.getElementById('calc-gifts')?.value, 10);
+  const el = document.getElementById('calc-result');
+  if (!el || !covers || covers < 1 || isNaN(gifts) || gifts < 0) return;
+  const winPct = Math.min(100, Math.round((gifts / covers) * 1000) / 10);
+  const total = cachedPrizes.reduce((s, p) => s + p.probability, 0) || 1;
+  const curWin = cachedPrizes.filter(p => p.deadline_days > 0).reduce((s, p) => s + p.probability, 0);
+  const curPct = Math.round((curWin / total) * 1000) / 10;
+  const curExpected = Math.round((curPct / 100) * covers * 10) / 10;
+  el.classList.add('show');
+  el.innerHTML = `Objectif : <strong>${winPct}%</strong> de gains ≈ <strong>${gifts}</strong> cadeaux / jour.<br>
+    Actuellement : <strong>${curPct}%</strong> → ≈ <strong>${curExpected}</strong> cadeaux / jour sur ${covers} spins.`;
+}
+
+async function applyPrizeCalculator() {
+  const covers = parseInt(document.getElementById('calc-covers').value, 10);
+  const gifts = parseInt(document.getElementById('calc-gifts').value, 10);
+  if (!covers || covers < 1) { alert('Indique un nombre de couverts / jour.'); return; }
+  if (isNaN(gifts) || gifts < 0) { alert('Indique un nombre de cadeaux / jour.'); return; }
+  if (gifts > covers) { alert('Les cadeaux ne peuvent pas dépasser les couverts.'); return; }
+  if (!confirm(`Appliquer : ${gifts} cadeaux pour ${covers} couverts / jour ?\nLes probabilités des lots seront recalculées.`)) return;
+
+  const res = await fetch('/api/admin/prizes/calibrate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ covers, gifts }),
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Erreur'); return; }
+  cachedPrizes = data.prizes || [];
+  await loadPrizes();
+  const el = document.getElementById('calc-result');
+  el.classList.add('show');
+  el.innerHTML = `Probabilités mises à jour : <strong>${data.win_percent}%</strong> de gains ≈ <strong>${data.expected_gifts_per_day}</strong> cadeaux / jour.`;
+}
+
+document.getElementById('calc-covers')?.addEventListener('input', updateCalcPreview);
+document.getElementById('calc-gifts')?.addEventListener('input', updateCalcPreview);
+
+function openPrizeModal(prize) {
+  editingPrizeId = prize ? prize.id : null;
+  document.getElementById('modal-title').textContent = prize ? 'Modifier le lot' : 'Nouveau lot';
+  document.getElementById('m-name').value = prize ? prize.name : '';
+  document.getElementById('m-desc').value = prize ? (prize.description || '') : '';
+  document.getElementById('m-prob').value = prize ? prize.probability : 10;
+  document.getElementById('m-deadline').value = prize ? prize.deadline_days : 30;
+  document.getElementById('m-color').value = prize ? prize.color : '#FF6B6B';
+  document.getElementById('m-color-picker').value = prize ? prize.color : '#FF6B6B';
+  document.getElementById('prize-modal').classList.add('open');
+}
+
+function closePrizeModal() {
+  document.getElementById('prize-modal').classList.remove('open');
+  editingPrizeId = null;
+}
+
+async function savePrize() {
+  const body = {
+    name: document.getElementById('m-name').value.trim(),
+    description: document.getElementById('m-desc').value.trim(),
+    probability: parseInt(document.getElementById('m-prob').value),
+    deadline_days: parseInt(document.getElementById('m-deadline').value),
+    color: document.getElementById('m-color').value
+  };
+
+  if (!body.name || isNaN(body.probability) || isNaN(body.deadline_days)) {
+    alert('Remplissez tous les champs obligatoires.');
+    return;
+  }
+
+  const url = editingPrizeId ? `/api/admin/prizes/${editingPrizeId}` : '/api/admin/prizes';
+  const method = editingPrizeId ? 'PUT' : 'POST';
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (res.ok) {
+    closePrizeModal();
+    loadPrizes();
+  } else {
+    const e = await res.json();
+    alert(e.error || 'Erreur');
+  }
+}
+
+async function deletePrize(id) {
+  if (!confirm('Supprimer ce lot ? Les gains déjà accordés restent valides.')) return;
+  await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' });
+  loadPrizes();
+}
+
+// ── QR Code ───────────────────────────────────────────────────────────────────
+async function loadQR() {
+  const res = await fetch('/api/admin/qrcode');
+  const data = await res.json();
+  const img = document.getElementById('qr-img');
+  img.src = data.qr;
+  document.getElementById('qr-url').textContent = data.url;
+  document.getElementById('qr-dl').href = data.qr;
+}
+
+// ── Paramètres ────────────────────────────────────────────────────────────────
+async function loadSettings() {
+  const [res, resEmail] = await Promise.all([fetch('/api/admin/settings'), fetch('/api/admin/email-settings')]);
+  const s = await res.json();
+  const e = await resEmail.json();
+  document.getElementById('s-name').value = s.restaurant_name || '';
+  document.getElementById('s-url').value = s.restaurant_url || '';
+  document.getElementById('s-cooldown').value = s.spin_cooldown_hours ?? 24;
+  if (s.theme_accent) setAccent(s.theme_accent, false);
+  document.getElementById('s-email-name').value = e.email_from_name || '';
+  document.getElementById('s-email-replyto').value = e.email_reply_to || '';
+  document.getElementById('s-send-win').checked = e.send_win_email !== 0;
+  document.getElementById('s-send-lose').checked = !!e.send_lose_email;
+  document.getElementById('s-reminder-days').value = e.reminder_days ?? 3;
+}
+
+async function saveEmailSettings() {
+  const body = {
+    email_from_name:  document.getElementById('s-email-name').value.trim(),
+    email_reply_to:   document.getElementById('s-email-replyto').value.trim(),
+    send_win_email:   document.getElementById('s-send-win').checked,
+    send_lose_email:  document.getElementById('s-send-lose').checked,
+    reminder_days:    parseInt(document.getElementById('s-reminder-days').value) || 0,
+  };
+  const res = await fetch('/api/admin/email-settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (res.ok) {
+    const n = document.getElementById('email-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+function setAccent(hex, updatePicker = true) {
+  if (updatePicker) document.getElementById('s-accent').value = hex;
+  document.getElementById('accent-hex-display').textContent = hex.toUpperCase();
+}
+
+document.getElementById('s-accent')?.addEventListener('input', e => {
+  document.getElementById('accent-hex-display').textContent = e.target.value.toUpperCase();
+});
+
+async function saveAccent() {
+  const hex = document.getElementById('s-accent').value;
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ theme_accent: hex })
+  });
+  if (res.ok) {
+    const n = document.getElementById('accent-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+async function saveSettings() {
+  const body = {
+    restaurant_name: document.getElementById('s-name').value.trim(),
+    restaurant_url: document.getElementById('s-url').value.trim(),
+    spin_cooldown_hours: parseInt(document.getElementById('s-cooldown').value, 10) || 24,
+  };
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (res.ok) {
+    document.getElementById('resto-name').textContent = body.restaurant_name;
+    const n = document.getElementById('save-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+async function savePwd() {
+  const pwd = document.getElementById('s-pwd').value;
+  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  const res = await fetch('/api/admin/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ admin_password: pwd })
+  });
+  if (res.ok) {
+    document.getElementById('s-pwd').value = '';
+    const n = document.getElementById('pwd-notice');
+    n.style.display = 'block';
+    setTimeout(() => { n.style.display = 'none'; }, 2500);
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Fermer modal en cliquant dehors
+document.getElementById('prize-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('prize-modal')) closePrizeModal();
+});
+
+checkAuth();
+</script>
+</body>
+</html>
