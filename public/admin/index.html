@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-i18n-title="admin.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,7 +54,11 @@
       justify-content: center;
       padding: 20px;
       background: var(--felt);
+      position: relative;
     }
+    .sidebar-lang { padding: 0.15rem 1.2rem 0.85rem; }
+    .sidebar-lang .lang-switch { width: 100%; }
+    .sidebar-lang .lang-switch button { flex: 1; }
     .login-box {
       background: var(--surface);
       border: 3px solid var(--border);
@@ -569,6 +573,21 @@
       margin-top: 4px;
     }
     .save-notice { color: var(--green); font-size: 0.85rem; margin-top: 10px; display: none; font-weight: 600; }
+    .save-notice.bad { color: var(--red); }
+    .btn-cancel-sub {
+      padding: 10px 18px;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      box-shadow: 3px 3px 0 var(--border);
+      margin-top: 4px;
+    }
+    .btn-cancel-sub:disabled { opacity: 0.5; cursor: not-allowed; }
+    #cancel-status { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
 
     .color-row { display: flex; align-items: center; gap: 12px; }
     .color-row input[type="color"] {
@@ -589,6 +608,8 @@
       }
       .sidebar-brand { padding: 0 8px; font-size: 0.7rem; }
       .sidebar-resto { display: none; }
+      .sidebar-lang { padding: 0 4px; }
+      .sidebar-lang .lang-switch { min-width: 72px; }
       .nav-item { padding: 6px 8px; font-size: 0.72rem; border-left: none; border-bottom: 2px solid transparent; }
       .nav-item.active { border-left: none; border-bottom-color: var(--brass); }
       .sidebar-bottom { display: none; }
@@ -600,15 +621,19 @@
 
 <!-- Login -->
 <div id="login-screen">
+  <div class="lang-float lang-switch" role="group" aria-label="Language">
+    <button type="button" data-lang-btn="fr">FR</button>
+    <button type="button" data-lang-btn="en">EN</button>
+  </div>
   <div class="login-box">
     <div class="icon">RESTAU WHEEL</div>
-    <h2>Connexion</h2>
-    <p>Espace restaurateur</p>
-    <input type="email"    id="login-email" placeholder="Votre email" autocomplete="email" style="margin-bottom:10px;">
-    <input type="password" id="login-pwd"   placeholder="Mot de passe" autocomplete="current-password">
-    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
-    <p id="login-error">Email ou mot de passe incorrect.</p>
-    <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);">Pas encore de compte ? <a href="/register" style="color:var(--accent);text-decoration:none;font-weight:600;">S'inscrire</a></p>
+    <h2 data-i18n="admin.login.h2">Connexion</h2>
+    <p data-i18n="admin.login.sub">Espace restaurateur</p>
+    <input type="email"    id="login-email" data-i18n-placeholder="admin.login.ph.email" placeholder="Votre email" autocomplete="email" style="margin-bottom:10px;">
+    <input type="password" id="login-pwd"   data-i18n-placeholder="admin.login.ph.password" placeholder="Mot de passe" autocomplete="current-password">
+    <button class="btn-primary" onclick="doLogin()" data-i18n="admin.login.submit">Se connecter</button>
+    <p id="login-error" data-i18n="admin.login.error">Email ou mot de passe incorrect.</p>
+    <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);"><span data-i18n="admin.login.noaccount">Pas encore de compte ?</span> <a href="/register" style="color:var(--accent);text-decoration:none;font-weight:600;" data-i18n="admin.login.register">S'inscrire</a></p>
   </div>
 </div>
 
@@ -617,13 +642,19 @@
   <nav class="sidebar">
     <div class="sidebar-brand">RESTAU WHEEL</div>
     <div class="sidebar-resto" id="resto-name">Mon Restaurant</div>
-    <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">Tableau de bord</div>
-    <div class="nav-item" onclick="showPage('search')" data-page="search">Clients</div>
-    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes">Lots</div>
-    <div class="nav-item" onclick="showPage('qrcode')" data-page="qrcode">QR Code</div>
-    <div class="nav-item" onclick="showPage('settings')" data-page="settings">Paramètres</div>
+    <div class="sidebar-lang">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang-btn="fr">FR</button>
+        <button type="button" data-lang-btn="en">EN</button>
+      </div>
+    </div>
+    <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard" data-i18n="admin.nav.dash">Tableau de bord</div>
+    <div class="nav-item" onclick="showPage('search')" data-page="search" data-i18n="admin.nav.clients">Clients</div>
+    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes" data-i18n="admin.nav.prizes">Lots</div>
+    <div class="nav-item" onclick="showPage('qrcode')" data-page="qrcode" data-i18n="admin.nav.qr">QR Code</div>
+    <div class="nav-item" onclick="showPage('settings')" data-page="settings" data-i18n="admin.nav.settings">Paramètres</div>
     <div class="sidebar-bottom">
-      <button class="btn-logout" onclick="doLogout()">Se déconnecter</button>
+      <button class="btn-logout" onclick="doLogout()" data-i18n="admin.nav.logout">Se déconnecter</button>
     </div>
   </nav>
 
@@ -631,92 +662,92 @@
 
     <!-- Dashboard -->
     <div class="page active" id="page-dashboard">
-      <h2 class="page-title">Tableau de bord</h2>
-      <p class="page-desc">Vue d'ensemble de votre programme de fidélité</p>
+      <h2 class="page-title" data-i18n="admin.dash.title">Tableau de bord</h2>
+      <p class="page-desc" data-i18n="admin.dash.desc">Vue d'ensemble de votre programme de fidélité</p>
       <div class="stats-grid" id="stats-grid"></div>
     </div>
 
     <!-- Clients -->
     <div class="page" id="page-search">
-      <h2 class="page-title">Clients</h2>
-      <p class="page-desc">Liste des joueurs et leurs gains — filtrez par nom, email ou téléphone</p>
+      <h2 class="page-title" data-i18n="admin.clients.title">Clients</h2>
+      <p class="page-desc" data-i18n="admin.clients.desc">Liste des joueurs et leurs gains — filtrez par nom, email ou téléphone</p>
       <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Filtrer : nom, prénom, email, téléphone…" oninput="doSearch()" onkeydown="if(event.key==='Enter') doSearch()">
-        <button class="btn-search" onclick="doSearch()">Filtrer</button>
+        <input type="text" id="search-input" data-i18n-placeholder="admin.clients.ph" placeholder="Filtrer : nom, prénom, email, téléphone…" oninput="doSearch()" onkeydown="if(event.key==='Enter') doSearch()">
+        <button class="btn-search" onclick="doSearch()" data-i18n="admin.clients.filter">Filtrer</button>
       </div>
       <div id="search-results"></div>
     </div>
 
     <!-- Lots -->
     <div class="page" id="page-prizes">
-      <h2 class="page-title">Gérer les lots</h2>
-      <p class="page-desc">Configurez les cases de la roue de fortune</p>
+      <h2 class="page-title" data-i18n="admin.prizes.title">Gérer les lots</h2>
+      <p class="page-desc" data-i18n="admin.prizes.desc">Configurez les cases de la roue de fortune</p>
 
       <div class="calc-box">
-        <h3>Calculateur cadeaux / jour</h3>
-        <p class="hint">Exemple : 100 couverts prévus, mais seulement 15 cadeaux à distribuer. On règle automatiquement les chances de la roue.</p>
+        <h3 data-i18n="admin.prizes.calc.h">Calculateur cadeaux / jour</h3>
+        <p class="hint" data-i18n="admin.prizes.calc.hint">Exemple : 100 couverts prévus, mais seulement 15 cadeaux à distribuer. On règle automatiquement les chances de la roue.</p>
         <div class="calc-row">
           <div class="field" style="margin:0">
-            <label>Couverts / jour (spins estimés)</label>
+            <label data-i18n="admin.prizes.calc.covers">Couverts / jour (spins estimés)</label>
             <input type="number" id="calc-covers" min="1" value="100">
           </div>
           <div class="field" style="margin:0">
-            <label>Cadeaux / jour (max)</label>
+            <label data-i18n="admin.prizes.calc.gifts">Cadeaux / jour (max)</label>
             <input type="number" id="calc-gifts" min="0" value="15">
           </div>
-          <button type="button" class="btn-calc" onclick="applyPrizeCalculator()">Appliquer →</button>
+          <button type="button" class="btn-calc" onclick="applyPrizeCalculator()" data-i18n="admin.prizes.calc.apply">Appliquer →</button>
         </div>
         <div class="calc-result" id="calc-result"></div>
       </div>
 
-      <button class="btn-add" onclick="openPrizeModal()">Ajouter un lot</button>
+      <button class="btn-add" onclick="openPrizeModal()" data-i18n="admin.prizes.add">Ajouter un lot</button>
       <div class="prizes-grid" id="prizes-grid"></div>
     </div>
 
     <!-- QR Code -->
     <div class="page" id="page-qrcode">
-      <h2 class="page-title">QR Code</h2>
-      <p class="page-desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
+      <h2 class="page-title" data-i18n="admin.qr.title">QR Code</h2>
+      <p class="page-desc" data-i18n="admin.qr.desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
       <div class="qr-section">
-        <p>Scannez pour accéder à la page client :</p>
+        <p data-i18n="admin.qr.scan">Scannez pour accéder à la page client :</p>
         <img id="qr-img" src="" alt="QR Code">
         <div class="qr-url" id="qr-url"></div>
-        <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png">Télécharger</a>
+        <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png" data-i18n="admin.qr.dl">Télécharger</a>
       </div>
     </div>
 
     <!-- Paramètres -->
     <div class="page" id="page-settings">
-      <h2 class="page-title">Paramètres</h2>
-      <p class="page-desc">Configurez votre restaurant</p>
+      <h2 class="page-title" data-i18n="admin.set.title">Paramètres</h2>
+      <p class="page-desc" data-i18n="admin.set.desc">Configurez votre restaurant</p>
 
       <div class="settings-card">
-        <h3>Informations du restaurant</h3>
+        <h3 data-i18n="admin.set.info.h">Informations du restaurant</h3>
         <div class="field">
-          <label>Nom du restaurant</label>
-          <input type="text" id="s-name" placeholder="Mon Restaurant">
+          <label data-i18n="admin.set.info.name">Nom du restaurant</label>
+          <input type="text" id="s-name" data-i18n-placeholder="admin.ph.resto" placeholder="Mon Restaurant">
         </div>
         <div class="field">
-          <label>URL publique (pour le QR code)</label>
+          <label data-i18n="admin.set.info.url">URL publique (pour le QR code)</label>
           <input type="text" id="s-url" placeholder="https://monrestaurant.com">
         </div>
         <div class="field">
-          <label>Délai entre 2 tirages (heures)</label>
+          <label data-i18n="admin.set.info.cooldown">Délai entre 2 tirages (heures)</label>
           <input type="number" id="s-cooldown" min="1" max="720" value="24" placeholder="24">
-          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px">Anti-abus : un même email ou téléphone ne peut rejouer qu’après ce délai (défaut 24h).</small>
+          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px" data-i18n="admin.set.info.cooldown.hint">Anti-abus : un même email ou téléphone ne peut rejouer qu’après ce délai (défaut 24h).</small>
         </div>
-        <button class="btn-save-settings" onclick="saveSettings()">Enregistrer</button>
-        <p class="save-notice" id="save-notice">Enregistré</p>
+        <button class="btn-save-settings" onclick="saveSettings()" data-i18n="admin.set.save">Enregistrer</button>
+        <p class="save-notice" id="save-notice" data-i18n="admin.set.saved">Enregistré</p>
       </div>
 
       <div class="settings-card">
-        <h3>Couleur du thème</h3>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Choisissez la couleur principale qui s'affiche sur la page client (boutons, titres, anneau de la roue).</p>
+        <h3 data-i18n="admin.set.theme.h">Couleur du thème</h3>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;" data-i18n="admin.set.theme.p">Choisissez la couleur principale qui s'affiche sur la page client (boutons, titres, anneau de la roue).</p>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
           <input type="color" id="s-accent" value="#FFD700"
             style="width:56px;height:48px;border:none;border-radius:10px;cursor:pointer;background:none;padding:0;">
           <div>
-            <div style="font-weight:700;font-size:0.95rem;" id="accent-preview-label">Couleur sélectionnée</div>
+            <div style="font-weight:700;font-size:0.95rem;" id="accent-preview-label" data-i18n="admin.set.theme.selected">Couleur sélectionnée</div>
             <div style="color:var(--muted);font-size:0.82rem;" id="accent-hex-display">#FFD700</div>
           </div>
         </div>
@@ -730,45 +761,57 @@
           <button class="color-preset" style="background:#00B5D8" onclick="setAccent('#00B5D8')" title="Cyan"></button>
           <button class="color-preset" style="background:#F687B3" onclick="setAccent('#F687B3')" title="Rose"></button>
         </div>
-        <button class="btn-save-settings" onclick="saveAccent()">Appliquer la couleur</button>
-        <p class="save-notice" id="accent-notice">Couleur appliquée</p>
+        <button class="btn-save-settings" onclick="saveAccent()" data-i18n="admin.set.theme.apply">Appliquer la couleur</button>
+        <p class="save-notice" id="accent-notice" data-i18n="admin.set.theme.applied">Couleur appliquée</p>
       </div>
 
       <div class="settings-card">
-        <h3>Notifications email</h3>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Configurez les emails automatiques envoyés à vos clients après chaque tirage. La configuration SMTP doit être renseignée par l'opérateur.</p>
+        <h3 data-i18n="admin.set.email.h">Notifications email</h3>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;" data-i18n="admin.set.email.p">Configurez les emails automatiques envoyés à vos clients après chaque tirage. La configuration SMTP doit être renseignée par l'opérateur.</p>
         <div class="field">
-          <label>Nom expéditeur (affiché dans l'email)</label>
+          <label data-i18n="admin.set.email.from">Nom expéditeur (affiché dans l'email)</label>
           <input type="text" id="s-email-name" placeholder="Ex : Le Bistrot du Coin">
         </div>
         <div class="field">
-          <label>Email de réponse (reply-to)</label>
+          <label data-i18n="admin.set.email.reply">Email de réponse (reply-to)</label>
           <input type="email" id="s-email-replyto" placeholder="contact@monrestaurant.fr">
         </div>
         <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
           <input type="checkbox" id="s-send-win" style="width:auto;margin:0;">
-          <label for="s-send-win" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>gagne</strong></label>
+          <label for="s-send-win" style="margin:0;cursor:pointer;" data-i18n="admin.set.email.win" data-i18n-html>Envoyer un email quand le client <strong>gagne</strong></label>
         </div>
         <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
           <input type="checkbox" id="s-send-lose" style="width:auto;margin:0;">
-          <label for="s-send-lose" style="margin:0;cursor:pointer;">Envoyer un email quand le client <strong>ne gagne pas</strong></label>
+          <label for="s-send-lose" style="margin:0;cursor:pointer;" data-i18n="admin.set.email.lose" data-i18n-html>Envoyer un email quand le client <strong>ne gagne pas</strong></label>
         </div>
         <div class="field">
-          <label>Rappels email périodiques (1 = actif, 0 = off)</label>
+          <label data-i18n="admin.set.email.remind">Rappels email périodiques (1 = actif, 0 = off)</label>
           <input type="number" id="s-reminder-days" min="0" max="1" placeholder="1">
         </div>
-        <button class="btn-save-settings" onclick="saveEmailSettings()">Enregistrer</button>
-        <p class="save-notice" id="email-notice">Enregistré</p>
+        <button class="btn-save-settings" onclick="saveEmailSettings()" data-i18n="admin.set.save">Enregistrer</button>
+        <p class="save-notice" id="email-notice" data-i18n="admin.set.saved">Enregistré</p>
       </div>
 
       <div class="settings-card">
-        <h3>Changer le mot de passe admin</h3>
+        <h3 data-i18n="admin.set.pwd.h">Changer le mot de passe admin</h3>
         <div class="field">
-          <label>Nouveau mot de passe (min. 4 caractères)</label>
-          <input type="password" id="s-pwd" placeholder="Nouveau mot de passe">
+          <label data-i18n="admin.set.pwd.label">Nouveau mot de passe (min. 4 caractères)</label>
+          <input type="password" id="s-pwd" data-i18n-placeholder="admin.set.pwd.ph" placeholder="Nouveau mot de passe">
         </div>
-        <button class="btn-save-settings" onclick="savePwd()">Changer le mot de passe</button>
-        <p class="save-notice" id="pwd-notice">Mot de passe mis à jour</p>
+        <button class="btn-save-settings" onclick="savePwd()" data-i18n="admin.set.pwd.btn">Changer le mot de passe</button>
+        <p class="save-notice" id="pwd-notice" data-i18n="admin.set.pwd.ok">Mot de passe mis à jour</p>
+      </div>
+
+      <div class="settings-card">
+        <h3 data-i18n="admin.set.cancel.h">Résilier mon abonnement</h3>
+        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:12px;" data-i18n="admin.set.cancel.p">L’abonnement Restau Wheel Pro (20 €/mois) reste actif jusqu’à la fin de la période déjà payée, puis s’arrête. Aucun frais de résiliation.</p>
+        <p id="cancel-status">—</p>
+        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <input type="checkbox" id="s-cancel-confirm" style="width:auto;margin:0;">
+          <label for="s-cancel-confirm" style="margin:0;cursor:pointer;" data-i18n="admin.set.cancel.confirm">Je confirme vouloir résilier mon abonnement Restau Wheel Pro.</label>
+        </div>
+        <button class="btn-cancel-sub" id="btn-cancel-sub" onclick="cancelSubscription()" data-i18n="admin.set.cancel.btn">Résilier l’abonnement</button>
+        <p class="save-notice" id="cancel-notice"></p>
       </div>
     </div>
 
@@ -778,42 +821,67 @@
 <!-- Modal lot -->
 <div class="modal-overlay" id="prize-modal">
   <div class="modal">
-    <h3 id="modal-title">Nouveau lot</h3>
+    <h3 id="modal-title" data-i18n="admin.prizes.modal.new">Nouveau lot</h3>
     <div class="field">
-      <label>Nom du lot *</label>
-      <input type="text" id="m-name" placeholder="Ex: Dessert offert">
+      <label data-i18n="admin.prizes.modal.name">Nom du lot *</label>
+      <input type="text" id="m-name" data-i18n-placeholder="admin.prizes.ph.name" placeholder="Ex: Dessert offert">
     </div>
     <div class="field">
-      <label>Description</label>
-      <input type="text" id="m-desc" placeholder="Ex: Un dessert au choix offert">
+      <label data-i18n="admin.prizes.modal.desc">Description</label>
+      <input type="text" id="m-desc" data-i18n-placeholder="admin.prizes.ph.desc" placeholder="Ex: Un dessert au choix offert">
     </div>
     <div class="field-row">
       <div class="field">
-        <label>Probabilité (%)</label>
+        <label data-i18n="admin.prizes.modal.prob">Probabilité (%)</label>
         <input type="number" id="m-prob" min="1" max="100" placeholder="10">
       </div>
       <div class="field">
-        <label>Délai pour utiliser (jours)</label>
+        <label data-i18n="admin.prizes.modal.deadline">Délai pour utiliser (jours)</label>
         <input type="number" id="m-deadline" min="0" max="365" placeholder="30">
-        <small style="color:var(--muted);font-size:0.75rem">0 = case "Rien gagné"</small>
+        <small style="color:var(--muted);font-size:0.75rem" data-i18n="admin.prizes.modal.deadline.hint">0 = case "Rien gagné"</small>
       </div>
     </div>
     <div class="field">
-      <label>Couleur</label>
+      <label data-i18n="admin.prizes.modal.color">Couleur</label>
       <div class="color-row">
         <input type="color" id="m-color-picker" value="#FF6B6B" oninput="document.getElementById('m-color').value=this.value">
         <input type="text" id="m-color" value="#FF6B6B" placeholder="#FF6B6B" oninput="document.getElementById('m-color-picker').value=this.value">
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closePrizeModal()">Annuler</button>
-      <button class="btn-save" onclick="savePrize()">Enregistrer</button>
+      <button class="btn-cancel" onclick="closePrizeModal()" data-i18n="admin.prizes.modal.cancel">Annuler</button>
+      <button class="btn-save" onclick="savePrize()" data-i18n="admin.prizes.modal.save">Enregistrer</button>
     </div>
   </div>
 </div>
 
+<script src="/js/i18n.js"></script>
 <script>
+const t = (k, v) => window.RW_I18N.t(k, v);
+const loc = () => window.RW_I18N.locale();
 let editingPrizeId = null;
+
+function isAppOpen() {
+  return document.getElementById('app').style.display === 'flex';
+}
+
+function refreshLangDynamic() {
+  if (!isAppOpen()) return;
+  const active = document.querySelector('.page.active');
+  const id = active ? active.id.replace('page-', '') : 'dashboard';
+  if (id === 'dashboard') loadStats();
+  if (id === 'search') doSearch();
+  if (id === 'prizes') { loadPrizes(); updateCalcPreview(); }
+  if (id === 'settings') loadSubscription();
+  const modal = document.getElementById('prize-modal');
+  if (modal.classList.contains('open')) {
+    document.getElementById('modal-title').textContent = editingPrizeId
+      ? t('admin.prizes.modal.edit')
+      : t('admin.prizes.modal.new');
+  }
+}
+
+document.addEventListener('rw:lang', refreshLangDynamic);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 async function checkAuth() {
@@ -822,7 +890,7 @@ async function checkAuth() {
   if (data.isAdmin) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
-    document.getElementById('resto-name').textContent = data.restaurant_name || 'Mon Restaurant';
+    document.getElementById('resto-name').textContent = data.restaurant_name || t('admin.ph.resto');
     initApp();
   }
 }
@@ -839,7 +907,7 @@ async function doLogin() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     const me = await (await fetch('/api/admin/me')).json();
-    document.getElementById('resto-name').textContent = me.restaurant_name || 'Mon Restaurant';
+    document.getElementById('resto-name').textContent = me.restaurant_name || t('admin.ph.resto');
     initApp();
   } else {
     document.getElementById('login-error').style.display = 'block';
@@ -886,23 +954,23 @@ async function loadStats() {
   const s = await res.json();
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card">
-      <div class="stat-label">Total tirages</div>
+      <div class="stat-label">${t('admin.stat.spins')}</div>
       <div class="stat-value">${s.totalSpins}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Gains distribués</div>
+      <div class="stat-label">${t('admin.stat.wins')}</div>
       <div class="stat-value green">${s.totalWins}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Gains utilisés</div>
+      <div class="stat-label">${t('admin.stat.used')}</div>
       <div class="stat-value green">${s.usedWins}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">En attente</div>
+      <div class="stat-label">${t('admin.stat.pending')}</div>
       <div class="stat-value yellow">${s.pendingWins}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Expirés</div>
+      <div class="stat-label">${t('admin.stat.expired')}</div>
       <div class="stat-value red">${s.expiredWins}</div>
     </div>
   `;
@@ -916,51 +984,51 @@ async function doSearch() {
   const container = document.getElementById('search-results');
 
   if (!Array.isArray(customers)) {
-    container.innerHTML = '<div class="no-results">Erreur de chargement.</div>';
+    container.innerHTML = `<div class="no-results">${t('admin.clients.error')}</div>`;
     return;
   }
 
   if (!customers.length) {
-    container.innerHTML = '<div class="no-results">Aucun client pour l’instant.</div>';
+    container.innerHTML = `<div class="no-results">${t('admin.clients.empty')}</div>`;
     return;
   }
 
   container.innerHTML = customers.map(c => {
     const lastSpinLabel = c.last_spin_at
       ? new Date(c.last_spin_at.includes('T') ? c.last_spin_at : c.last_spin_at.replace(' ', 'T') + 'Z')
-          .toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+          .toLocaleString(loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
       : '—';
     const cooldownBadge = c.in_cooldown
-      ? `<span class="badge badge-cooldown">Cooldown cooldown · peut rejouer après ${c.cooldown_hours}h</span>`
-      : `<span class="badge badge-ok">Peut rejouer</span>`;
+      ? `<span class="badge badge-cooldown">${t('admin.clients.cooldown', { hours: c.cooldown_hours })}</span>`
+      : `<span class="badge badge-ok">${t('admin.clients.canplay')}</span>`;
 
     const spinsHtml = (!c.spins || c.spins.length === 0)
-      ? '<p style="color:var(--muted);font-size:0.85rem">Aucun tirage pour ce client.</p>'
+      ? `<p style="color:var(--muted);font-size:0.85rem">${t('admin.clients.nospins')}</p>`
       : c.spins.map(s => {
           const isReal = s.deadline_days > 0;
           const isExpired = s.deadline && new Date(s.deadline) < new Date();
           const wonDate = new Date(s.won_at.includes('T') ? s.won_at : s.won_at.replace(' ', 'T') + 'Z')
-            .toLocaleString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const dlDate = s.deadline ? new Date(s.deadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+            .toLocaleString(loc(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const dlDate = s.deadline ? new Date(s.deadline).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
           let badge, action = '';
           if (!isReal) {
-            badge = `<span class="badge badge-lose">Pas de gain</span>`;
+            badge = `<span class="badge badge-lose">${t('admin.clients.nwin')}</span>`;
           } else if (s.used) {
-            const usedDate = new Date(s.used_at).toLocaleDateString('fr-FR');
-            badge = `<span class="badge badge-used">Utilisé · ${usedDate}</span>`;
+            const usedDate = new Date(s.used_at).toLocaleDateString(loc());
+            badge = `<span class="badge badge-used">${t('admin.clients.used', { date: usedDate })}</span>`;
           } else if (isExpired) {
-            badge = `<span class="badge badge-expired">Expiré</span>`;
+            badge = `<span class="badge badge-expired">${t('admin.clients.expired')}</span>`;
           } else {
-            badge = `<span class="badge badge-pending">En attente</span>`;
-            action = `<button class="btn-use" onclick="useSpin(${s.id}, this)">Valider l'utilisation</button>`;
+            badge = `<span class="badge badge-pending">${t('admin.clients.pending')}</span>`;
+            action = `<button class="btn-use" onclick="useSpin(${s.id}, this)">${t('admin.clients.validate')}</button>`;
           }
 
           return `
             <div class="spin-item" id="spin-${s.id}">
               <div>
                 <div class="spin-prize" style="color:${s.prize_color || 'inherit'}">${escHtml(s.prize_name || 'Lot')}</div>
-                <div class="spin-meta">Tirage le ${wonDate}${isReal && dlDate ? ` · Valable jusqu'au ${dlDate}` : ''}</div>
+                <div class="spin-meta">${t('admin.clients.spun', { date: wonDate })}${isReal && dlDate ? t('admin.clients.validuntil', { date: dlDate }) : ''}</div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 ${badge}
@@ -976,12 +1044,12 @@ async function doSearch() {
             <div class="customer-name">${escHtml(c.first_name)} ${escHtml(c.last_name)}</div>
             <div class="customer-email">${escHtml(c.email)}${c.phone ? ' · ' + escHtml(c.phone) : ''}</div>
           </div>
-          <div class="customer-date">Depuis le ${new Date(c.created_at).toLocaleDateString('fr-FR')}</div>
+          <div class="customer-date">${t('admin.clients.since', { date: new Date(c.created_at).toLocaleDateString(loc()) })}</div>
         </div>
         <div class="customer-stats">
-          <span>${c.spin_count || 0} tirage(s)</span>
-          <span>${c.win_count || 0} gain(s)</span>
-          <span>Dernier : ${lastSpinLabel}</span>
+          <span>${t('admin.clients.spins', { n: c.spin_count || 0 })}</span>
+          <span>${t('admin.clients.wins', { n: c.win_count || 0 })}</span>
+          <span>${t('admin.clients.last', { date: lastSpinLabel })}</span>
           ${cooldownBadge}
         </div>
         <div class="spin-list">${spinsHtml}</div>
@@ -994,14 +1062,14 @@ async function useSpin(spinId, btn) {
   const data = await res.json();
   if (data.success) {
     const item = document.getElementById('spin-' + spinId);
-    const today = new Date().toLocaleDateString('fr-FR');
+    const today = new Date().toLocaleDateString(loc());
     item.querySelector('.badge-pending')?.remove();
     item.querySelector('.btn-use')?.remove();
     const badgeWrap = item.querySelector('div[style]');
-    badgeWrap.innerHTML = `<span class="badge badge-used">Utilisé · ${today}</span>`;
+    badgeWrap.innerHTML = `<span class="badge badge-used">${t('admin.clients.used', { date: today })}</span>`;
     loadStats();
   } else {
-    alert(data.error || 'Erreur');
+    alert(data.error || t('admin.error'));
   }
 }
 
@@ -1020,12 +1088,12 @@ async function loadPrizes() {
       <div class="prize-card-name">${escHtml(p.name)}</div>
       <div class="prize-card-desc">${escHtml(p.description || '')}</div>
       <div class="prize-meta">
-        <span>${pct}% de chance</span>
-        <span>${p.deadline_days === 0 ? 'Aucun gain' : p.deadline_days + ' j'}</span>
+        <span>${t('admin.prizes.chance', { pct })}</span>
+        <span>${p.deadline_days === 0 ? t('admin.prizes.none') : t('admin.prizes.days', { n: p.deadline_days })}</span>
       </div>
       <div class="prize-actions">
-        <button class="btn-edit" onclick="openPrizeModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">Modifier</button>
-        <button class="btn-del" onclick="deletePrize(${p.id})">Supprimer</button>
+        <button class="btn-edit" onclick="openPrizeModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">${t('admin.prizes.edit')}</button>
+        <button class="btn-del" onclick="deletePrize(${p.id})">${t('admin.prizes.del')}</button>
       </div>
     </div>`;
   }).join('');
@@ -1043,17 +1111,16 @@ function updateCalcPreview() {
   const curPct = Math.round((curWin / total) * 1000) / 10;
   const curExpected = Math.round((curPct / 100) * covers * 10) / 10;
   el.classList.add('show');
-  el.innerHTML = `Objectif : <strong>${winPct}%</strong> de gains ≈ <strong>${gifts}</strong> cadeaux / jour.<br>
-    Actuellement : <strong>${curPct}%</strong> → ≈ <strong>${curExpected}</strong> cadeaux / jour sur ${covers} spins.`;
+  el.innerHTML = t('admin.prizes.preview', { winPct, gifts, curPct, curExpected, covers });
 }
 
 async function applyPrizeCalculator() {
   const covers = parseInt(document.getElementById('calc-covers').value, 10);
   const gifts = parseInt(document.getElementById('calc-gifts').value, 10);
-  if (!covers || covers < 1) { alert('Indique un nombre de couverts / jour.'); return; }
-  if (isNaN(gifts) || gifts < 0) { alert('Indique un nombre de cadeaux / jour.'); return; }
-  if (gifts > covers) { alert('Les cadeaux ne peuvent pas dépasser les couverts.'); return; }
-  if (!confirm(`Appliquer : ${gifts} cadeaux pour ${covers} couverts / jour ?\nLes probabilités des lots seront recalculées.`)) return;
+  if (!covers || covers < 1) { alert(t('admin.prizes.alert.covers')); return; }
+  if (isNaN(gifts) || gifts < 0) { alert(t('admin.prizes.alert.gifts')); return; }
+  if (gifts > covers) { alert(t('admin.prizes.alert.over')); return; }
+  if (!confirm(t('admin.prizes.confirm.cal', { gifts, covers }))) return;
 
   const res = await fetch('/api/admin/prizes/calibrate', {
     method: 'POST',
@@ -1062,12 +1129,12 @@ async function applyPrizeCalculator() {
     body: JSON.stringify({ covers, gifts }),
   });
   const data = await res.json();
-  if (!res.ok) { alert(data.error || 'Erreur'); return; }
+  if (!res.ok) { alert(data.error || t('admin.error')); return; }
   cachedPrizes = data.prizes || [];
   await loadPrizes();
   const el = document.getElementById('calc-result');
   el.classList.add('show');
-  el.innerHTML = `Probabilités mises à jour : <strong>${data.win_percent}%</strong> de gains ≈ <strong>${data.expected_gifts_per_day}</strong> cadeaux / jour.`;
+  el.innerHTML = t('admin.prizes.updated', { pct: data.win_percent, gifts: data.expected_gifts_per_day });
 }
 
 document.getElementById('calc-covers')?.addEventListener('input', updateCalcPreview);
@@ -1075,7 +1142,7 @@ document.getElementById('calc-gifts')?.addEventListener('input', updateCalcPrevi
 
 function openPrizeModal(prize) {
   editingPrizeId = prize ? prize.id : null;
-  document.getElementById('modal-title').textContent = prize ? 'Modifier le lot' : 'Nouveau lot';
+  document.getElementById('modal-title').textContent = prize ? t('admin.prizes.modal.edit') : t('admin.prizes.modal.new');
   document.getElementById('m-name').value = prize ? prize.name : '';
   document.getElementById('m-desc').value = prize ? (prize.description || '') : '';
   document.getElementById('m-prob').value = prize ? prize.probability : 10;
@@ -1100,7 +1167,7 @@ async function savePrize() {
   };
 
   if (!body.name || isNaN(body.probability) || isNaN(body.deadline_days)) {
-    alert('Remplissez tous les champs obligatoires.');
+    alert(t('admin.prizes.alert.required'));
     return;
   }
 
@@ -1117,12 +1184,12 @@ async function savePrize() {
     loadPrizes();
   } else {
     const e = await res.json();
-    alert(e.error || 'Erreur');
+    alert(e.error || t('admin.error'));
   }
 }
 
 async function deletePrize(id) {
-  if (!confirm('Supprimer ce lot ? Les gains déjà accordés restent valides.')) return;
+  if (!confirm(t('admin.prizes.confirm.del'))) return;
   await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' });
   loadPrizes();
 }
@@ -1151,6 +1218,7 @@ async function loadSettings() {
   document.getElementById('s-send-win').checked = e.send_win_email !== 0;
   document.getElementById('s-send-lose').checked = !!e.send_lose_email;
   document.getElementById('s-reminder-days').value = e.reminder_days ?? 3;
+  loadSubscription();
 }
 
 async function saveEmailSettings() {
@@ -1215,9 +1283,78 @@ async function saveSettings() {
   }
 }
 
+async function loadSubscription() {
+  const el = document.getElementById('cancel-status');
+  const btn = document.getElementById('btn-cancel-sub');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/admin/subscription');
+    const d = await res.json();
+    const until = d.period_end
+      ? new Date(d.period_end).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
+      : '';
+    const email = d.email ? ` · ${d.email}` : '';
+    if (d.status === 'demo') {
+      el.textContent = t('admin.set.cancel.status.demo') + email;
+      if (btn) btn.disabled = true;
+    } else if (d.status === 'canceling') {
+      el.textContent = t('admin.set.cancel.status.canceling', { date: until }) + email;
+      if (btn) btn.disabled = true;
+    } else if (d.status === 'active') {
+      el.textContent = t('admin.set.cancel.status.active') + email;
+      if (btn) btn.disabled = false;
+    } else {
+      el.textContent = t('admin.set.cancel.status.none') + email;
+      if (btn) btn.disabled = true;
+    }
+  } catch (_) {
+    el.textContent = t('admin.set.cancel.error');
+  }
+}
+
+async function cancelSubscription() {
+  const notice = document.getElementById('cancel-notice');
+  const confirm = document.getElementById('s-cancel-confirm');
+  notice.classList.remove('bad');
+  notice.style.display = 'none';
+  if (!confirm.checked) {
+    notice.textContent = t('admin.set.cancel.need');
+    notice.classList.add('bad');
+    notice.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('btn-cancel-sub');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/subscription/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ confirm: true }),
+    });
+    const d = await res.json();
+    notice.style.display = 'block';
+    if (!res.ok) {
+      notice.classList.add('bad');
+      notice.textContent = d.code === 'none' ? t('admin.set.cancel.none') : (d.error || t('admin.set.cancel.error'));
+      btn.disabled = false;
+      return;
+    }
+    notice.classList.remove('bad');
+    notice.textContent = d.already ? t('admin.set.cancel.already') : t('admin.set.cancel.ok');
+    confirm.checked = false;
+    loadSubscription();
+  } catch (_) {
+    notice.classList.add('bad');
+    notice.textContent = t('admin.set.cancel.error');
+    notice.style.display = 'block';
+    btn.disabled = false;
+  }
+}
+
 async function savePwd() {
   const pwd = document.getElementById('s-pwd').value;
-  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  if (pwd.length < 4) { alert(t('admin.set.pwd.min')); return; }
   const res = await fetch('/api/admin/settings', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

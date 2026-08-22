@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-i18n-title="client.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +23,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 1.75rem 1rem;
+      padding: 3.2rem 1rem 1.75rem;
       overflow-x: hidden;
       position: relative;
     }
@@ -267,38 +267,42 @@
   </style>
 </head>
 <body>
-<div class="page">
+<div class="lang-float lang-switch" role="group" aria-label="Language">
+  <button type="button" data-lang-btn="fr">FR</button>
+  <button type="button" data-lang-btn="en">EN</button>
+</div>
+<div class="page" id="client-app">
 
 <div class="header">
-  <span class="mono">TIREZ VOTRE CHANCE</span>
-  <h1>La roue vous attend.</h1>
-  <p>Remplissez le ticket, puis tournez</p>
+  <span class="mono" data-i18n="client.kicker">TIREZ VOTRE CHANCE</span>
+  <h1 data-i18n="client.h1">La roue vous attend.</h1>
+  <p data-i18n="client.sub">Remplissez le ticket, puis tournez</p>
 </div>
 
 <div id="form-section">
-  <div class="ticket-label">BON DE PARTICIPATION</div>
+  <div class="ticket-label" data-i18n="client.ticket">BON DE PARTICIPATION</div>
   <div class="field">
-    <label>Prénom</label>
-    <input type="text" id="first_name" placeholder="Votre prénom" autocomplete="given-name">
+    <label data-i18n="client.first">Prénom</label>
+    <input type="text" id="first_name" data-i18n-placeholder="client.ph.first" placeholder="Votre prénom" autocomplete="given-name">
   </div>
   <div class="field">
-    <label>Nom</label>
-    <input type="text" id="last_name" placeholder="Votre nom de famille" autocomplete="family-name">
+    <label data-i18n="client.last">Nom</label>
+    <input type="text" id="last_name" data-i18n-placeholder="client.ph.last" placeholder="Votre nom de famille" autocomplete="family-name">
   </div>
   <div class="field">
-    <label>Email</label>
-    <input type="email" id="email" placeholder="votre@email.com" autocomplete="email">
+    <label data-i18n="client.email">Email</label>
+    <input type="email" id="email" data-i18n-placeholder="client.ph.email" placeholder="votre@email.com" autocomplete="email">
   </div>
   <div class="field">
-    <label>Téléphone</label>
-    <input type="tel" id="phone" placeholder="06 12 34 56 78" autocomplete="tel" inputmode="tel">
+    <label data-i18n="client.phone">Téléphone</label>
+    <input type="tel" id="phone" data-i18n-placeholder="client.ph.phone" placeholder="06 12 34 56 78" autocomplete="tel" inputmode="tel">
   </div>
   <p class="err" id="form-err">Veuillez remplir tous les champs correctement.</p>
-  <button class="btn-gold" id="btn-next">Accéder à la roue →</button>
+  <button class="btn-gold" id="btn-next" data-i18n="client.next">Accéder à la roue →</button>
 </div>
 
 <div id="wheel-section">
-  <p class="wheel-hint">Appuyez pour faire tourner la roue</p>
+  <p class="wheel-hint" data-i18n="client.wheel.hint">Appuyez pour faire tourner la roue</p>
   <div class="wheel-wrap">
     <div class="pointer">
       <div class="pointer-dot"></div>
@@ -306,7 +310,7 @@
     </div>
     <canvas id="wheel-canvas" width="600" height="600"></canvas>
   </div>
-  <button class="btn-spin" id="btn-spin">Tourner la roue</button>
+  <button class="btn-spin" id="btn-spin" data-i18n="client.wheel.spin">Tourner la roue</button>
 </div>
 
 <div id="result-section">
@@ -314,7 +318,7 @@
   <div id="result-card" class="result-card">
     <div id="result-prize" class="result-prize"></div>
     <div id="result-desc"  class="result-desc"></div>
-    <div id="result-next-visit" class="result-next-visit" style="display:none">
+    <div id="result-next-visit" class="result-next-visit" style="display:none" data-i18n="client.result.next">
       À présenter lors de votre prochaine visite
     </div>
     <div id="result-deadline" class="result-deadline" style="display:none">
@@ -324,8 +328,8 @@
     <label class="reminder-opt" id="reminder-opt" style="display:none">
       <input type="checkbox" id="reminder-check" onchange="toggleReminder(this)">
       <div class="reminder-opt-label">
-        <strong>Me rappeler par SMS</strong><br>
-        Relance automatique avant expiration de ton gain (ex. J-7)
+        <strong data-i18n="client.sms.title">Me rappeler par SMS</strong><br>
+        <span data-i18n="client.sms.desc">Relance automatique avant expiration de ton gain (ex. J-7)</span>
       </div>
     </label>
     <div class="reminder-confirm" id="reminder-confirm">✓ Rappels activés !</div>
@@ -335,7 +339,11 @@
 </div>
 <div id="sparkles"></div>
 
+<script src="/js/i18n.js"></script>
 <script>
+const tr = (k, v) => window.RW_I18N.t(k, v);
+const loc = () => window.RW_I18N.locale();
+
 // ─── Constantes canvas ────────────────────────────────────────────────────────
 const PI2      = Math.PI * 2;
 const CX = 300, CY = 300;
@@ -389,18 +397,24 @@ async function applyTheme() {
 
 function shortLabel(name) {
   const n = name.toLowerCase();
-  if (n.includes('rien'))    return 'Rien';
+  if (n.includes('rien') || n.includes('nothing') || n === 'none') return tr('client.wheel.none');
   if (n.includes('%'))       return '-10%';
-  if (n.includes('dessert')) return 'Dessert';
-  if (n.includes('boisson') || n.includes('verre') || n.includes('drink')) return 'Boisson';
-  if (n.includes('café') || n.includes('cafe')) return 'Café';
+  if (n.includes('dessert')) return tr('client.wheel.dessert');
+  if (n.includes('boisson') || n.includes('verre') || n.includes('drink')) return tr('client.wheel.drink');
+  if (n.includes('café') || n.includes('cafe') || n.includes('coffee')) return tr('client.wheel.coffee');
   return name.substring(0, 8);
 }
 
 // ─── Identifiant restaurant (param ?r=) ──────────────────────────────────────
 const RESTAURANT_ID = new URLSearchParams(window.location.search).get('r');
 if (!RESTAURANT_ID) {
-  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px;background:#0a0a0a;color:#fff8e7;font-family:Outfit,sans-serif"><div><p style="font-family:DM Mono,monospace;letter-spacing:.15em;color:#ffd60a;font-size:.75rem;margin-bottom:12px">ERREUR</p><h2 style="font-family:Unbounded,sans-serif;margin-bottom:8px;">Lien invalide</h2><p style="color:rgba(255,248,231,.55)">Scannez le QR code de votre restaurant.</p></div></div>';
+  document.getElementById('client-app').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <p class="mono" data-i18n="client.err.tag" style="color:var(--brass);margin-bottom:12px">ERREUR</p>
+      <h2 data-i18n="client.err.invalid" style="font-family:var(--font-display);margin-bottom:8px;">Lien invalide</h2>
+      <p data-i18n="client.err.invalid.p" style="color:rgba(255,248,231,.55)">Scannez le QR code de votre restaurant.</p>
+    </div>`;
+  window.RW_I18N.applyI18n();
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -501,7 +515,7 @@ function drawWheel(currentAngle, flashSlot = -1) {
     ctx.fillStyle    = 'rgba(255,255,255,0.95)';
     ctx.shadowColor  = 'rgba(0,0,0,0.85)';
     ctx.shadowBlur   = 5;
-    const fs = slot.shortLabel === 'Rien' ? 16 : 14;
+    const fs = slot.shortLabel === tr('client.wheel.none') ? 16 : 14;
     ctx.font = `bold ${fs}px Outfit, sans-serif`;
     ctx.fillText(slot.shortLabel, SEG_R * 0.63, 0);
     ctx.restore();
@@ -599,7 +613,7 @@ async function doSpin() {
 
   const btn = document.getElementById('btn-spin');
   btn.disabled    = true;
-  btn.textContent = 'Tirage en cours…';
+  btn.textContent = tr('client.wheel.spinning');
 
   // Appel API
   let result;
@@ -611,10 +625,13 @@ async function doSpin() {
     });
     result = await res.json();
     if (!res.ok) {
-      if (result.code === 'already_spun' || result.code === 'already_spun_phone') {
-        throw new Error(result.error || 'Tu as déjà tourné la roue récemment.');
+      if (result.code === 'already_spun') {
+        throw new Error(tr('client.err.already', { hours: result.cooldown_hours || 24 }));
       }
-      throw new Error(result.error || 'Erreur');
+      if (result.code === 'already_spun_phone') {
+        throw new Error(tr('client.err.already.phone', { hours: result.cooldown_hours || 24 }));
+      }
+      throw new Error(result.error || tr('client.err.generic'));
     }
     // Soft lock navigateur (complément anti-abus)
     try {
@@ -625,11 +642,11 @@ async function doSpin() {
     alert(err.message);
     spinning = false;
     btn.disabled    = false;
-    btn.textContent = 'Tourner la roue';
+    btn.textContent = tr('client.wheel.spin');
     return;
   }
 
-  btn.textContent = 'Tourner la roue';
+  btn.textContent = tr('client.wheel.spin');
 
   const wonPrize = result.prize;
   const segAngle = PI2 / slots.length;
@@ -692,47 +709,53 @@ function flashSegment(idx, times, callback) {
 
 // ─── Affichage résultat ───────────────────────────────────────────────────────
 let currentSpinId = null;
+let lastResult = null;
+let resultFxDone = false;
 
-function showResult(data) {
-  document.getElementById('wheel-section').style.display = 'none';
-  const section = document.getElementById('result-section');
-  section.style.display = 'flex';
-
-  const { prize, customer, spin_id } = data;
-  currentSpinId = spin_id;
-
+function paintResult(data) {
+  const { prize, customer } = data;
   document.getElementById('result-name').textContent =
-    `Bonne visite, ${customer.first_name} ${customer.last_name} !`;
+    tr('client.result.hello', { name: `${customer.first_name} ${customer.last_name}` });
 
   if (prize.is_real_prize) {
     document.getElementById('result-icon').textContent = '★';
     document.getElementById('result-card').classList.add('won');
+    document.getElementById('result-prize').classList.remove('no-win');
     document.getElementById('result-prize').textContent = prize.name;
     document.getElementById('result-desc').textContent  =
-      prize.description || 'Félicitations !';
+      prize.description || tr('client.result.congrats');
 
     document.getElementById('result-next-visit').style.display = 'block';
     if (prize.deadline) {
       const d = new Date(prize.deadline);
       document.getElementById('deadline-text').textContent =
-        `Valable jusqu'au ${d.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}`;
+        tr('client.result.until', { date: d.toLocaleDateString(loc(), { day:'numeric', month:'long', year:'numeric' }) });
       document.getElementById('result-deadline').style.display = 'inline-flex';
     }
-
-    // Checkbox rappels (activé par défaut — SMS J-7)
-    document.getElementById('reminder-check').checked = true;
-    document.getElementById('reminder-confirm').style.display = 'none';
     document.getElementById('reminder-opt').style.display = 'flex';
-    toggleReminder(document.getElementById('reminder-check'));
-
-    launchSparkles();
   } else {
     document.getElementById('result-icon').textContent = '—';
     document.getElementById('result-prize').classList.add('no-win');
-    document.getElementById('result-prize').textContent = 'Pas de chance !';
-    document.getElementById('result-desc').textContent  =
-      'La prochaine fois sera la bonne… Revenez nous voir !';
+    document.getElementById('result-prize').textContent = tr('client.result.lose');
+    document.getElementById('result-desc').textContent  = tr('client.result.lose.desc');
     document.getElementById('reminder-opt').style.display = 'none';
+  }
+}
+
+function showResult(data) {
+  document.getElementById('wheel-section').style.display = 'none';
+  document.getElementById('result-section').style.display = 'flex';
+
+  lastResult = data;
+  currentSpinId = data.spin_id;
+  paintResult(data);
+
+  if (data.prize.is_real_prize && !resultFxDone) {
+    resultFxDone = true;
+    document.getElementById('reminder-check').checked = true;
+    document.getElementById('reminder-confirm').style.display = 'none';
+    toggleReminder(document.getElementById('reminder-check'));
+    launchSparkles();
   }
   spinning = false;
 }
@@ -746,10 +769,10 @@ async function toggleReminder(checkbox) {
   });
   const confirm = document.getElementById('reminder-confirm');
   if (checkbox.checked) {
-    confirm.textContent = '✓ Rappels SMS activés !';
+    confirm.textContent = tr('client.sms.on');
     confirm.style.display = 'block';
   } else {
-    confirm.textContent = '✓ Rappels désactivés.';
+    confirm.textContent = tr('client.sms.off');
     confirm.style.display = 'block';
     setTimeout(() => { confirm.style.display = 'none'; }, 2000);
   }
@@ -778,7 +801,31 @@ function launchSparkles() {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+if (!RESTAURANT_ID) {
+  // Lien sans ?r= — le message d'erreur est déjà affiché
+} else {
 applyTheme();
+
+document.addEventListener('rw:lang', () => {
+  if (slots.length) {
+    slots.forEach(s => { s.shortLabel = shortLabel(s.name); });
+    const wheel = document.getElementById('wheel-section');
+    if (wheel && wheel.style.display === 'flex') drawWheel(angle);
+  }
+  const spinBtn = document.getElementById('btn-spin');
+  if (spinBtn) spinBtn.textContent = spinning ? tr('client.wheel.spinning') : tr('client.wheel.spin');
+  const nextBtn = document.getElementById('btn-next');
+  if (nextBtn && document.getElementById('form-section').style.display !== 'none') {
+    if (!nextBtn.disabled) nextBtn.textContent = tr('client.next');
+    else nextBtn.textContent = tr('client.loading');
+  }
+  if (lastResult) paintResult(lastResult);
+  const confirm = document.getElementById('reminder-confirm');
+  const check = document.getElementById('reminder-check');
+  if (confirm && confirm.style.display === 'block' && check) {
+    confirm.textContent = check.checked ? tr('client.sms.on') : tr('client.sms.off');
+  }
+});
 
 // ─── Formulaire ───────────────────────────────────────────────────────────────
 document.getElementById('btn-next').addEventListener('click', async () => {
@@ -792,9 +839,7 @@ document.getElementById('btn-next').addEventListener('click', async () => {
     || /^(\+33|0)[1-9]\d{8}$/.test(ph.replace(/[\s.\-]/g, ''));
 
   if (!fn || !ln || !em || !/\S+@\S+\.\S+/.test(em) || !phoneOk) {
-    err.textContent = !phoneOk
-      ? 'Indique un numéro de téléphone valide (ex: 06 12 34 56 78).'
-      : 'Veuillez remplir tous les champs correctement.';
+    err.textContent = !phoneOk ? tr('client.err.phone') : tr('client.err.fields');
     err.style.display = 'block';
     return;
   }
@@ -807,7 +852,7 @@ document.getElementById('btn-next').addEventListener('click', async () => {
     const last = parseInt(localStorage.getItem(key) || '0', 10);
     const hours = 24;
     if (last && Date.now() - last < hours * 3600 * 1000) {
-      err.textContent = `Tu as déjà tourné la roue récemment. Reviens dans ${hours}h.`;
+      err.textContent = tr('client.err.cooldown', { hours });
       err.style.display = 'block';
       return;
     }
@@ -815,7 +860,7 @@ document.getElementById('btn-next').addEventListener('click', async () => {
 
   const btn = document.getElementById('btn-next');
   btn.disabled    = true;
-  btn.textContent = 'Chargement…';
+  btn.textContent = tr('client.loading');
 
   await loadPrizes();
 
@@ -826,6 +871,7 @@ document.getElementById('btn-next').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-spin').addEventListener('click', doSpin);
+}
 </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-i18n-title="sa.title">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,6 +112,7 @@
       cursor: pointer; font-size: .85rem; font-family: var(--font-body);
     }
     .btn-logout:hover { color: var(--ivory); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
     .main { padding: 32px 28px; max-width: 1000px; margin: 0 auto; width: 100%; }
     .page-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
     .page-desc { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
@@ -198,15 +199,19 @@
 
 <!-- Écran de connexion -->
 <div id="login-screen">
-  <div class="logo">SUPER ADMIN</div>
-  <h1>Super Admin</h1>
-  <p>Espace réservé à l'opérateur Restau Wheel</p>
+  <div class="lang-float lang-switch" role="group" aria-label="Language">
+    <button type="button" data-lang-btn="fr">FR</button>
+    <button type="button" data-lang-btn="en">EN</button>
+  </div>
+  <div class="logo" data-i18n="sa.login.kicker">SUPER ADMIN</div>
+  <h1 data-i18n="sa.login.h1">Super Admin</h1>
+  <p data-i18n="sa.login.sub">Espace réservé à l'opérateur Restau Wheel</p>
   <div class="login-card">
     <div class="field">
-      <label>Mot de passe</label>
-      <input type="password" id="login-pwd" placeholder="Mot de passe super-admin" autocomplete="current-password">
+      <label data-i18n="sa.login.password">Mot de passe</label>
+      <input type="password" id="login-pwd" data-i18n-placeholder="sa.login.ph" placeholder="Mot de passe super-admin" autocomplete="current-password">
     </div>
-    <button class="btn-red" onclick="doLogin()">Accéder →</button>
+    <button class="btn-red" onclick="doLogin()" data-i18n="sa.login.submit">Accéder →</button>
     <p class="err" id="login-err"></p>
   </div>
 </div>
@@ -217,37 +222,43 @@
     <div class="topbar-left">
       <span class="topbar-logo">🔐</span>
       <h2>Restau Wheel</h2>
-      <span class="topbar-badge">SUPER ADMIN</span>
+      <span class="topbar-badge" data-i18n="sa.top.badge">SUPER ADMIN</span>
     </div>
-    <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+    <div class="topbar-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang-btn="fr">FR</button>
+        <button type="button" data-lang-btn="en">EN</button>
+      </div>
+      <button class="btn-logout" onclick="doLogout()" data-i18n="sa.logout">Déconnexion</button>
+    </div>
   </div>
 
   <div class="main">
-    <div class="page-title">Tableau de bord</div>
-    <p class="page-desc">Gérez tous les restaurants inscrits sur la plateforme</p>
+    <div class="page-title" data-i18n="sa.dash.title">Tableau de bord</div>
+    <p class="page-desc" data-i18n="sa.dash.desc">Gérez tous les restaurants inscrits sur la plateforme</p>
 
     <div class="stats-row" id="stats-row">
-      <div class="stat-card"><div class="stat-value" id="st-total">–</div><div class="stat-label">Restaurants</div></div>
-      <div class="stat-card"><div class="stat-value" id="st-active">–</div><div class="stat-label">Actifs</div></div>
-      <div class="stat-card"><div class="stat-value" id="st-inactive">–</div><div class="stat-label">Suspendus</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-total">–</div><div class="stat-label" data-i18n="sa.stat.total">Restaurants</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-active">–</div><div class="stat-label" data-i18n="sa.stat.active">Actifs</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-inactive">–</div><div class="stat-label" data-i18n="sa.stat.inactive">Suspendus</div></div>
     </div>
 
     <div class="section-header">
-      <div class="section-title">Restaurants inscrits</div>
-      <button class="btn-add" onclick="openModal()">+ Créer un compte</button>
+      <div class="section-title" data-i18n="sa.list.title">Restaurants inscrits</div>
+      <button class="btn-add" onclick="openModal()" data-i18n="sa.list.create">+ Créer un compte</button>
     </div>
 
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Restaurant</th>
-            <th>Email</th>
-            <th>Clients</th>
-            <th>Tirages</th>
-            <th>Inscrit le</th>
-            <th>Statut</th>
-            <th>Actions</th>
+            <th data-i18n="sa.th.resto">Restaurant</th>
+            <th data-i18n="sa.th.email">Email</th>
+            <th data-i18n="sa.th.clients">Clients</th>
+            <th data-i18n="sa.th.spins">Tirages</th>
+            <th data-i18n="sa.th.date">Inscrit le</th>
+            <th data-i18n="sa.th.status">Statut</th>
+            <th data-i18n="sa.th.actions">Actions</th>
           </tr>
         </thead>
         <tbody id="resto-tbody"></tbody>
@@ -255,58 +266,58 @@
     </div>
 
     <div class="pwd-card">
-      <h3>📧 Configuration SMTP (emails)</h3>
-      <p style="color:#8892a4;font-size:.88rem;margin-bottom:16px;">Ces paramètres sont partagés entre tous les restaurants. Utilisez un compte Gmail avec un <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#fc8181;">mot de passe d'application</a> (pas votre vrai mot de passe Gmail).</p>
+      <h3 data-i18n="sa.smtp.h">Configuration SMTP (emails)</h3>
+      <p style="color:#8892a4;font-size:.88rem;margin-bottom:16px;" data-i18n="sa.smtp.p" data-i18n-html>Ces paramètres sont partagés entre tous les restaurants. Utilisez un compte Gmail avec un <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" style="color:#fc8181;">mot de passe d'application</a> (pas votre vrai mot de passe Gmail).</p>
       <div class="field">
-        <label>Serveur SMTP</label>
+        <label data-i18n="sa.smtp.host">Serveur SMTP</label>
         <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
       </div>
       <div class="field">
-        <label>Port</label>
+        <label data-i18n="sa.smtp.port">Port</label>
         <input type="number" id="smtp-port" placeholder="587" value="587">
       </div>
       <div class="field">
-        <label>Email (utilisateur SMTP)</label>
+        <label data-i18n="sa.smtp.user">Email (utilisateur SMTP)</label>
         <input type="email" id="smtp-user" placeholder="moncompte@gmail.com">
       </div>
       <div class="field">
-        <label>Mot de passe d'application</label>
+        <label data-i18n="sa.smtp.pass">Mot de passe d'application</label>
         <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
-        <button class="btn-save-pwd" onclick="saveSMTP()">Enregistrer</button>
-        <button class="btn-save-pwd" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()">Envoyer email test</button>
+        <button class="btn-save-pwd" onclick="saveSMTP()" data-i18n="sa.smtp.save">Enregistrer</button>
+        <button class="btn-save-pwd" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()" data-i18n="sa.smtp.test">Envoyer email test</button>
       </div>
       <p class="notice" id="smtp-notice"></p>
     </div>
 
     <div class="pwd-card">
-      <h3>Configuration SMS (Twilio)</h3>
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;">Relances SMS J-7 avant expiration du lot. Tu peux aussi mettre les clés en variables d'environnement Vercel (<code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM</code>).</p>
+      <h3 data-i18n="sa.twilio.h">Configuration SMS (Twilio)</h3>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;" data-i18n="sa.twilio.p" data-i18n-html>Relances SMS J-7 avant expiration du lot. Tu peux aussi mettre les clés en variables d'environnement Vercel (<code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM</code>).</p>
       <div class="field">
-        <label>Account SID</label>
+        <label data-i18n="sa.twilio.sid">Account SID</label>
         <input type="text" id="twilio-sid" placeholder="ACxxxxxxxx">
       </div>
       <div class="field">
-        <label>Auth Token</label>
+        <label data-i18n="sa.twilio.token">Auth Token</label>
         <input type="password" id="twilio-token" placeholder="••••••••">
       </div>
       <div class="field">
-        <label>Numéro expéditeur (From)</label>
+        <label data-i18n="sa.twilio.from">Numéro expéditeur (From)</label>
         <input type="text" id="twilio-from" placeholder="+337xxxxxxxx">
       </div>
-      <button class="btn-save-pwd" onclick="saveTwilio()">Enregistrer Twilio</button>
+      <button class="btn-save-pwd" onclick="saveTwilio()" data-i18n="sa.twilio.save">Enregistrer Twilio</button>
       <p class="notice" id="twilio-notice"></p>
     </div>
 
     <div class="pwd-card">
-      <h3>Changer le mot de passe super-admin</h3>
+      <h3 data-i18n="sa.pwd.h">Changer le mot de passe super-admin</h3>
       <div class="field">
-        <label>Nouveau mot de passe (min. 4 caractères)</label>
-        <input type="password" id="new-pwd" placeholder="Nouveau mot de passe">
+        <label data-i18n="sa.pwd.label">Nouveau mot de passe (min. 4 caractères)</label>
+        <input type="password" id="new-pwd" data-i18n-placeholder="sa.pwd.ph" placeholder="Nouveau mot de passe">
       </div>
-      <button class="btn-save-pwd" onclick="savePwd()">Changer</button>
-      <p class="notice" id="pwd-notice">✓ Mot de passe mis à jour !</p>
+      <button class="btn-save-pwd" onclick="savePwd()" data-i18n="sa.pwd.btn">Changer</button>
+      <p class="notice" id="pwd-notice" data-i18n="sa.pwd.ok">✓ Mot de passe mis à jour !</p>
     </div>
   </div>
 </div>
@@ -314,30 +325,43 @@
 <!-- Modal création / édition -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <h3 id="modal-title">Créer un compte restaurant</h3>
+    <h3 id="modal-title" data-i18n="sa.modal.create">Créer un compte restaurant</h3>
     <div class="field">
-      <label>Nom du restaurant</label>
+      <label data-i18n="sa.modal.name">Nom du restaurant</label>
       <input type="text" id="m-name" placeholder="Le Petit Bistrot">
     </div>
     <div class="field">
-      <label>Email</label>
+      <label data-i18n="sa.modal.email">Email</label>
       <input type="email" id="m-email" placeholder="contact@restaurant.fr">
     </div>
     <div class="field">
-      <label>Mot de passe</label>
+      <label data-i18n="sa.modal.password">Mot de passe</label>
       <input type="password" id="m-pwd" placeholder="Minimum 4 caractères">
     </div>
     <p class="err" id="modal-err"></p>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-      <button class="btn-save" onclick="saveModal()">Enregistrer</button>
+      <button class="btn-cancel" onclick="closeModal()" data-i18n="sa.modal.cancel">Annuler</button>
+      <button class="btn-save" onclick="saveModal()" data-i18n="sa.modal.save">Enregistrer</button>
     </div>
   </div>
 </div>
 
+<script src="/js/i18n.js"></script>
 <script>
+const t = (k, v) => window.RW_I18N.t(k, v);
+const loc = () => window.RW_I18N.locale();
 let editingId = null;
 let restaurants = [];
+
+document.addEventListener('rw:lang', () => {
+  if (document.getElementById('app').style.display !== 'flex') return;
+  loadRestaurants();
+  if (document.getElementById('modal').style.display === 'flex') {
+    document.getElementById('modal-title').textContent = editingId
+      ? t('sa.modal.edit')
+      : t('sa.modal.create');
+  }
+});
 
 async function doLogin() {
   const pwd = document.getElementById('login-pwd').value;
@@ -355,11 +379,11 @@ async function doLogin() {
       await showApp();
     } else {
       err.style.display = 'block';
-      err.textContent = data.error || 'Mot de passe incorrect';
+      err.textContent = data.error === 'Mot de passe incorrect' ? t('sa.login.bad') : (data.error || t('sa.login.bad'));
     }
   } catch (e) {
     err.style.display = 'block';
-    err.textContent = 'Erreur réseau';
+    err.textContent = t('sa.login.net');
   }
 }
 document.getElementById('login-pwd').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -393,8 +417,8 @@ async function saveTwilio() {
   if (raw && !raw.startsWith('•')) body.twilio_token = raw;
   const res = await fetch('/api/superadmin/twilio', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const n = document.getElementById('twilio-notice');
-  if (res.ok) { n.textContent='Configuration Twilio enregistrée'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
-  else { n.textContent='Erreur'; n.style.display='block'; }
+  if (res.ok) { n.textContent=t('sa.twilio.saved'); n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+  else { n.textContent=t('admin.error'); n.style.display='block'; }
 }
 
 async function loadSMTP() {
@@ -417,19 +441,19 @@ async function saveSMTP() {
   if (rawPass && !rawPass.startsWith('•')) body.smtp_pass = rawPass;
   const res = await fetch('/api/superadmin/smtp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const n = document.getElementById('smtp-notice');
-  if (res.ok) { n.textContent='✓ Configuration SMTP enregistrée !'; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
-  else        { n.style.color='#fc8181'; n.textContent='Erreur lors de la sauvegarde.'; n.style.display='block'; }
+  if (res.ok) { n.textContent=t('sa.smtp.saved'); n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+  else        { n.style.color='#fc8181'; n.textContent=t('sa.smtp.saveerr'); n.style.display='block'; }
 }
 
 async function testSMTP() {
-  const to = prompt('Email de test (votre adresse) :');
+  const to = prompt(t('sa.smtp.prompt'));
   if (!to) return;
   const n = document.getElementById('smtp-notice');
-  n.style.color='#34d399'; n.textContent='Envoi en cours…'; n.style.display='block';
+  n.style.color='#34d399'; n.textContent=t('sa.smtp.sending'); n.style.display='block';
   const res = await fetch('/api/superadmin/smtp/test', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to }) });
   const d = await res.json();
-  if (d.ok) { n.textContent=`✓ Email envoyé à ${to} !`; }
-  else      { n.style.color='#fc8181'; n.textContent=`Erreur : ${d.reason}`; }
+  if (d.ok) { n.textContent=t('sa.smtp.sent', { to }); }
+  else      { n.style.color='#fc8181'; n.textContent=t('sa.smtp.err', { reason: d.reason }); }
   setTimeout(()=>n.style.display='none', 5000);
 }
 
@@ -450,12 +474,12 @@ async function loadRestaurants() {
       <td>${esc(r.email)}</td>
       <td>${r.total_customers}</td>
       <td>${r.total_spins}</td>
-      <td>${new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
-      <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? 'Actif' : 'Suspendu'}</span></td>
+      <td>${new Date(r.created_at).toLocaleDateString(loc())}</td>
+      <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
       <td>
-        <button class="action-btn" onclick="editResto(${r.id})">Modifier</button>
+        <button class="action-btn" onclick="editResto(${r.id})">${t('sa.act.edit')}</button>
         <button class="action-btn ${r.active ? 'danger' : ''}" onclick="toggleActive(${r.id}, ${r.active})">
-          ${r.active ? 'Suspendre' : 'Réactiver'}
+          ${r.active ? t('sa.act.suspend') : t('sa.act.restore')}
         </button>
       </td>
     </tr>
@@ -466,7 +490,7 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 
 function openModal(id) {
   editingId = null;
-  document.getElementById('modal-title').textContent = 'Créer un compte restaurant';
+  document.getElementById('modal-title').textContent = t('sa.modal.create');
   document.getElementById('m-name').value  = '';
   document.getElementById('m-email').value = '';
   document.getElementById('m-pwd').value   = '';
@@ -477,7 +501,7 @@ function openModal(id) {
 function editResto(id) {
   editingId = id;
   const r = restaurants.find(x => x.id === id);
-  document.getElementById('modal-title').textContent = 'Modifier le compte';
+  document.getElementById('modal-title').textContent = t('sa.modal.edit');
   document.getElementById('m-name').value  = r.name;
   document.getElementById('m-email').value = r.email;
   document.getElementById('m-pwd').value   = '';
@@ -502,7 +526,7 @@ async function saveModal() {
     const res = await fetch(`/api/superadmin/restaurants/${editingId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
   } else {
-    if (!name || !email || !password) { errEl.textContent='Tous les champs sont requis'; errEl.style.display='block'; return; }
+    if (!name || !email || !password) { errEl.textContent=t('sa.modal.required'); errEl.style.display='block'; return; }
     const res = await fetch('/api/superadmin/restaurants', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password }) });
     if (!res.ok) { const d=await res.json(); errEl.textContent=d.error; errEl.style.display='block'; return; }
   }
@@ -511,7 +535,7 @@ async function saveModal() {
 }
 
 async function toggleActive(id, currentlyActive) {
-  const msg = currentlyActive ? 'Suspendre ce restaurant ? Il ne pourra plus se connecter.' : 'Réactiver ce restaurant ?';
+  const msg = currentlyActive ? t('sa.confirm.suspend') : t('sa.confirm.restore');
   if (!confirm(msg)) return;
   await fetch(`/api/superadmin/restaurants/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active: !currentlyActive }) });
   loadRestaurants();
@@ -519,7 +543,7 @@ async function toggleActive(id, currentlyActive) {
 
 async function savePwd() {
   const pwd = document.getElementById('new-pwd').value;
-  if (pwd.length < 4) { alert('Minimum 4 caractères.'); return; }
+  if (pwd.length < 4) { alert(t('sa.pwd.min')); return; }
   const res = await fetch('/api/superadmin/password', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pwd }) });
   if (res.ok) { const n=document.getElementById('pwd-notice'); n.style.display='block'; setTimeout(()=>n.style.display='none',2500); document.getElementById('new-pwd').value=''; }
 }

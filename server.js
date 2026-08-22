@@ -620,62 +620,120 @@ app.get('/api/checkout/config', async (req, res) => {
   });
 });
 
+async function listBillingSubs(email) {
+  if (!stripe) return { demo: true, items: [] };
+  const customers = await stripe.customers.list({ email, limit: 10 });
+  const items = [];
+  for (const customer of customers.data) {
+    const subs = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: 'all',
+      limit: 20,
+    });
+    for (const sub of subs.data) {
+      if (!['active', 'trialing', 'past_due'].includes(sub.status)) continue;
+      items.push(sub);
+    }
+  }
+  return { demo: false, items };
+}
+
+async function cancelSubscriptionByEmail(email, via) {
+  if (!stripe) return { ok: false, status: 503, error: 'Paiements non configurés' };
+  const { items } = await listBillingSubs(email);
+  if (!items.length) return { ok: false, status: 404, error: 'Aucun abonnement', code: 'none' };
+
+  let cancelled = 0;
+  let already = 0;
+  let periodEnd = null;
+
+  for (const sub of items) {
+    if (sub.cancel_at_period_end) {
+      already++;
+      periodEnd = sub.current_period_end;
+      continue;
+    }
+    const updated = await stripe.subscriptions.update(sub.id, {
+      cancel_at_period_end: true,
+      metadata: {
+        ...(sub.metadata || {}),
+        cancelled_via: via,
+        cancelled_at: new Date().toISOString(),
+      },
+    });
+    cancelled++;
+    periodEnd = updated.current_period_end;
+  }
+
+  if (!cancelled && !already) {
+    return { ok: false, status: 404, error: 'Aucun abonnement', code: 'none' };
+  }
+  return {
+    ok: true,
+    cancelled,
+    already: cancelled === 0 && already > 0,
+    period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+  };
+}
+
 /** Résiliation abonnement Stripe (fin de période) via email de facturation */
 app.post('/api/subscription/cancel', async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Email invalide' });
   }
-  if (!stripe) {
-    return res.status(503).json({ error: 'Paiements non configurés' });
-  }
   try {
-    const customers = await stripe.customers.list({ email, limit: 10 });
-    if (!customers.data.length) {
-      return res.status(404).json({ error: 'Aucun abonnement', code: 'none' });
-    }
-
-    let cancelled = 0;
-    let already = 0;
-    let periodEnd = null;
-
-    for (const customer of customers.data) {
-      const subs = await stripe.subscriptions.list({
-        customer: customer.id,
-        status: 'all',
-        limit: 20,
-      });
-      for (const sub of subs.data) {
-        if (!['active', 'trialing', 'past_due'].includes(sub.status)) continue;
-        if (sub.cancel_at_period_end) {
-          already++;
-          periodEnd = sub.current_period_end;
-          continue;
-        }
-        const updated = await stripe.subscriptions.update(sub.id, {
-          cancel_at_period_end: true,
-          metadata: {
-            ...(sub.metadata || {}),
-            cancelled_via: 'restau-wheel-cancel-page',
-            cancelled_at: new Date().toISOString(),
-          },
-        });
-        cancelled++;
-        periodEnd = updated.current_period_end;
-      }
-    }
-
-    if (!cancelled && !already) {
-      return res.status(404).json({ error: 'Aucun abonnement', code: 'none' });
-    }
+    const result = await cancelSubscriptionByEmail(email, 'restau-wheel-cancel-page');
+    if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
     res.json({
       success: true,
-      cancelled,
-      already: cancelled === 0 && already > 0,
-      period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      cancelled: result.cancelled,
+      already: result.already,
+      period_end: result.period_end,
     });
   } catch (e) {
     console.error('[cancel]', e.message);
+    res.status(500).json({ error: 'Erreur résiliation' });
+  }
+});
+
+app.get('/api/admin/subscription', requireRestaurant, async (req, res) => {
+  const r = await db.prepare('SELECT email FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  const email = r?.email || '';
+  try {
+    const { demo, items } = await listBillingSubs(email);
+    if (demo) return res.json({ demo: true, email, status: 'demo' });
+    const live = items[0];
+    if (!live) return res.json({ demo: false, email, status: 'none' });
+    res.json({
+      demo: false,
+      email,
+      status: live.cancel_at_period_end ? 'canceling' : 'active',
+      period_end: live.current_period_end
+        ? new Date(live.current_period_end * 1000).toISOString()
+        : null,
+    });
+  } catch (e) {
+    console.error('[admin/subscription]', e.message);
+    res.status(500).json({ error: 'Erreur abonnement' });
+  }
+});
+
+app.post('/api/admin/subscription/cancel', requireRestaurant, async (req, res) => {
+  if (!req.body?.confirm) return res.status(400).json({ error: 'Confirmation requise' });
+  const r = await db.prepare('SELECT email FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  const email = r?.email || '';
+  try {
+    const result = await cancelSubscriptionByEmail(email, 'admin-settings');
+    if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
+    res.json({
+      success: true,
+      cancelled: result.cancelled,
+      already: result.already,
+      period_end: result.period_end,
+    });
+  } catch (e) {
+    console.error('[admin/cancel]', e.message);
     res.status(500).json({ error: 'Erreur résiliation' });
   }
 });
@@ -720,6 +778,14 @@ app.get('/register',    async (req, res) => res.sendFile(path.join(__dirname, 'p
 app.get('/superadmin',  async (req, res) => res.sendFile(path.join(__dirname, 'public', 'superadmin', 'index.html')));
 app.get('/checkout',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'checkout',   'index.html')));
 app.get('/cancel',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel',     'index.html')));
+app.get('/carte',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'index.html')));
+app.get('/pro',         async (req, res) => res.redirect(301, '/carte'));
+app.get('/carte/qr',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'qr.html')));
+app.get('/carte.vcf',   async (req, res) => {
+  res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="enzo-demonchaux-acker.vcf"');
+  res.sendFile(path.join(__dirname, 'public', 'carte.vcf'));
+});
 app.get('/mentions',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'mentions',   'index.html')));
 app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'));
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));

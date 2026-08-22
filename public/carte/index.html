@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr" data-i18n-title="card.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enzo Demonchaux-Acker – Restau Wheel</title>
+  <meta name="description" content="Enzo Demonchaux-Acker, fondateur de Restau Wheel. Fidélisation restaurant par la roue de fortune.">
+  <meta property="og:title" content="Enzo Demonchaux-Acker – Restau Wheel">
+  <meta property="og:description" content="Une roue sur chaque table. Vos clients scannent, jouent, reviennent.">
+  <meta property="og:url" content="https://restauwheel.com/carte">
+  <meta property="og:type" content="profile">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt);
+      color: var(--ivory);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3.4rem 1.1rem 2rem;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(255,214,10,0.16), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255,45,106,0.2), transparent 50%);
+      pointer-events: none;
+    }
+    .wrap { position: relative; z-index: 1; width: 100%; max-width: 400px; }
+    .card {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--wine);
+      padding: 1.7rem 1.4rem 1.45rem;
+      position: relative;
+    }
+    .card::before,
+    .card::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 10px;
+      background: radial-gradient(circle at 8px 0, transparent 7px, var(--ivory) 8px) repeat-x;
+      background-size: 16px 10px;
+    }
+    .card::before { top: -10px; transform: scaleY(-1); }
+    .card::after { bottom: -10px; }
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      color: var(--wine);
+      margin-bottom: 1.15rem;
+    }
+    .who { display: flex; align-items: center; gap: 0.95rem; margin-bottom: 1.15rem; }
+    .mono-av {
+      width: 64px; height: 64px;
+      flex-shrink: 0;
+      background: var(--ticket);
+      border: 2px solid var(--ink);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      line-height: 1.15;
+      margin-bottom: 0.2rem;
+    }
+    .role { color: var(--muted); font-size: 0.88rem; font-weight: 600; }
+    .pitch {
+      font-size: 0.95rem;
+      line-height: 1.45;
+      margin-bottom: 1.2rem;
+    }
+    .rows { display: grid; gap: 0.55rem; margin-bottom: 1.2rem; }
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      padding: 0.7rem 0.8rem;
+      background: var(--ticket);
+      border: 1px solid var(--line);
+    }
+    .row span {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .row a, .row b { font-size: 0.95rem; font-weight: 700; }
+    .actions { display: grid; gap: 0.55rem; }
+    .btn { width: 100%; }
+    .foot {
+      margin-top: 1.15rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: rgba(255,248,231,0.5);
+    }
+    .foot a { color: var(--brass); }
+  </style>
+</head>
+<body>
+  <div class="lang-float lang-switch" role="group" aria-label="Language">
+    <button type="button" data-lang-btn="fr">FR</button>
+    <button type="button" data-lang-btn="en">EN</button>
+  </div>
+  <div class="wrap">
+    <article class="card">
+      <div class="kicker" data-i18n="card.kicker">CARTE PRO</div>
+      <div class="who">
+        <div class="mono-av">ED</div>
+        <div>
+          <h1>Enzo Demonchaux-Acker</h1>
+          <p class="role" data-i18n="card.role">Fondateur · Restau Wheel</p>
+        </div>
+      </div>
+      <p class="pitch" data-i18n="card.pitch">Une roue sur chaque table. Vos clients scannent, jouent, reviennent.</p>
+      <div class="rows">
+        <div class="row">
+          <span data-i18n="card.phone">Téléphone</span>
+          <a href="tel:+33768036838">07 68 03 68 38</a>
+        </div>
+        <div class="row">
+          <span>Email</span>
+          <a href="mailto:enzodemonchauxacker@gmail.com">enzodemonchauxacker@gmail.com</a>
+        </div>
+        <div class="row">
+          <span>Web</span>
+          <a href="https://restauwheel.com">restauwheel.com</a>
+        </div>
+        <div class="row">
+          <span data-i18n="card.addr">Adresse</span>
+          <b>33 C Avenue des Messeguières<br>84360 Lauris</b>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-wine" href="/carte.vcf" data-i18n="card.save">Enregistrer le contact</a>
+        <a class="btn btn-brass" href="tel:+33768036838" data-i18n="card.call">Appeler</a>
+        <a class="btn btn-ivory" href="https://wa.me/33768036838" data-i18n="card.wa">WhatsApp</a>
+        <a class="btn btn-ivory" href="/" data-i18n="card.site">Voir Restau Wheel</a>
+        <a class="btn btn-ivory" href="/register" data-i18n="card.start">Créer mon compte resto</a>
+      </div>
+    </article>
+    <p class="foot"><a href="mailto:enzodemonchauxacker@gmail.com" data-i18n="card.mail">Écrire un email</a></p>
+  </div>
+  <script src="/js/i18n.js"></script>
+</body>
+</html>
