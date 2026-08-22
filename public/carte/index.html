@@ -148,6 +148,7 @@
         </div>
       </div>
       <div class="actions">
+        <a class="btn btn-wine" id="wallet-btn" href="/carte.pkpass" hidden data-i18n="card.wallet">Ajouter à Apple Wallet</a>
         <a class="btn btn-wine" href="/carte.vcf" data-i18n="card.save">Enregistrer le contact</a>
         <a class="btn btn-brass" href="tel:+33768036838" data-i18n="card.call">Appeler</a>
         <a class="btn btn-ivory" href="https://wa.me/33768036838" data-i18n="card.wa">WhatsApp</a>
@@ -158,5 +159,17 @@
     <p class="foot"><a href="mailto:enzodemonchauxacker@gmail.com" data-i18n="card.mail">Écrire un email</a></p>
   </div>
   <script src="/js/i18n.js"></script>
+  <script>
+    (function () {
+      const btn = document.getElementById('wallet-btn');
+      if (!btn) return;
+      fetch('/api/wallet/status')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.available) btn.hidden = false;
+        })
+        .catch(() => {});
+    })();
+  </script>
 </body>
 </html>

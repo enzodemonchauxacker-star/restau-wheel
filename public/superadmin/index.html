@@ -292,25 +292,6 @@
     </div>
 
     <div class="pwd-card">
-      <h3 data-i18n="sa.twilio.h">Configuration SMS (Twilio)</h3>
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;" data-i18n="sa.twilio.p" data-i18n-html>Relances SMS J-7 avant expiration du lot. Tu peux aussi mettre les clés en variables d'environnement Vercel (<code>TWILIO_ACCOUNT_SID</code>, <code>TWILIO_AUTH_TOKEN</code>, <code>TWILIO_FROM</code>).</p>
-      <div class="field">
-        <label data-i18n="sa.twilio.sid">Account SID</label>
-        <input type="text" id="twilio-sid" placeholder="ACxxxxxxxx">
-      </div>
-      <div class="field">
-        <label data-i18n="sa.twilio.token">Auth Token</label>
-        <input type="password" id="twilio-token" placeholder="••••••••">
-      </div>
-      <div class="field">
-        <label data-i18n="sa.twilio.from">Numéro expéditeur (From)</label>
-        <input type="text" id="twilio-from" placeholder="+337xxxxxxxx">
-      </div>
-      <button class="btn-save-pwd" onclick="saveTwilio()" data-i18n="sa.twilio.save">Enregistrer Twilio</button>
-      <p class="notice" id="twilio-notice"></p>
-    </div>
-
-    <div class="pwd-card">
       <h3 data-i18n="sa.pwd.h">Changer le mot de passe super-admin</h3>
       <div class="field">
         <label data-i18n="sa.pwd.label">Nouveau mot de passe (min. 4 caractères)</label>
@@ -396,29 +377,7 @@ async function doLogout() {
 async function showApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  await Promise.all([loadRestaurants(), loadSMTP(), loadTwilio()]);
-}
-
-async function loadTwilio() {
-  const res = await fetch('/api/superadmin/twilio');
-  if (!res.ok) return;
-  const s = await res.json();
-  document.getElementById('twilio-sid').value = s.twilio_sid || '';
-  document.getElementById('twilio-from').value = s.twilio_from || '';
-  document.getElementById('twilio-token').value = s.twilio_token || '';
-}
-
-async function saveTwilio() {
-  const body = {
-    twilio_sid: document.getElementById('twilio-sid').value.trim(),
-    twilio_from: document.getElementById('twilio-from').value.trim(),
-  };
-  const raw = document.getElementById('twilio-token').value;
-  if (raw && !raw.startsWith('•')) body.twilio_token = raw;
-  const res = await fetch('/api/superadmin/twilio', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  const n = document.getElementById('twilio-notice');
-  if (res.ok) { n.textContent=t('sa.twilio.saved'); n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
-  else { n.textContent=t('admin.error'); n.style.display='block'; }
+  await Promise.all([loadRestaurants(), loadSMTP()]);
 }
 
 async function loadSMTP() {

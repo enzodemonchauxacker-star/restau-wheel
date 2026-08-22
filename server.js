@@ -6,6 +6,7 @@ const cron    = require('node-cron');
 const { db, createDefaultPrizes, ensureReady } = require('./database');
 const { sendSpinEmail, sendReminderEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
+const { walletConfigured, buildCartePass } = require('./wallet');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -417,7 +418,12 @@ app.put('/api/admin/settings', requireRestaurant, async (req, res) => {
   const rid = req.session.restaurantId;
   if (restaurant_name) await db.prepare('UPDATE restaurants SET name=? WHERE id=?').run(restaurant_name, rid);
   if (restaurant_url)  await db.prepare('UPDATE restaurants SET url=?  WHERE id=?').run(restaurant_url,  rid);
-  if (theme_accent)    await db.prepare('UPDATE restaurants SET theme_accent=? WHERE id=?').run(theme_accent, rid);
+  if (theme_accent) {
+    const hex = String(theme_accent).trim().match(/^#?([0-9a-fA-F]{6})$/);
+    if (hex) {
+      await db.prepare('UPDATE restaurants SET theme_accent=? WHERE id=?').run(`#${hex[1]}`, rid);
+    }
+  }
   if (spin_cooldown_hours != null) {
     const h = Math.min(720, Math.max(1, parseInt(spin_cooldown_hours, 10) || 24));
     await db.prepare('UPDATE restaurants SET spin_cooldown_hours=? WHERE id=?').run(h, rid);
@@ -785,6 +791,25 @@ app.get('/carte.vcf',   async (req, res) => {
   res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="enzo-demonchaux-acker.vcf"');
   res.sendFile(path.join(__dirname, 'public', 'carte.vcf'));
+});
+app.get('/api/wallet/status', async (req, res) => {
+  res.json({ available: walletConfigured() });
+});
+app.get('/carte.pkpass', async (req, res) => {
+  try {
+    const buffer = await buildCartePass();
+    res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
+    res.setHeader('Content-Disposition', 'attachment; filename="enzo-restauwheel.pkpass"');
+    res.setHeader('Cache-Control', 'no-store');
+    res.send(buffer);
+  } catch (err) {
+    const missing = err.code === 'WALLET_CERTS' || !walletConfigured();
+    res.status(missing ? 503 : 500).json({
+      error: missing
+        ? 'Apple Wallet n’est pas encore configuré (certificat Pass Type ID manquant).'
+        : 'Impossible de générer le pass Apple Wallet.',
+    });
+  }
 });
 app.get('/mentions',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'mentions',   'index.html')));
 app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'));

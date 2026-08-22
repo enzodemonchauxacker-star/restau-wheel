@@ -557,6 +557,7 @@
       padding: 0;
     }
     .color-preset:hover { transform: scale(1.08); }
+    .color-preset.is-on { outline: 3px solid var(--ink); outline-offset: 2px; }
     .color-preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .settings-card .field input { margin-bottom: 0; }
     .settings-card .field { margin-bottom: 12px; }
@@ -752,14 +753,14 @@
           </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-          <button class="color-preset" style="background:#FFD700" onclick="setAccent('#FFD700')" title="Or (défaut)"></button>
-          <button class="color-preset" style="background:#E53E3E" onclick="setAccent('#E53E3E')" title="Rouge"></button>
-          <button class="color-preset" style="background:#38A169" onclick="setAccent('#38A169')" title="Vert"></button>
-          <button class="color-preset" style="background:#3182CE" onclick="setAccent('#3182CE')" title="Bleu"></button>
-          <button class="color-preset" style="background:#805AD5" onclick="setAccent('#805AD5')" title="Violet"></button>
-          <button class="color-preset" style="background:#DD6B20" onclick="setAccent('#DD6B20')" title="Orange"></button>
-          <button class="color-preset" style="background:#00B5D8" onclick="setAccent('#00B5D8')" title="Cyan"></button>
-          <button class="color-preset" style="background:#F687B3" onclick="setAccent('#F687B3')" title="Rose"></button>
+          <button type="button" class="color-preset" data-hex="#FFD700" style="background:#FFD700" onclick="pickAccent('#FFD700')" title="Or (défaut)"></button>
+          <button type="button" class="color-preset" data-hex="#E53E3E" style="background:#E53E3E" onclick="pickAccent('#E53E3E')" title="Rouge"></button>
+          <button type="button" class="color-preset" data-hex="#38A169" style="background:#38A169" onclick="pickAccent('#38A169')" title="Vert"></button>
+          <button type="button" class="color-preset" data-hex="#3182CE" style="background:#3182CE" onclick="pickAccent('#3182CE')" title="Bleu"></button>
+          <button type="button" class="color-preset" data-hex="#805AD5" style="background:#805AD5" onclick="pickAccent('#805AD5')" title="Violet"></button>
+          <button type="button" class="color-preset" data-hex="#DD6B20" style="background:#DD6B20" onclick="pickAccent('#DD6B20')" title="Orange"></button>
+          <button type="button" class="color-preset" data-hex="#00B5D8" style="background:#00B5D8" onclick="pickAccent('#00B5D8')" title="Cyan"></button>
+          <button type="button" class="color-preset" data-hex="#F687B3" style="background:#F687B3" onclick="pickAccent('#F687B3')" title="Rose"></button>
         </div>
         <button class="btn-save-settings" onclick="saveAccent()" data-i18n="admin.set.theme.apply">Appliquer la couleur</button>
         <p class="save-notice" id="accent-notice" data-i18n="admin.set.theme.applied">Couleur appliquée</p>
@@ -1242,25 +1243,40 @@ async function saveEmailSettings() {
 }
 
 function setAccent(hex, updatePicker = true) {
-  if (updatePicker) document.getElementById('s-accent').value = hex;
-  document.getElementById('accent-hex-display').textContent = hex.toUpperCase();
+  const value = String(hex || '#FFD700').toUpperCase();
+  if (updatePicker) document.getElementById('s-accent').value = value;
+  document.getElementById('accent-hex-display').textContent = value;
+  document.querySelectorAll('.color-preset').forEach((btn) => {
+    btn.classList.toggle('is-on', (btn.dataset.hex || '').toUpperCase() === value);
+  });
+}
+
+function pickAccent(hex) {
+  setAccent(hex, true);
+  saveAccent();
 }
 
 document.getElementById('s-accent')?.addEventListener('input', e => {
-  document.getElementById('accent-hex-display').textContent = e.target.value.toUpperCase();
+  setAccent(e.target.value, false);
 });
+document.getElementById('s-accent')?.addEventListener('change', () => saveAccent());
 
 async function saveAccent() {
   const hex = document.getElementById('s-accent').value;
-  const res = await fetch('/api/admin/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ theme_accent: hex })
-  });
-  if (res.ok) {
-    const n = document.getElementById('accent-notice');
+  const n = document.getElementById('accent-notice');
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme_accent: hex })
+    });
+    if (!res.ok) throw new Error('save');
+    n.textContent = t('admin.set.theme.applied');
     n.style.display = 'block';
     setTimeout(() => { n.style.display = 'none'; }, 2500);
+  } catch {
+    n.textContent = t('admin.error');
+    n.style.display = 'block';
   }
 }
 
@@ -1269,6 +1285,7 @@ async function saveSettings() {
     restaurant_name: document.getElementById('s-name').value.trim(),
     restaurant_url: document.getElementById('s-url').value.trim(),
     spin_cooldown_hours: parseInt(document.getElementById('s-cooldown').value, 10) || 24,
+    theme_accent: document.getElementById('s-accent').value,
   };
   const res = await fetch('/api/admin/settings', {
     method: 'PUT',

@@ -13,7 +13,9 @@
       --accent: #ffd60a;
       --accent-dark: #e6c000;
       --accent-glow: rgba(255,214,10,0.55);
-      --accent-soft: rgba(255,45,106,0.12);
+      --accent-soft: rgba(255,214,10,0.14);
+      --accent-ink: #0a0a0a;
+      --accent-hover: #ffe566;
     }
     body {
       min-height: 100vh;
@@ -32,7 +34,7 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 45% at 50% -10%, rgba(255,214,10,0.14), transparent 55%),
+        radial-gradient(ellipse 70% 45% at 50% -10%, var(--accent-soft), transparent 55%),
         repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 4px);
       pointer-events: none;
       z-index: 0;
@@ -42,7 +44,7 @@
     .header { text-align: center; margin-bottom: 1.5rem; animation: fadeUp .5s var(--ease) both; }
     .header .mono {
       display: block;
-      color: var(--brass);
+      color: var(--accent);
       font-size: 0.7rem;
       margin-bottom: 0.75rem;
     }
@@ -90,7 +92,7 @@
       border-radius: var(--radius);
     }
     .field input:focus {
-      border-color: var(--brass);
+      border-color: var(--accent);
       background: #f7f1e6;
       box-shadow: none;
     }
@@ -100,17 +102,17 @@
       width: 100%;
       padding: 0.9rem;
       margin-top: 0.35rem;
-      background: var(--wine);
+      background: var(--accent);
       border: none;
       border-radius: var(--radius);
-      color: var(--ivory);
+      color: var(--accent-ink);
       font-family: var(--font-body);
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
       transition: transform .2s var(--ease), background .2s;
     }
-    .btn-gold:hover { transform: translateY(-1px); background: #ff4d85; }
+    .btn-gold:hover { transform: translateY(-1px); background: var(--accent-hover); }
     .btn-gold:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
     #wheel-section {
@@ -132,7 +134,7 @@
       position: absolute;
       inset: -16px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,214,10,0.18) 0%, transparent 70%);
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
       pointer-events: none;
       animation: feltPulse 3s ease-in-out infinite;
     }
@@ -160,16 +162,16 @@
       width: 0; height: 0;
       border-left: 14px solid transparent;
       border-right: 14px solid transparent;
-      border-top: 28px solid var(--wine);
+      border-top: 28px solid var(--accent);
       filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));
     }
     .btn-spin {
       margin-top: 1.4rem;
       padding: 0.95rem 2.5rem;
-      background: var(--wine);
+      background: var(--accent);
       border: none;
       border-radius: var(--radius);
-      color: var(--ivory);
+      color: var(--accent-ink);
       font-family: var(--font-body);
       font-size: 1.05rem;
       font-weight: 700;
@@ -177,7 +179,7 @@
       letter-spacing: 0.02em;
       transition: transform .2s var(--ease), background .2s;
     }
-    .btn-spin:hover { transform: translateY(-2px); background: #ff4d85; }
+    .btn-spin:hover { transform: translateY(-2px); background: var(--accent-hover); }
     .btn-spin:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
     #result-section {
@@ -205,7 +207,7 @@
       font-family: var(--font-display);
       font-size: 1.7rem;
       font-weight: 700;
-      color: var(--wine);
+      color: var(--accent);
       margin-bottom: 0.5rem;
     }
     .result-prize.no-win {
@@ -217,8 +219,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      border: 1px solid var(--brass);
-      color: var(--brass);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       background: transparent;
       padding: 0.5rem 0.9rem;
       font-family: var(--font-mono);
@@ -239,27 +241,6 @@
       font-weight: 700;
       font-size: 0.95rem;
     }
-    .reminder-opt {
-      margin-top: 1.1rem;
-      padding: 0.9rem 1rem;
-      background: var(--ticket);
-      border: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      text-align: left;
-      transition: border-color .2s;
-    }
-    .reminder-opt:hover { border-color: var(--brass); }
-    .reminder-opt input[type="checkbox"] {
-      width: 18px; height: 18px;
-      accent-color: var(--wine);
-      flex-shrink: 0;
-    }
-    .reminder-opt-label { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
-    .reminder-opt-label strong { color: var(--ink); }
-    .reminder-confirm { color: var(--green); font-size: 0.82rem; margin-top: 0.5rem; display: none; }
 
     #sparkles { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
     .spark { position: absolute; border-radius: 50%; animation: fall linear forwards; }
@@ -325,14 +306,6 @@
       <span id="deadline-text"></span>
     </div>
     <div id="result-name" class="result-name"></div>
-    <label class="reminder-opt" id="reminder-opt" style="display:none">
-      <input type="checkbox" id="reminder-check" onchange="toggleReminder(this)">
-      <div class="reminder-opt-label">
-        <strong data-i18n="client.sms.title">Me rappeler par SMS</strong><br>
-        <span data-i18n="client.sms.desc">Relance automatique avant expiration de ton gain (ex. J-7)</span>
-      </div>
-    </label>
-    <div class="reminder-confirm" id="reminder-confirm">✓ Rappels activés !</div>
   </div>
 </div>
 
@@ -378,21 +351,26 @@ function lightenAccent(hex, ratio) {
   return `rgb(${blend(r)},${blend(g)},${blend(b)})`;
 }
 
+function applyAccentVars(hex) {
+  const raw = String(hex || '').trim();
+  const norm = raw.startsWith('#') ? raw : `#${raw}`;
+  if (!/^#[0-9a-fA-F]{6}$/.test(norm)) return;
+  const { r, g, b } = hexToRgb(norm);
+  const y = (r * 299 + g * 587 + b * 114) / 1000;
+  const lift = (v) => Math.min(255, Math.round(v + (255 - v) * 0.18));
+  document.documentElement.style.setProperty('--accent',      norm);
+  document.documentElement.style.setProperty('--accent-dark', `rgb(${Math.round(r * 0.75)},${Math.round(g * 0.75)},${Math.round(b * 0.75)})`);
+  document.documentElement.style.setProperty('--accent-soft', `rgba(${r},${g},${b},0.16)`);
+  document.documentElement.style.setProperty('--accent-glow', `rgba(${r},${g},${b},0.55)`);
+  document.documentElement.style.setProperty('--accent-ink',  y > 160 ? '#0a0a0a' : '#fff8e7');
+  document.documentElement.style.setProperty('--accent-hover', `rgb(${lift(r)},${lift(g)},${lift(b)})`);
+}
+
 async function applyTheme() {
   try {
     const theme = await fetch(`/api/theme?r=${RESTAURANT_ID}`).then(r => r.json());
-    if (theme.theme_accent) {
-      const hex   = theme.theme_accent;
-      const { r, g, b } = hexToRgb(hex);
-      const dark  = `rgb(${Math.round(r*.75)},${Math.round(g*.75)},${Math.round(b*.75)})`;
-      const soft  = `rgba(${r},${g},${b},0.1)`;
-      const glow  = `rgba(${r},${g},${b},0.7)`;
-      document.documentElement.style.setProperty('--accent',      hex);
-      document.documentElement.style.setProperty('--accent-dark', dark);
-      document.documentElement.style.setProperty('--accent-soft', soft);
-      document.documentElement.style.setProperty('--accent-glow', glow);
-    }
-  } catch(e) { /* garde les valeurs par défaut */ }
+    if (theme.theme_accent) applyAccentVars(theme.theme_accent);
+  } catch (e) { /* garde les valeurs par défaut */ }
 }
 
 function shortLabel(name) {
@@ -410,7 +388,7 @@ const RESTAURANT_ID = new URLSearchParams(window.location.search).get('r');
 if (!RESTAURANT_ID) {
   document.getElementById('client-app').innerHTML = `
     <div style="text-align:center;padding:20px">
-      <p class="mono" data-i18n="client.err.tag" style="color:var(--brass);margin-bottom:12px">ERREUR</p>
+      <p class="mono" data-i18n="client.err.tag" style="color:var(--accent);margin-bottom:12px">ERREUR</p>
       <h2 data-i18n="client.err.invalid" style="font-family:var(--font-display);margin-bottom:8px;">Lien invalide</h2>
       <p data-i18n="client.err.invalid.p" style="color:rgba(255,248,231,.55)">Scannez le QR code de votre restaurant.</p>
     </div>`;
@@ -708,7 +686,6 @@ function flashSegment(idx, times, callback) {
 }
 
 // ─── Affichage résultat ───────────────────────────────────────────────────────
-let currentSpinId = null;
 let lastResult = null;
 let resultFxDone = false;
 
@@ -732,13 +709,11 @@ function paintResult(data) {
         tr('client.result.until', { date: d.toLocaleDateString(loc(), { day:'numeric', month:'long', year:'numeric' }) });
       document.getElementById('result-deadline').style.display = 'inline-flex';
     }
-    document.getElementById('reminder-opt').style.display = 'flex';
   } else {
     document.getElementById('result-icon').textContent = '—';
     document.getElementById('result-prize').classList.add('no-win');
     document.getElementById('result-prize').textContent = tr('client.result.lose');
     document.getElementById('result-desc').textContent  = tr('client.result.lose.desc');
-    document.getElementById('reminder-opt').style.display = 'none';
   }
 }
 
@@ -747,35 +722,13 @@ function showResult(data) {
   document.getElementById('result-section').style.display = 'flex';
 
   lastResult = data;
-  currentSpinId = data.spin_id;
   paintResult(data);
 
   if (data.prize.is_real_prize && !resultFxDone) {
     resultFxDone = true;
-    document.getElementById('reminder-check').checked = true;
-    document.getElementById('reminder-confirm').style.display = 'none';
-    toggleReminder(document.getElementById('reminder-check'));
     launchSparkles();
   }
   spinning = false;
-}
-
-async function toggleReminder(checkbox) {
-  if (!currentSpinId) return;
-  await fetch(`/api/spin/${currentSpinId}/reminders`, {
-    method:  'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ allow: checkbox.checked }),
-  });
-  const confirm = document.getElementById('reminder-confirm');
-  if (checkbox.checked) {
-    confirm.textContent = tr('client.sms.on');
-    confirm.style.display = 'block';
-  } else {
-    confirm.textContent = tr('client.sms.off');
-    confirm.style.display = 'block';
-    setTimeout(() => { confirm.style.display = 'none'; }, 2000);
-  }
 }
 
 // ─── Étincelles de victoire ───────────────────────────────────────────────────
@@ -820,11 +773,6 @@ document.addEventListener('rw:lang', () => {
     else nextBtn.textContent = tr('client.loading');
   }
   if (lastResult) paintResult(lastResult);
-  const confirm = document.getElementById('reminder-confirm');
-  const check = document.getElementById('reminder-check');
-  if (confirm && confirm.style.display === 'block' && check) {
-    confirm.textContent = check.checked ? tr('client.sms.on') : tr('client.sms.off');
-  }
 });
 
 // ─── Formulaire ───────────────────────────────────────────────────────────────

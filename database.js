@@ -89,6 +89,7 @@ async function initSchema() {
         created_at          TIMESTAMPTZ DEFAULT NOW()
       )
     `;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS theme_accent TEXT NOT NULL DEFAULT '#FFD700'`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS prizes (

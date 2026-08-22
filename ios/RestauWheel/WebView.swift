@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import PassKit
 
 /// Les callbacks WebKit (KVO, evaluateJavaScript) arrivent sur le main thread mais
 /// sans isolation d'acteur. Ce sas les ramène proprement sur le MainActor.
@@ -131,6 +132,12 @@ struct WebView: UIViewRepresentable {
                 return
             }
 
+            if url.pathExtension.lowercased() == "pkpass" {
+                decisionHandler(.cancel)
+                addAppleWalletPass(from: url)
+                return
+            }
+
             switch url.scheme?.lowercased() {
             case "http", "https":
                 if AppConfig.isInternal(url) {
@@ -253,6 +260,53 @@ struct WebView: UIViewRepresentable {
             present(alert, from: webView) { completionHandler(nil) }
         }
 
+        private func addAppleWalletPass(from url: URL) {
+            Task {
+                do {
+                    let (data, response) = try await URLSession.shared.data(from: url)
+                    if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                        throw URLError(.cannotParseResponse)
+                    }
+                    let pass = try PKPass(data: data)
+                    await MainActor.run {
+                        guard PKAddPassesViewController.canAddPasses(),
+                              let addVC = PKAddPassesViewController(pass: pass),
+                              let webView = model.webView
+                        else { return }
+                        presentController(addVC, from: webView)
+                    }
+                } catch {
+                    await MainActor.run {
+                        guard let webView = model.webView else { return }
+                        let alert = UIAlertController(
+                            title: "Apple Wallet",
+                            message: "Impossible d’ajouter la carte pour le moment.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "OK", style: .default))
+                        present(alert, from: webView) {}
+                    }
+                }
+            }
+        }
+
+        private func presentController(_ controller: UIViewController, from webView: WKWebView) {
+            guard let host = hostController(from: webView) else { return }
+            host.present(controller, animated: true)
+        }
+
+        private func hostController(from webView: WKWebView) -> UIViewController? {
+            var responder: UIResponder? = webView
+            while let current = responder, !(current is UIViewController) {
+                responder = current.next
+            }
+            guard var controller = responder as? UIViewController else { return nil }
+            while let presented = controller.presentedViewController {
+                controller = presented
+            }
+            return controller
+        }
+
         /// Présente depuis le view controller qui héberge la WKWebView.
         /// `fallback` libère le completionHandler de WebKit si rien n'est présentable
         /// (sinon la page web reste bloquée indéfiniment).
@@ -261,16 +315,9 @@ struct WebView: UIViewRepresentable {
             from webView: WKWebView,
             fallback: @escaping () -> Void
         ) {
-            var responder: UIResponder? = webView
-            while let current = responder, !(current is UIViewController) {
-                responder = current.next
-            }
-            guard var controller = responder as? UIViewController else {
+            guard let controller = hostController(from: webView) else {
                 fallback()
                 return
-            }
-            while let presented = controller.presentedViewController {
-                controller = presented
             }
             controller.present(alert, animated: true)
         }

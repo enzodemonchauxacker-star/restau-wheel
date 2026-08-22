@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public/**,database.js,mailer.js,server.js,sms.js}",
+      "includeFiles": "{public/**,database.js,mailer.js,server.js,sms.js,wallet.js,wallet/**}",
       "maxDuration": 30
     }
   },
