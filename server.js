@@ -2,6 +2,7 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const QRCode  = require('qrcode');
 const path    = require('path');
+const fs      = require('fs');
 const cron    = require('node-cron');
 const crypto  = require('crypto');
 const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./database');
@@ -31,6 +32,15 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/favicon.ico', async (req, res) => res.redirect(301, '/favicon.png'));
+app.get('/carte.vcf', (req, res) => {
+  const raw = fs.readFileSync(path.join(__dirname, 'public', 'carte.vcf'), 'utf8');
+  const body = raw.replace(/\r?\n/g, '\r\n').replace(/(\r\n)*$/, '\r\n');
+  const ios = /iPhone|iPad|iPod/i.test(String(req.headers['user-agent'] || ''));
+  res.setHeader('Content-Type', `${ios ? 'text/x-vcard' : 'text/vcard'}; charset=utf-8`);
+  res.setHeader('Content-Disposition', 'inline; filename="Enzo-Demonchaux-Acker.vcf"');
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(body);
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session en cookie (compatible Vercel serverless — pas de MemoryStore)
@@ -1240,11 +1250,6 @@ app.get('/demo-qr.png', async (req, res) => {
   }
 });
 app.get('/carte/qr',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'qr.html')));
-app.get('/carte.vcf',   async (req, res) => {
-  res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="enzo-demonchaux-acker.vcf"');
-  res.sendFile(path.join(__dirname, 'public', 'carte.vcf'));
-});
 app.get('/api/wallet/status', async (req, res) => {
   res.json({ available: walletConfigured() });
 });

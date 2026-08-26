@@ -1,11 +1,12 @@
 BEGIN:VCARD
 VERSION:3.0
+PRODID:-//Restau Wheel//Carte Pro//FR
 N:Demonchaux-Acker;Enzo;;;
 FN:Enzo Demonchaux-Acker
 ORG:Restau Wheel
 TITLE:Fondateur
-TEL;TYPE=CELL,VOICE:+33768036838
-EMAIL;TYPE=WORK,INTERNET:enzodemonchauxacker@gmail.com
+TEL;TYPE=CELL;TYPE=VOICE;TYPE=PREF:+33768036838
+EMAIL;TYPE=INTERNET;TYPE=WORK:enzodemonchauxacker@gmail.com
 URL:https://restauwheel.com
-NOTE:Fidélisation restaurant — roue de fortune. https://restauwheel.com/carte
+NOTE:Restau Wheel — https://restauwheel.com/carte
 END:VCARD
