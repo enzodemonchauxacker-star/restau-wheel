@@ -104,6 +104,13 @@
     .row a, .row b { font-size: 0.95rem; font-weight: 700; }
     .actions { display: grid; gap: 0.55rem; }
     .btn { width: 100%; }
+    .save-hint {
+      margin: -0.15rem 0 0.35rem;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--muted);
+      text-align: center;
+    }
     .foot {
       margin-top: 1.15rem;
       text-align: center;
@@ -145,7 +152,8 @@
       </div>
       <div class="actions">
         <a class="btn btn-wine" href="/demo?src=carte" data-i18n="card.demo">Essayer la démo</a>
-        <a class="btn btn-wine" id="save-contact" href="/carte.vcf" type="text/x-vcard" data-i18n="card.save">Enregistrer le contact</a>
+        <a class="btn btn-wine" href="/carte.vcf" type="text/x-vcard" data-i18n="card.save">Ajouter aux contacts</a>
+        <p class="save-hint" data-i18n="card.save.hint">iPhone : « Créer un nouveau contact », puis OK.</p>
         <a class="btn btn-brass" href="tel:+33768036838" data-i18n="card.call">Appeler</a>
         <a class="btn btn-ivory" href="https://wa.me/33768036838" data-i18n="card.wa">WhatsApp</a>
         <a class="btn btn-ivory" href="/" data-i18n="card.site">Voir Restau Wheel</a>
@@ -155,29 +163,5 @@
     <p class="foot"><a href="mailto:enzodemonchauxacker@gmail.com" data-i18n="card.mail">Écrire un email</a></p>
   </div>
   <script src="/js/i18n.js"></script>
-  <script>
-    (function () {
-      const btn = document.getElementById('save-contact');
-      if (!btn) return;
-      const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-      if (!ios) return;
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          const text = await fetch(btn.getAttribute('href'), { cache: 'no-store' }).then((r) => r.text());
-          const body = text.replace(/\r?\n/g, '\r\n');
-          const file = new File([body], 'Enzo-Demonchaux-Acker.vcf', { type: 'text/vcard' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Enzo Demonchaux-Acker' });
-            return;
-          }
-          location.href = 'data:text/x-vcard;charset=utf-8,' + encodeURIComponent(body);
-        } catch (err) {
-          if (err && err.name === 'AbortError') return;
-          location.href = btn.href;
-        }
-      });
-    })();
-  </script>
 </body>
 </html>

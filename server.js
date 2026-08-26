@@ -34,8 +34,7 @@ app.get('/favicon.ico', async (req, res) => res.redirect(301, '/favicon.png'));
 app.get('/carte.vcf', (req, res) => {
   const raw = fs.readFileSync(path.join(__dirname, 'public', 'carte.vcf'), 'utf8');
   const body = raw.replace(/\r?\n/g, '\r\n').replace(/(\r\n)*$/, '\r\n');
-  const ios = /iPhone|iPad|iPod/i.test(String(req.headers['user-agent'] || ''));
-  res.setHeader('Content-Type', `${ios ? 'text/x-vcard' : 'text/vcard'}; charset=utf-8`);
+  res.setHeader('Content-Type', 'text/x-vcard; charset=utf-8');
   res.setHeader('Content-Disposition', 'inline; filename="Enzo-Demonchaux-Acker.vcf"');
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
