@@ -8,7 +8,6 @@ const crypto  = require('crypto');
 const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./database');
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
-const { walletConfigured, buildCartePass } = require('./wallet');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 
 const app  = express();
@@ -1250,25 +1249,6 @@ app.get('/demo-qr.png', async (req, res) => {
   }
 });
 app.get('/carte/qr',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'qr.html')));
-app.get('/api/wallet/status', async (req, res) => {
-  res.json({ available: walletConfigured() });
-});
-app.get('/carte.pkpass', async (req, res) => {
-  try {
-    const buffer = await buildCartePass();
-    res.setHeader('Content-Type', 'application/vnd.apple.pkpass');
-    res.setHeader('Content-Disposition', 'attachment; filename="enzo-restauwheel.pkpass"');
-    res.setHeader('Cache-Control', 'no-store');
-    res.send(buffer);
-  } catch (err) {
-    const missing = err.code === 'WALLET_CERTS' || !walletConfigured();
-    res.status(missing ? 503 : 500).json({
-      error: missing
-        ? 'Apple Wallet n’est pas encore configuré (certificat Pass Type ID manquant).'
-        : 'Impossible de générer le pass Apple Wallet.',
-    });
-  }
-});
 app.get('/mentions',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'mentions',   'index.html')));
 app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'));
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));

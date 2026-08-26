@@ -145,8 +145,7 @@
       </div>
       <div class="actions">
         <a class="btn btn-wine" href="/demo?src=carte" data-i18n="card.demo">Essayer la démo</a>
-        <a class="btn btn-wine" id="wallet-btn" href="/carte.pkpass" hidden data-i18n="card.wallet">Ajouter à Apple Wallet</a>
-        <a class="btn btn-wine" href="/carte.vcf" type="text/x-vcard" data-i18n="card.save">Enregistrer le contact</a>
+        <a class="btn btn-wine" id="save-contact" href="/carte.vcf" type="text/x-vcard" data-i18n="card.save">Enregistrer le contact</a>
         <a class="btn btn-brass" href="tel:+33768036838" data-i18n="card.call">Appeler</a>
         <a class="btn btn-ivory" href="https://wa.me/33768036838" data-i18n="card.wa">WhatsApp</a>
         <a class="btn btn-ivory" href="/" data-i18n="card.site">Voir Restau Wheel</a>
@@ -158,14 +157,26 @@
   <script src="/js/i18n.js"></script>
   <script>
     (function () {
-      const btn = document.getElementById('wallet-btn');
+      const btn = document.getElementById('save-contact');
       if (!btn) return;
-      fetch('/api/wallet/status')
-        .then((r) => r.json())
-        .then((data) => {
-          if (data && data.available) btn.hidden = false;
-        })
-        .catch(() => {});
+      const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+      if (!ios) return;
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          const text = await fetch(btn.getAttribute('href'), { cache: 'no-store' }).then((r) => r.text());
+          const body = text.replace(/\r?\n/g, '\r\n');
+          const file = new File([body], 'Enzo-Demonchaux-Acker.vcf', { type: 'text/vcard' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Enzo Demonchaux-Acker' });
+            return;
+          }
+          location.href = 'data:text/x-vcard;charset=utf-8,' + encodeURIComponent(body);
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+          location.href = btn.href;
+        }
+      });
     })();
   </script>
 </body>
