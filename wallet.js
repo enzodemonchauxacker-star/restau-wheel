@@ -77,7 +77,6 @@ async function buildCartePass() {
           { key: 'email', label: 'EMAIL', value: 'enzodemonchauxacker@gmail.com' },
         ],
         backFields: [
-          { key: 'addr', label: 'Adresse', value: '33 C Avenue des Messeguières, 84360 Lauris' },
           { key: 'mail', label: 'Email', value: 'enzodemonchauxacker@gmail.com' },
           { key: 'tel', label: 'Téléphone', value: '+33 7 68 03 68 38' },
           { key: 'site', label: 'Site', value: 'https://restauwheel.com' },
