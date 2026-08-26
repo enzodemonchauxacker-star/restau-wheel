@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr" data-i18n-title="demo.qr.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR démo – Restau Wheel</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt);
+      color: var(--ivory);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.1rem;
+      text-align: center;
+    }
+    .sheet {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 10px 10px 0 var(--brass);
+      padding: 1.4rem 1.2rem 1.3rem;
+      width: 100%;
+      max-width: 360px;
+    }
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      color: var(--wine);
+      margin-bottom: 0.45rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      margin-bottom: 0.35rem;
+    }
+    p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem; }
+    img {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      border: 2px solid var(--ink);
+      background: #fff8e7;
+    }
+    .url {
+      margin-top: 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      word-break: break-all;
+    }
+    .actions { display: grid; gap: 0.5rem; margin-top: 1rem; }
+    .btn { width: 100%; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .actions, .lang-float { display: none !important; }
+      .sheet { box-shadow: none; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lang-float lang-switch" role="group" aria-label="Language">
+    <button type="button" data-lang-btn="fr">FR</button>
+    <button type="button" data-lang-btn="en">EN</button>
+  </div>
+  <div class="sheet">
+    <div class="kicker">RESTAU WHEEL</div>
+    <h1 data-i18n="demo.qr.h1">Démo restaurateur</h1>
+    <p data-i18n="demo.qr.hint">Ils scannent → essaient la roue, laissent un rappel</p>
+    <img src="/demo-qr.png" alt="QR code démo Restau Wheel" width="1200" height="1200">
+    <div class="url">restauwheel.com/demo</div>
+    <div class="actions">
+      <a class="btn btn-wine" href="/demo-qr.png" download="restauwheel-demo-qr.png" data-i18n="demo.qr.dl">Télécharger le QR</a>
+      <a class="btn btn-ivory" href="/demo?src=qr" data-i18n="demo.qr.open">Ouvrir la démo</a>
+    </div>
+  </div>
+  <script src="/js/i18n.js"></script>
+</body>
+</html>

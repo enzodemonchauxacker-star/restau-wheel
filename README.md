@@ -40,11 +40,14 @@ L'application démarre sur **http://localhost:3000**
 | Page | URL |
 |---|---|
 | Landing | http://localhost:3000/ |
+| Démo prospection | http://localhost:3000/demo |
+| QR démo (à imprimer) | http://localhost:3000/demo/qr |
 | Page client (QR) | http://localhost:3000/client?r=1 |
 | Inscription | http://localhost:3000/register |
 | Dashboard admin | http://localhost:3000/admin |
 | Super-admin | http://localhost:3000/superadmin |
 | Checkout | http://localhost:3000/checkout |
+| Carte pro | http://localhost:3000/carte |
 
 | Compte | Identifiants |
 |---|---|

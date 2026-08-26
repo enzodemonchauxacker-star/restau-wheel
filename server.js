@@ -3,10 +3,12 @@ const cookieSession = require('cookie-session');
 const QRCode  = require('qrcode');
 const path    = require('path');
 const cron    = require('node-cron');
-const { db, createDefaultPrizes, ensureReady } = require('./database');
-const { sendSpinEmail, sendReminderEmail } = require('./mailer');
+const crypto  = require('crypto');
+const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./database');
+const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { walletConfigured, buildCartePass } = require('./wallet');
+const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +21,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html') || req.path === '/') {
+  if (
+    req.path.endsWith('.html') ||
+    req.path === '/' ||
+    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo)\/?$/.test(req.path)
+  ) {
     res.setHeader('Cache-Control', 'no-store');
   }
   next();
@@ -40,8 +46,34 @@ app.use(cookieSession({
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 function requireRestaurant(req, res, next) {
-  if (req.session?.restaurantId) return next();
+  const id = parseInt(req.session?.restaurantId, 10);
+  if (id > 0) {
+    req.session.restaurantId = id;
+    return next();
+  }
   res.status(401).json({ error: 'Non autorisé' });
+}
+
+async function findRestaurantByRef(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  if (/^\d+$/.test(s)) {
+    return db.prepare('SELECT * FROM restaurants WHERE id=? AND active=1').get(Number(s));
+  }
+  return db.prepare('SELECT * FROM restaurants WHERE public_code=? AND active=1').get(s.toLowerCase());
+}
+
+async function ensureRestaurantCode(r) {
+  if (!r) return r;
+  if (r.public_code) return r;
+  for (let i = 0; i < 6; i++) {
+    const code = newPublicCode();
+    try {
+      await db.prepare('UPDATE restaurants SET public_code=? WHERE id=? AND (public_code IS NULL OR public_code=?)').run(code, r.id, '');
+      return { ...r, public_code: code };
+    } catch { /* collision */ }
+  }
+  return r;
 }
 
 function requireSuperAdmin(req, res, next) {
@@ -49,43 +81,154 @@ function requireSuperAdmin(req, res, next) {
   res.status(401).json({ error: 'Non autorisé' });
 }
 
+const DEVICE_COOKIE = 'rw_did';
+const DEVICE_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function readCookie(req, name) {
+  const raw = req.headers.cookie || '';
+  const hit = raw.split(';').map((s) => s.trim()).find((s) => s.startsWith(name + '='));
+  if (!hit) return '';
+  try { return decodeURIComponent(hit.slice(name.length + 1)); } catch { return ''; }
+}
+
+function appendSetCookie(res, cookie) {
+  const prev = res.getHeader('Set-Cookie');
+  if (!prev) res.setHeader('Set-Cookie', cookie);
+  else if (Array.isArray(prev)) res.setHeader('Set-Cookie', [...prev, cookie]);
+  else res.setHeader('Set-Cookie', [prev, cookie]);
+}
+
+function setDeviceCookie(res, id) {
+  const secure = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  appendSetCookie(
+    res,
+    `${DEVICE_COOKIE}=${id}; Max-Age=${365 * 24 * 3600}; Path=/; SameSite=Lax; HttpOnly${secure ? '; Secure' : ''}`
+  );
+}
+
+function resolveDeviceId(req, res, bodyId) {
+  const fromCookie = readCookie(req, DEVICE_COOKIE);
+  const fromBody = typeof bodyId === 'string' ? bodyId.trim() : '';
+  let id = DEVICE_ID_RE.test(fromCookie) ? fromCookie
+    : DEVICE_ID_RE.test(fromBody) ? fromBody
+    : crypto.randomUUID();
+  setDeviceCookie(res, id);
+  return id;
+}
+
+async function recentDeviceSpin(rid, deviceId, hours) {
+  if (!deviceId || !rid) return null;
+  return db.prepare(`
+    SELECT s.won_at
+    FROM spins s
+    JOIN customers c ON c.id = s.customer_id
+    WHERE c.restaurant_id = ? AND s.device_id = ?
+      AND s.won_at > NOW() - (? || ' hours')::interval
+    ORDER BY s.won_at DESC LIMIT 1
+  `).get(rid, deviceId, String(hours));
+}
+
 // ─── Routes publiques client ─────────────────────────────────────────────────
 
 // Lots actifs d'un restaurant (pour dessiner la roue)
 app.get('/api/prizes', async (req, res) => {
-  const rid = parseInt(req.query.r);
-  if (!rid) return res.status(400).json({ error: 'Restaurant manquant' });
-  const prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(rid);
+  const r = await findRestaurantByRef(req.query.r);
+  if (!r) return res.status(400).json({ error: 'Restaurant manquant' });
+  const prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(r.id);
   res.json(prizes);
 });
 
 // Thème du restaurant (couleur principale, nom)
 app.get('/api/theme', async (req, res) => {
-  const rid = parseInt(req.query.r);
-  if (!rid) return res.json({ theme_accent: '#FFD700' });
-  const r = await db.prepare('SELECT name, theme_accent FROM restaurants WHERE id=? AND active=1').get(rid);
-  if (!r) return res.json({ theme_accent: '#FFD700' });
-  res.json({ theme_accent: r.theme_accent, restaurant_name: r.name });
+  res.setHeader('Cache-Control', 'no-store');
+  const r = await findRestaurantByRef(req.query.r);
+  if (!r) return res.json({ theme_accent: '#FFD700', can_spin: true });
+  const cooldownH = Math.max(1, parseInt(r.spin_cooldown_hours, 10) || 24);
+  const isDemo = String(r.public_code || '').toLowerCase() === 'demo';
+  if (isDemo) {
+    return res.json({
+      theme_accent: r.theme_accent,
+      restaurant_name: r.name,
+      can_spin: true,
+      cooldown_hours: cooldownH,
+      is_demo: true,
+    });
+  }
+  const deviceId = resolveDeviceId(req, res, req.query.did);
+  const recent = await recentDeviceSpin(r.id, deviceId, cooldownH);
+  res.json({
+    theme_accent: r.theme_accent,
+    restaurant_name: r.name,
+    can_spin: !recent,
+    cooldown_hours: cooldownH,
+  });
 });
+
+function pickWeightedPrize(prizes) {
+  const total = prizes.reduce((s, p) => s + (p.probability || 0), 0);
+  if (!prizes.length || !total) return prizes[0] || null;
+  let rand = Math.random() * total;
+  let prize = prizes[prizes.length - 1];
+  for (const p of prizes) {
+    rand -= p.probability;
+    if (rand <= 0) { prize = p; break; }
+  }
+  return prize;
+}
+
+async function jsonDemoSpin(resto, res) {
+  const prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(resto.id);
+  const prize = pickWeightedPrize(prizes);
+  if (!prize) return res.status(400).json({ error: 'Aucun lot actif' });
+  const isReal = prize.deadline_days > 0;
+  const deadline = isReal ? new Date(Date.now() + prize.deadline_days * 86400000).toISOString() : null;
+  res.json({
+    demo: true,
+    prize: {
+      id: prize.id,
+      name: prize.name,
+      description: prize.description,
+      color: prize.color,
+      deadline_days: prize.deadline_days,
+      deadline,
+      is_real_prize: isReal,
+    },
+    customer: { first_name: 'Vous', last_name: '' },
+  });
+}
 
 // Tirage de la roue
 app.post('/api/spin', async (req, res) => {
-  const { email, first_name, last_name, phone, restaurant_id } = req.body;
-  const rid = parseInt(restaurant_id);
+  const { email, first_name, last_name, phone, restaurant_id, device_id } = req.body;
+  const resto = await findRestaurantByRef(restaurant_id);
+  if (!resto) return res.status(404).json({ error: 'Restaurant introuvable' });
+  if (String(resto.public_code || '').toLowerCase() === 'demo') {
+    return jsonDemoSpin(resto, res);
+  }
+  const rid = resto.id;
 
-  if (!email || !first_name || !last_name || !phone || !rid) {
+  if (!email || !first_name || !last_name || !phone) {
     return res.status(400).json({ error: 'Tous les champs sont requis (dont le téléphone)' });
   }
   const phoneNorm = normalizePhone(phone);
   if (!phoneNorm) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide (ex: 06 12 34 56 78)' });
   }
-  const resto = await db.prepare('SELECT id, spin_cooldown_hours FROM restaurants WHERE id=? AND active=1').get(rid);
-  if (!resto) return res.status(404).json({ error: 'Restaurant introuvable' });
 
   const emailNorm = email.toLowerCase().trim();
   const cooldownH = Math.max(1, parseInt(resto.spin_cooldown_hours, 10) || 24);
   const sinceHours = cooldownH;
+  const deviceId = resolveDeviceId(req, res, device_id);
+
+  const recentDevice = await recentDeviceSpin(rid, deviceId, sinceHours);
+  if (recentDevice) {
+    return res.status(429).json({
+      error: `Cet appareil a déjà tourné la roue. Reviens dans ${cooldownH}h.`,
+      code: 'already_spun_device',
+      cooldown_hours: cooldownH,
+      last_spin_at: recentDevice.won_at,
+    });
+  }
 
   // Anti-abus : 1 tirage / email / resto pendant le cooldown
   const recentEmail = await db.prepare(`
@@ -149,8 +292,8 @@ app.post('/api/spin', async (req, res) => {
   const deadline = isReal ? new Date(Date.now() + prize.deadline_days * 86400000).toISOString() : null;
 
   // Opt-in SMS auto si gain réel + téléphone
-  const spin = await db.prepare('INSERT INTO spins (customer_id, prize_id, deadline, allow_reminders) VALUES (?,?,?,?)')
-    .run(customer.id, prize.id, deadline, isReal ? 1 : 0);
+  const spin = await db.prepare('INSERT INTO spins (customer_id, prize_id, deadline, allow_reminders, device_id) VALUES (?,?,?,?,?)')
+    .run(customer.id, prize.id, deadline, isReal ? 1 : 0, deviceId);
 
   res.json({
     prize: { id: prize.id, name: prize.name, description: prize.description, color: prize.color, deadline_days: prize.deadline_days, deadline, is_real_prize: isReal },
@@ -164,6 +307,110 @@ app.post('/api/spin', async (req, res) => {
   // const smsPayload = { customer: { ...customer, phone: phoneNorm }, prize: { ...prize, deadline }, restaurant };
   // if (isReal) sendWinSms(smsPayload).catch(() => {});
   // else sendLoseSms(smsPayload).catch(() => {});
+});
+
+app.post('/api/demo/spin', async (req, res) => {
+  const resto = await findRestaurantByRef('demo');
+  if (!resto) return res.status(404).json({ error: 'Démo indisponible' });
+  return jsonDemoSpin(resto, res);
+});
+
+function visitorHash(req) {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || '')
+    .split(',')[0].trim();
+  const ua = String(req.headers['user-agent'] || '').slice(0, 180);
+  const salt = process.env.SESSION_SECRET || 'restau-wheel-secret-2024';
+  return crypto.createHash('sha256').update(`${salt}|${ip}|${ua}`).digest('hex').slice(0, 32);
+}
+
+function isVisitBot(req) {
+  return /bot|crawler|crawl|spider|slurp|bingpreview|facebookexternalhit|linkedinbot|twitterbot|telegrambot|discordbot|slackbot|googleimageproxy|applebot|semrush|ahrefs/i
+    .test(String(req.headers['user-agent'] || ''));
+}
+
+function cleanReferrer(raw) {
+  const s = String(raw || '').trim().slice(0, 300);
+  if (!s) return '';
+  try {
+    const u = new URL(s);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+    return (u.origin + u.pathname).slice(0, 300);
+  } catch {
+    return '';
+  }
+}
+
+function cleanSource(raw) {
+  return String(raw || '').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 40);
+}
+
+function parisDayKeys(n) {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const [y, m, d] = fmt.format(new Date()).split('-').map(Number);
+  const utc = Date.UTC(y, m - 1, d);
+  const days = [];
+  for (let i = n - 1; i >= 0; i--) {
+    days.push(new Date(utc - i * 86400000).toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+async function recordDemoVisit(req, { referrer, source } = {}) {
+  if (isVisitBot(req)) return { ok: true, skipped: 'bot' };
+  const hash = visitorHash(req);
+  const recent = await db.prepare(
+    `SELECT id FROM demo_visits WHERE visitor_hash=? AND created_at > NOW() - INTERVAL '45 seconds' LIMIT 1`
+  ).get(hash);
+  if (recent) return { ok: true, duplicate: true };
+  await db.prepare(
+    'INSERT INTO demo_visits (visitor_hash, referrer, source) VALUES (?,?,?)'
+  ).run(hash, cleanReferrer(referrer), cleanSource(source));
+  return { ok: true };
+}
+
+app.post('/api/demo/visit', async (req, res) => {
+  try {
+    const result = await recordDemoVisit(req, {
+      referrer: req.body?.referrer || req.get('referer'),
+      source: req.body?.src || req.body?.source || req.query.src,
+    });
+    res.json(result);
+  } catch (e) {
+    console.error('[demo-visit]', e.message);
+    res.json({ ok: false });
+  }
+});
+
+app.post('/api/prospects', async (req, res) => {
+  if (String(req.body?.website || '').trim()) return res.json({ success: true });
+  const restaurantName = String(req.body?.restaurant_name || '').trim().slice(0, 80);
+  const contactName = String(req.body?.contact_name || '').trim().slice(0, 80);
+  const email = String(req.body?.email || '').trim().toLowerCase().slice(0, 120);
+  const phoneNorm = normalizePhone(req.body?.phone);
+  if (!restaurantName || restaurantName.length < 2) {
+    return res.status(400).json({ error: 'Nom du restaurant requis' });
+  }
+  if (!phoneNorm) {
+    return res.status(400).json({ error: 'Téléphone invalide' });
+  }
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Email invalide' });
+  }
+  const recent = await db.prepare(
+    `SELECT id FROM prospects WHERE phone=? AND created_at > NOW() - INTERVAL '30 minutes' LIMIT 1`
+  ).get(phoneNorm);
+  if (recent) return res.json({ success: true, duplicate: true });
+
+  await db.prepare(
+    'INSERT INTO prospects (restaurant_name, contact_name, phone, email, source, status) VALUES (?,?,?,?,?,?)'
+  ).run(restaurantName, contactName, phoneNorm, email, 'form', 'new');
+  sendProspectEmail({ restaurantName, contactName, phone: phoneNorm, email }).catch(() => {});
+  res.json({ success: true });
 });
 // Opt-in rappels (public — le spin_id est renvoyé juste après le tirage)
 app.put('/api/spin/:id/reminders', async (req, res) => {
@@ -182,12 +429,13 @@ app.post('/api/register', async (req, res) => {
   const exists = await db.prepare('SELECT id FROM restaurants WHERE lower(email)=lower(?) ').get(email.trim());
   if (exists) return res.status(409).json({ error: 'Cet email est déjà utilisé' });
 
-  const r = await db.prepare('INSERT INTO restaurants (name, email, password) VALUES (?,?,?)').run(name.trim(), email.toLowerCase().trim(), password);
+  const code = newPublicCode();
+  const r = await db.prepare('INSERT INTO restaurants (name, email, password, public_code) VALUES (?,?,?,?)').run(name.trim(), email.toLowerCase().trim(), password, code);
   await createDefaultPrizes(r.lastInsertRowid);
 
-  req.session.restaurantId   = r.lastInsertRowid;
+  req.session.restaurantId   = parseInt(r.lastInsertRowid, 10);
   req.session.restaurantName = name.trim();
-  res.json({ success: true, restaurant_id: r.lastInsertRowid });
+  res.json({ success: true, restaurant_id: req.session.restaurantId });
 });
 
 // ─── Auth admin restaurant ────────────────────────────────────────────────────
@@ -195,7 +443,7 @@ app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
   const r = await db.prepare('SELECT * FROM restaurants WHERE lower(email)=lower(?) AND active=1').get(email?.trim());
   if (!r || password !== r.password) return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-  req.session.restaurantId   = r.id;
+  req.session.restaurantId   = parseInt(r.id, 10);
   req.session.restaurantName = r.name;
   res.json({ success: true });
 });
@@ -287,7 +535,7 @@ app.put('/api/admin/spins/:id/use', requireRestaurant, async (req, res) => {
 
 // CRUD lots
 app.get('/api/admin/prizes', requireRestaurant, async (req, res) => {
-  res.json(await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? ORDER BY probability DESC').all(req.session.restaurantId));
+  res.json(await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1 ORDER BY probability DESC').all(req.session.restaurantId));
 });
 
 app.post('/api/admin/prizes', requireRestaurant, async (req, res) => {
@@ -304,10 +552,16 @@ app.put('/api/admin/prizes/:id', requireRestaurant, async (req, res) => {
   res.json(await db.prepare('SELECT * FROM prizes WHERE id=?').get(id));
 });
 
-app.delete('/api/admin/prizes/:id', requireRestaurant, async (req, res) => {
-  await db.prepare('UPDATE prizes SET active=0 WHERE id=? AND restaurant_id=?').run(parseInt(req.params.id), req.session.restaurantId);
+async function deactivatePrize(req, res) {
+  const updated = await db.prepare(
+    'UPDATE prizes SET active=0 WHERE id=? AND restaurant_id=? AND active=1 RETURNING id'
+  ).get(parseInt(req.params.id, 10), req.session.restaurantId);
+  if (!updated) return res.status(404).json({ error: 'Lot introuvable' });
   res.json({ success: true });
-});
+}
+
+app.delete('/api/admin/prizes/:id', requireRestaurant, deactivatePrize);
+app.post('/api/admin/prizes/:id/delete', requireRestaurant, deactivatePrize);
 
 /**
  * Calibre les probabilités :
@@ -415,7 +669,8 @@ app.get('/api/admin/settings', requireRestaurant, async (req, res) => {
 
 app.put('/api/admin/settings', requireRestaurant, async (req, res) => {
   const { restaurant_name, restaurant_url, admin_password, theme_accent, spin_cooldown_hours } = req.body;
-  const rid = req.session.restaurantId;
+  const rid = parseInt(req.session.restaurantId, 10);
+  if (!rid) return res.status(401).json({ error: 'Non autorisé' });
   if (restaurant_name) await db.prepare('UPDATE restaurants SET name=? WHERE id=?').run(restaurant_name, rid);
   if (restaurant_url)  await db.prepare('UPDATE restaurants SET url=?  WHERE id=?').run(restaurant_url,  rid);
   if (theme_accent) {
@@ -475,12 +730,14 @@ function getPublicBaseUrl(req, storedUrl) {
 }
 
 app.get('/api/admin/qrcode', requireRestaurant, async (req, res) => {
-  const r = await db.prepare('SELECT url FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  let r = await db.prepare('SELECT id, name, url, public_code FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  r = await ensureRestaurantCode(r);
   const base = getPublicBaseUrl(req, r?.url);
-  const url = `${base}/client?r=${req.session.restaurantId}`;
+  const code = r?.public_code || String(req.session.restaurantId);
+  const url = `${base}/client?r=${code}`;
   try {
     const qr = await QRCode.toDataURL(url, { width: 400, margin: 2, color: { dark: '#1a1a2e', light: '#ffffff' } });
-    res.json({ qr, url });
+    res.json({ qr, url, restaurant_name: r?.name || '', public_code: code });
   } catch { res.status(500).json({ error: 'Erreur génération QR code' }); }
 });
 
@@ -520,13 +777,161 @@ app.get('/api/superadmin/restaurants', requireSuperAdmin, async (req, res) => {
   res.json(rows);
 });
 
+app.get('/api/superadmin/demo-traffic', requireSuperAdmin, async (req, res) => {
+  try {
+    const todayStart = `(date_trunc('day', NOW() AT TIME ZONE 'Europe/Paris') AT TIME ZONE 'Europe/Paris')`;
+    const [today, days7, days30, total, dailyRows, recent] = await Promise.all([
+      db.prepare(`SELECT COUNT(*)::int AS views, COUNT(DISTINCT visitor_hash)::int AS uniques FROM demo_visits WHERE created_at >= ${todayStart}`).get(),
+      db.prepare(`SELECT COUNT(*)::int AS views, COUNT(DISTINCT visitor_hash)::int AS uniques FROM demo_visits WHERE created_at >= NOW() - INTERVAL '7 days'`).get(),
+      db.prepare(`SELECT COUNT(*)::int AS views, COUNT(DISTINCT visitor_hash)::int AS uniques FROM demo_visits WHERE created_at >= NOW() - INTERVAL '30 days'`).get(),
+      db.prepare(`SELECT COUNT(*)::int AS views, COUNT(DISTINCT visitor_hash)::int AS uniques FROM demo_visits`).get(),
+      db.prepare(`
+        SELECT to_char(created_at AT TIME ZONE 'Europe/Paris', 'YYYY-MM-DD') AS day,
+               COUNT(*)::int AS views,
+               COUNT(DISTINCT visitor_hash)::int AS uniques
+        FROM demo_visits
+        WHERE created_at >= NOW() - INTERVAL '14 days'
+        GROUP BY 1
+        ORDER BY 1
+      `).all(),
+      db.prepare(`SELECT created_at, referrer, source FROM demo_visits ORDER BY created_at DESC LIMIT 40`).all(),
+    ]);
+    const byDay = new Map((dailyRows || []).map((r) => [String(r.day).slice(0, 10), r]));
+    const daily = parisDayKeys(14).map((day) => ({
+      day,
+      views: byDay.get(day)?.views || 0,
+      uniques: byDay.get(day)?.uniques || 0,
+    }));
+    res.json({
+      today: { views: today?.views || 0, uniques: today?.uniques || 0 },
+      days7: { views: days7?.views || 0, uniques: days7?.uniques || 0 },
+      days30: { views: days30?.views || 0, uniques: days30?.uniques || 0 },
+      total: { views: total?.views || 0, uniques: total?.uniques || 0 },
+      daily,
+      recent: recent || [],
+    });
+  } catch (e) {
+    console.error('[demo-traffic]', e.message);
+    res.status(500).json({ error: 'Impossible de charger le trafic démo' });
+  }
+});
+
+app.get('/api/superadmin/prospects', requireSuperAdmin, async (req, res) => {
+  const city = String(req.query.city || '').trim();
+  const rows = await db.prepare('SELECT * FROM prospects ORDER BY created_at DESC LIMIT 400').all();
+  const filtered = city
+    ? rows.filter((r) => sameCity(r.city, city) || sameCity(r.address, city))
+    : rows;
+  res.json(filtered.slice(0, 200));
+});
+
+function isSecretPlaceholder(val) {
+  const s = String(val || '').trim();
+  return !s || s.startsWith('••••') || /^•+$/.test(s);
+}
+
+app.get('/api/superadmin/prospect-settings', requireSuperAdmin, async (req, res) => {
+  const google = await getProspectSecret('google_places_key', 'GOOGLE_PLACES_API_KEY');
+  const pappers = await getProspectSecret('pappers_api_token', 'PAPPERS_API_TOKEN');
+  res.json({
+    city: await getProspectSetting('prospect_city', 'Lauris'),
+    radius_km: await getProspectSetting('prospect_radius_km', '12'),
+    auto: (await getProspectSetting('prospect_auto', '1')) !== '0',
+    google_ok: !!google,
+    google_hint: secretHint(google),
+    google_from_env: !!(process.env.GOOGLE_PLACES_API_KEY || '').trim(),
+    pappers_ok: !!pappers,
+    pappers_hint: secretHint(pappers),
+    pappers_from_env: !!(process.env.PAPPERS_API_TOKEN || '').trim(),
+  });
+});
+
+app.put('/api/superadmin/prospect-settings', requireSuperAdmin, async (req, res) => {
+  try {
+    const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)');
+    const city = String(req.body?.city || '').trim();
+    const radius = String(Math.min(40, Math.max(3, parseInt(req.body?.radius_km, 10) || 12)));
+    const auto = req.body?.auto === false || req.body?.auto === 0 || req.body?.auto === '0' ? '0' : '1';
+    if (city) await set.run('prospect_city', city);
+    await set.run('prospect_radius_km', radius);
+    await set.run('prospect_auto', auto);
+    if (!isSecretPlaceholder(req.body?.google_places_key)) {
+      await set.run('google_places_key', String(req.body.google_places_key).trim());
+    }
+    if (!isSecretPlaceholder(req.body?.pappers_api_token)) {
+      await set.run('pappers_api_token', String(req.body.pappers_api_token).trim());
+    }
+    const google = await getProspectSecret('google_places_key', 'GOOGLE_PLACES_API_KEY');
+    const pappers = await getProspectSecret('pappers_api_token', 'PAPPERS_API_TOKEN');
+    res.json({
+      success: true,
+      city: city || await getProspectSetting('prospect_city', 'Lauris'),
+      radius_km: radius,
+      auto: auto === '1',
+      google_ok: !!google,
+      pappers_ok: !!pappers,
+    });
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Enregistrement impossible' });
+  }
+});
+
+app.post('/api/superadmin/prospects/enrich', requireSuperAdmin, async (req, res) => {
+  try {
+    const result = await enrichMissingContacts(40);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Enrichissement impossible' });
+  }
+});
+
+app.post('/api/superadmin/prospects/scan', requireSuperAdmin, async (req, res) => {
+  try {
+    const city = String(req.body?.city || '').trim() || await getProspectSetting('prospect_city', 'Lauris');
+    const radius = req.body?.radius_km || await getProspectSetting('prospect_radius_km', '12');
+    const result = await scanCity(city, radius);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Scan impossible' });
+  }
+});
+
+function prospectUnsubToken(id) {
+  const secret = process.env.SESSION_SECRET || 'restau-wheel-secret-2024';
+  return crypto.createHmac('sha256', secret).update(`prospect:${id}`).digest('hex').slice(0, 24);
+}
+
+app.post('/api/superadmin/prospects/:id/email', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const p = await db.prepare('SELECT * FROM prospects WHERE id=?').get(id);
+  if (!p) return res.status(404).json({ error: 'Prospect introuvable' });
+  if (!p.email) return res.status(400).json({ error: 'Pas d’email sur ce lead' });
+  const base = getPublicBaseUrl(req);
+  const unsubUrl = `${base}/prospects/unsub?id=${id}&t=${prospectUnsubToken(id)}`;
+  const sent = await sendOutreachEmail({ restaurantName: p.restaurant_name, email: p.email, unsubUrl });
+  if (!sent.ok) return res.status(503).json({ error: sent.reason === 'smtp_unconfigured' ? 'SMTP non configuré' : (sent.reason || 'Envoi impossible') });
+  await db.prepare("UPDATE prospects SET status='emailed', emailed_at=CURRENT_TIMESTAMP WHERE id=?").run(id);
+  res.json({ success: true });
+});
+
+app.get('/prospects/unsub', async (req, res) => {
+  const id = parseInt(req.query.id, 10);
+  const t = String(req.query.t || '');
+  if (!id || t !== prospectUnsubToken(id)) {
+    return res.status(400).send('Lien invalide.');
+  }
+  await db.prepare("UPDATE prospects SET status='skipped' WHERE id=?").run(id);
+  res.type('html').send('<p style="font-family:sans-serif;padding:2rem">C’est noté, plus d’emails Restau Wheel.</p>');
+});
+
 app.post('/api/superadmin/restaurants', requireSuperAdmin, async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Tous les champs sont requis' });
   if (password.length < 4) return res.status(400).json({ error: 'Mot de passe trop court' });
   const exists = await db.prepare('SELECT id FROM restaurants WHERE lower(email)=lower(?) ').get(email.trim());
   if (exists) return res.status(409).json({ error: 'Email déjà utilisé' });
-  const r = await db.prepare('INSERT INTO restaurants (name, email, password) VALUES (?,?,?)').run(name.trim(), email.toLowerCase().trim(), password);
+  const code = newPublicCode();
+  const r = await db.prepare('INSERT INTO restaurants (name, email, password, public_code) VALUES (?,?,?,?)').run(name.trim(), email.toLowerCase().trim(), password, code);
   await createDefaultPrizes(r.lastInsertRowid);
   res.json(await db.prepare('SELECT * FROM restaurants WHERE id=?').get(r.lastInsertRowid));
 });
@@ -786,6 +1191,19 @@ app.get('/checkout',    async (req, res) => res.sendFile(path.join(__dirname, 'p
 app.get('/cancel',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel',     'index.html')));
 app.get('/carte',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'index.html')));
 app.get('/pro',         async (req, res) => res.redirect(301, '/carte'));
+app.get('/demo',        async (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo',       'index.html')));
+app.get('/demo/qr',     async (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo',       'qr.html')));
+app.get('/demo-qr.png', async (req, res) => {
+  try {
+    const url = `${getPublicBaseUrl(req)}/demo`;
+    const png = await QRCode.toBuffer(url, { width: 1200, margin: 2, type: 'png', color: { dark: '#0a0a0a', light: '#fff8e7' } });
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(png);
+  } catch {
+    res.status(500).json({ error: 'QR indisponible' });
+  }
+});
 app.get('/carte/qr',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'qr.html')));
 app.get('/carte.vcf',   async (req, res) => {
   res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
@@ -902,7 +1320,21 @@ app.get('/api/cron/reminders', async (req, res) => {
 
 if (!process.env.VERCEL) {
   cron.schedule('0 9 * * *', () => { runReminderJob().catch(console.error); });
+  cron.schedule('0 7 * * 1', () => { scanFromSettings().catch(console.error); });
 }
+
+app.get('/api/cron/prospects', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  try {
+    const result = await scanFromSettings();
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 if (require.main === module) {
   ensureReady()

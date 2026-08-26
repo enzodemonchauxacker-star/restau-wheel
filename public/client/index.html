@@ -57,6 +57,16 @@
       margin-bottom: 0.4rem;
     }
     .header p { color: rgba(255,248,231,0.55); font-size: 0.9rem; }
+    .resto-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 5.5vw, 1.85rem);
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1.15;
+      margin: 0 0 0.45rem;
+      letter-spacing: 0.01em;
+    }
+    #wheel-section .resto-name { margin-bottom: 0.75rem; }
 
     #form-section {
       width: 100%;
@@ -256,6 +266,7 @@
 
 <div class="header">
   <span class="mono" data-i18n="client.kicker">TIREZ VOTRE CHANCE</span>
+  <p class="resto-name" id="resto-label" hidden></p>
   <h1 data-i18n="client.h1">La roue vous attend.</h1>
   <p data-i18n="client.sub">Remplissez le ticket, puis tournez</p>
 </div>
@@ -283,6 +294,7 @@
 </div>
 
 <div id="wheel-section">
+  <p class="resto-name" id="wheel-resto-name" hidden></p>
   <p class="wheel-hint" data-i18n="client.wheel.hint">Appuyez pour faire tourner la roue</p>
   <div class="wheel-wrap">
     <div class="pointer">
@@ -306,6 +318,12 @@
       <span id="deadline-text"></span>
     </div>
     <div id="result-name" class="result-name"></div>
+  </div>
+  <div id="demo-cta" style="display:none;width:100%;margin-top:1.15rem">
+    <p id="demo-banner" style="font-size:0.85rem;color:rgba(255,248,231,0.6);margin-bottom:0.9rem" data-i18n="client.demo.banner">Ceci est une démo. Les lots ne sont pas valables.</p>
+    <a class="btn-gold" href="/register" style="display:block;text-align:center;text-decoration:none;margin-bottom:0.5rem" data-i18n="client.demo.start">Créer mon restaurant →</a>
+    <a href="/demo?src=wheel#rappel" style="display:block;text-align:center;color:var(--accent);font-weight:700;margin-bottom:0.55rem" data-i18n="client.demo.callback">Être rappelé</a>
+    <button type="button" class="btn-spin" id="btn-demo-again" data-i18n="client.demo.again">Rejouer</button>
   </div>
 </div>
 
@@ -366,11 +384,63 @@ function applyAccentVars(hex) {
   document.documentElement.style.setProperty('--accent-hover', `rgb(${lift(r)},${lift(g)},${lift(b)})`);
 }
 
+let restaurantName = '';
+
+function setRestaurantName(name) {
+  restaurantName = String(name || '').trim();
+  ['resto-label', 'wheel-resto-name'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (restaurantName) {
+      el.hidden = false;
+      el.textContent = restaurantName;
+    } else {
+      el.hidden = true;
+      el.textContent = '';
+    }
+  });
+  if (restaurantName) document.title = `${restaurantName} – Restau Wheel`;
+}
+
 async function applyTheme() {
   try {
-    const theme = await fetch(`/api/theme?r=${RESTAURANT_ID}`).then(r => r.json());
+    const did = getDeviceId();
+    const theme = await fetch(`/api/theme?r=${RESTAURANT_ID}&did=${encodeURIComponent(did)}`, {
+      credentials: 'same-origin',
+    }).then(r => r.json());
     if (theme.theme_accent) applyAccentVars(theme.theme_accent);
-  } catch (e) { /* garde les valeurs par défaut */ }
+    setRestaurantName(theme.restaurant_name);
+    return theme;
+  } catch (e) {
+    return { can_spin: true };
+  }
+}
+
+function getDeviceId() {
+  const KEY = 'rw_did';
+  try {
+    let id = localStorage.getItem(KEY);
+    if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      }));
+      localStorage.setItem(KEY, id);
+    }
+    return id;
+  } catch {
+    return '00000000-0000-4000-8000-000000000000';
+  }
+}
+
+function showDeviceBlocked(hours) {
+  const app = document.getElementById('client-app');
+  if (!app) return;
+  app.innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <p class="mono" data-i18n="client.err.tag" style="color:var(--accent);margin-bottom:12px">ERREUR</p>
+      <h2 style="font-family:var(--font-display);margin-bottom:8px;">${tr('client.err.already.device', { hours: hours || 24 })}</h2>
+    </div>`;
 }
 
 function shortLabel(name) {
@@ -385,6 +455,7 @@ function shortLabel(name) {
 
 // ─── Identifiant restaurant (param ?r=) ──────────────────────────────────────
 const RESTAURANT_ID = new URLSearchParams(window.location.search).get('r');
+const IS_DEMO = String(RESTAURANT_ID || '').toLowerCase() === 'demo';
 if (!RESTAURANT_ID) {
   document.getElementById('client-app').innerHTML = `
     <div style="text-align:center;padding:20px">
@@ -402,14 +473,16 @@ let formData = {};
 let angle    = 0;
 let spinning = false;
 
-// ─── Chargement lots → 12 slots ──────────────────────────────────────────────
+// ─── Chargement lots → ~12 cases visuelles (les % restent côté serveur) ──────
+const VISUAL_SLICES = 12;
+
 async function loadPrizes() {
   const res = await fetch(`/api/prizes?r=${RESTAURANT_ID}`);
   prizes = await res.json();
   slots  = [];
-  prizes.forEach(p => {
+  visualCounts(prizes, VISUAL_SLICES).forEach(({ prize: p, n }) => {
     const baseRgb = hexToRgb(p.color);
-    for (let i = 0; i < p.probability; i++) {
+    for (let i = 0; i < n; i++) {
       slots.push({
         id:         p.id,
         name:       p.name,
@@ -420,17 +493,62 @@ async function loadPrizes() {
       });
     }
   });
-  // Mélange Fisher-Yates
-  for (let i = slots.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [slots[i], slots[j]] = [slots[j], slots[i]];
-  }
-  // Alternance claire/sombre par lot pour distinguer les segments adjacents identiques
+  slots = spreadSlots(slots);
   const seen = {};
   slots.forEach(s => {
     seen[s.id] = (seen[s.id] || 0) + 1;
     s.offset = seen[s.id] % 2 === 0 ? -28 : 0;
   });
+}
+
+/** Répartit les lots sur `target` parts lisibles. Chaque lot a au moins 1 case. */
+function visualCounts(list, target) {
+  const active = (list || []).filter(p => (p.probability || 0) > 0);
+  if (!active.length) return [];
+  const goal = Math.max(target, active.length);
+  const total = active.reduce((s, p) => s + p.probability, 0) || 1;
+  const counts = active.map(p => ({
+    prize: p,
+    n: Math.max(1, Math.round((p.probability / total) * goal)),
+  }));
+  let sum = counts.reduce((s, c) => s + c.n, 0);
+  const fattest = () => counts.reduce((a, b) => (a.n >= b.n ? a : b));
+  while (sum > goal && counts.some(c => c.n > 1)) {
+    const row = fattest();
+    if (row.n <= 1) break;
+    row.n--;
+    sum--;
+  }
+  while (sum < goal) {
+    fattest().n++;
+    sum++;
+  }
+  return counts;
+}
+
+/** Évite que deux parts du même lot se collent (sinon le rouge a l’air 2× plus gros). */
+function spreadSlots(items) {
+  const piles = new Map();
+  for (const s of items) {
+    if (!piles.has(s.id)) piles.set(s.id, []);
+    piles.get(s.id).push(s);
+  }
+  for (const pile of piles.values()) {
+    for (let i = pile.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pile[i], pile[j]] = [pile[j], pile[i]];
+    }
+  }
+  const out = [];
+  const remaining = () => [...piles.values()].filter(p => p.length).sort((a, b) => b.length - a.length);
+  while (out.length < items.length) {
+    const ordered = remaining();
+    if (!ordered.length) break;
+    const lastId = out.length ? out[out.length - 1].id : null;
+    const next = ordered.find(p => p[0].id !== lastId) || ordered[0];
+    out.push(next.pop());
+  }
+  return out;
 }
 
 // ─── Dessin de la roue ────────────────────────────────────────────────────────
@@ -493,7 +611,7 @@ function drawWheel(currentAngle, flashSlot = -1) {
     ctx.fillStyle    = 'rgba(255,255,255,0.95)';
     ctx.shadowColor  = 'rgba(0,0,0,0.85)';
     ctx.shadowBlur   = 5;
-    const fs = slot.shortLabel === tr('client.wheel.none') ? 16 : 14;
+    const fs = slot.shortLabel === tr('client.wheel.none') ? 18 : 16;
     ctx.font = `bold ${fs}px Outfit, sans-serif`;
     ctx.fillText(slot.shortLabel, SEG_R * 0.63, 0);
     ctx.restore();
@@ -596,10 +714,12 @@ async function doSpin() {
   // Appel API
   let result;
   try {
-    const res = await fetch('/api/spin', {
+    const endpoint = IS_DEMO ? '/api/demo/spin' : '/api/spin';
+    const res = await fetch(endpoint, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ ...formData, restaurant_id: RESTAURANT_ID }),
+      credentials: 'same-origin',
+      body:    JSON.stringify({ ...formData, restaurant_id: RESTAURANT_ID, device_id: getDeviceId() }),
     });
     result = await res.json();
     if (!res.ok) {
@@ -609,12 +729,16 @@ async function doSpin() {
       if (result.code === 'already_spun_phone') {
         throw new Error(tr('client.err.already.phone', { hours: result.cooldown_hours || 24 }));
       }
+      if (result.code === 'already_spun_device') {
+        throw new Error(tr('client.err.already.device', { hours: result.cooldown_hours || 24 }));
+      }
       throw new Error(result.error || tr('client.err.generic'));
     }
     // Soft lock navigateur (complément anti-abus)
-    try {
+    if (!IS_DEMO) try {
       const key = `rw_spin_${RESTAURANT_ID}_${(formData.email || '').toLowerCase()}`;
       localStorage.setItem(key, String(Date.now()));
+      localStorage.setItem(`rw_spin_dev_${RESTAURANT_ID}`, String(Date.now()));
     } catch (_) {}
   } catch (err) {
     alert(err.message);
@@ -691,8 +815,9 @@ let resultFxDone = false;
 
 function paintResult(data) {
   const { prize, customer } = data;
-  document.getElementById('result-name').textContent =
-    tr('client.result.hello', { name: `${customer.first_name} ${customer.last_name}` });
+  document.getElementById('result-name').textContent = IS_DEMO
+    ? tr('client.demo.hello')
+    : tr('client.result.hello', { name: `${customer.first_name} ${customer.last_name}` });
 
   if (prize.is_real_prize) {
     document.getElementById('result-icon').textContent = '★';
@@ -728,6 +853,8 @@ function showResult(data) {
     resultFxDone = true;
     launchSparkles();
   }
+  const demoCta = document.getElementById('demo-cta');
+  if (demoCta) demoCta.style.display = IS_DEMO ? 'block' : 'none';
   spinning = false;
 }
 
@@ -757,7 +884,26 @@ function launchSparkles() {
 if (!RESTAURANT_ID) {
   // Lien sans ?r= — le message d'erreur est déjà affiché
 } else {
-applyTheme();
+applyTheme().then(async (theme) => {
+  if (!IS_DEMO && theme && theme.can_spin === false) {
+    showDeviceBlocked(theme.cooldown_hours);
+    return;
+  }
+  if (IS_DEMO) {
+    const kicker = document.querySelector('[data-i18n="client.kicker"]');
+    const h1 = document.querySelector('.header h1');
+    const sub = document.querySelector('[data-i18n="client.sub"]');
+    if (kicker) kicker.textContent = tr('client.demo.kicker');
+    if (h1) h1.textContent = tr('client.demo.h1');
+    if (sub) sub.textContent = tr('client.demo.sub');
+    document.getElementById('form-section').style.display = 'none';
+    formData = { first_name: 'Vous', last_name: '', email: 'demo@restauwheel.com', phone: '0600000000' };
+    await loadPrizes();
+    const ws = document.getElementById('wheel-section');
+    ws.style.display = 'flex';
+    drawWheel(0);
+  }
+});
 
 document.addEventListener('rw:lang', () => {
   if (slots.length) {
@@ -773,6 +919,14 @@ document.addEventListener('rw:lang', () => {
     else nextBtn.textContent = tr('client.loading');
   }
   if (lastResult) paintResult(lastResult);
+  if (IS_DEMO) {
+    const kicker = document.querySelector('[data-i18n="client.kicker"]');
+    const h1 = document.querySelector('.header h1');
+    const sub = document.querySelector('[data-i18n="client.sub"]');
+    if (kicker) kicker.textContent = tr('client.demo.kicker');
+    if (h1) h1.textContent = tr('client.demo.h1');
+    if (sub) sub.textContent = tr('client.demo.sub');
+  }
 });
 
 // ─── Formulaire ───────────────────────────────────────────────────────────────
@@ -794,13 +948,15 @@ document.getElementById('btn-next').addEventListener('click', async () => {
   err.style.display = 'none';
   formData = { first_name: fn, last_name: ln, email: em, phone: ph };
 
-  // Soft check navigateur
+  // Soft check navigateur (email + appareil)
   try {
-    const key = `rw_spin_${RESTAURANT_ID}_${em.toLowerCase()}`;
-    const last = parseInt(localStorage.getItem(key) || '0', 10);
     const hours = 24;
-    if (last && Date.now() - last < hours * 3600 * 1000) {
-      err.textContent = tr('client.err.cooldown', { hours });
+    const emailKey = `rw_spin_${RESTAURANT_ID}_${em.toLowerCase()}`;
+    const lastEmail = parseInt(localStorage.getItem(emailKey) || '0', 10);
+    const lastDev = parseInt(localStorage.getItem(`rw_spin_dev_${RESTAURANT_ID}`) || '0', 10);
+    if ((lastEmail && Date.now() - lastEmail < hours * 3600 * 1000)
+      || (lastDev && Date.now() - lastDev < hours * 3600 * 1000)) {
+      err.textContent = tr('client.err.already.device', { hours });
       err.style.display = 'block';
       return;
     }
@@ -819,6 +975,16 @@ document.getElementById('btn-next').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-spin').addEventListener('click', doSpin);
+document.getElementById('btn-demo-again')?.addEventListener('click', () => {
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('wheel-section').style.display = 'flex';
+  spinning = false;
+  resultFxDone = false;
+  const btn = document.getElementById('btn-spin');
+  btn.disabled = false;
+  btn.textContent = tr('client.wheel.spin');
+  drawWheel(angle);
+});
 }
 </script>
 </body>

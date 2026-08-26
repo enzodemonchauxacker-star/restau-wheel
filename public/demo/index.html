@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr" data-i18n-title="demo.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Démo – Restau Wheel</title>
+  <meta name="description" content="Essayez la roue Restau Wheel. 20 €/mois. Laissez vos coordonnées, on vous rappelle.">
+  <meta property="og:title" content="Restau Wheel — Démo">
+  <meta property="og:description" content="Voici ce que vos clients verront. Scannez, tournez, gagnez.">
+  <meta property="og:url" content="https://restauwheel.com/demo">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--felt);
+      color: var(--ivory);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3.2rem 1.1rem 2.4rem;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% -8%, rgba(255,214,10,0.16), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 100%, rgba(255,45,106,0.2), transparent 50%);
+      pointer-events: none;
+    }
+    .wrap { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      color: var(--brass);
+      margin-bottom: 0.85rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 7vw, 2.15rem);
+      line-height: 1.12;
+      margin-bottom: 0.7rem;
+    }
+    .sub {
+      color: rgba(255,248,231,0.7);
+      line-height: 1.5;
+      margin-bottom: 1.35rem;
+    }
+    .price {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      border: 1px solid var(--brass);
+      color: var(--brass);
+      padding: 0.35rem 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+    .cta { display: grid; gap: 0.55rem; margin-bottom: 1.6rem; }
+    .btn { width: 100%; }
+    .card {
+      background: var(--ivory);
+      color: var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--wine);
+      padding: 1.45rem 1.2rem 1.3rem;
+    }
+    .card h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin-bottom: 0.35rem;
+    }
+    .card p.hint { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+    .ok { display: none; color: #0a7a5c; font-weight: 700; margin-top: 0.6rem; }
+    .err { display: none; margin-top: 0.4rem; }
+    .contact {
+      margin-top: 1.4rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: rgba(255,248,231,0.55);
+    }
+    .contact a { color: var(--brass); font-weight: 700; }
+    .links { display: flex; justify-content: center; gap: 1rem; margin-top: 0.55rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="lang-float lang-switch" role="group" aria-label="Language">
+    <button type="button" data-lang-btn="fr">FR</button>
+    <button type="button" data-lang-btn="en">EN</button>
+  </div>
+  <div class="wrap">
+    <p class="kicker" data-i18n="demo.kicker">DÉMO PROSPECTION</p>
+    <h1 data-i18n="demo.h1">Voici ce que vos clients verront.</h1>
+    <p class="sub" data-i18n="demo.sub">Une roue sur chaque table. Ils scannent, jouent, reviennent. Vous gardez les lots et les chances.</p>
+    <div class="price" data-i18n="demo.price">20 € / mois</div>
+    <div class="cta">
+      <a class="btn btn-wine" href="/client?r=demo" data-i18n="demo.try">Essayer la roue →</a>
+      <a class="btn btn-brass" href="/register" data-i18n="demo.start">Créer mon restaurant</a>
+    </div>
+
+    <article class="card" id="rappel">
+      <h2 data-i18n="demo.lead.h">Être rappelé</h2>
+      <p class="hint" data-i18n="demo.lead.p">Laissez vos coordonnées, Enzo vous rappelle.</p>
+      <form id="lead-form">
+        <div class="hp" aria-hidden="true">
+          <label>Site</label>
+          <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="field">
+          <label data-i18n="demo.lead.resto">Nom du restaurant *</label>
+          <input type="text" id="lead-resto" required maxlength="80" autocomplete="organization">
+        </div>
+        <div class="field">
+          <label data-i18n="demo.lead.name">Votre nom</label>
+          <input type="text" id="lead-name" maxlength="80" autocomplete="name">
+        </div>
+        <div class="field">
+          <label data-i18n="demo.lead.phone">Téléphone *</label>
+          <input type="tel" id="lead-phone" required autocomplete="tel" inputmode="tel" placeholder="06 12 34 56 78">
+        </div>
+        <div class="field">
+          <label data-i18n="demo.lead.email">Email</label>
+          <input type="email" id="lead-email" autocomplete="email">
+        </div>
+        <button class="btn btn-wine" type="submit" id="lead-btn" data-i18n="demo.lead.send">Envoyer →</button>
+        <p class="err" id="lead-err"></p>
+        <p class="ok" id="lead-ok" data-i18n="demo.lead.ok">C’est noté. On vous rappelle vite.</p>
+      </form>
+    </article>
+
+    <div class="contact">
+      <p data-i18n="demo.contact">Ou appelez Enzo</p>
+      <div class="links">
+        <a href="tel:+33768036838">07 68 03 68 38</a>
+        <a href="https://wa.me/33768036838">WhatsApp</a>
+        <a href="/carte" data-i18n="demo.card">Carte pro</a>
+      </div>
+    </div>
+  </div>
+  <script src="/js/i18n.js"></script>
+  <script>
+    const t = (k) => window.RW_I18N.t(k);
+    (function trackDemoVisit() {
+      try {
+        const q = new URLSearchParams(location.search);
+        fetch('/api/demo/visit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            referrer: document.referrer || '',
+            src: q.get('src') || q.get('utm_source') || '',
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch (_) {}
+    })();
+    document.getElementById('lead-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('lead-err');
+      const ok = document.getElementById('lead-ok');
+      const btn = document.getElementById('lead-btn');
+      err.style.display = 'none';
+      ok.style.display = 'none';
+      const restaurant_name = document.getElementById('lead-resto').value.trim();
+      const contact_name = document.getElementById('lead-name').value.trim();
+      const phone = document.getElementById('lead-phone').value.trim();
+      const email = document.getElementById('lead-email').value.trim();
+      const website = document.querySelector('input[name="website"]').value;
+      if (!restaurant_name || restaurant_name.length < 2 || !phone) {
+        err.textContent = t('demo.lead.err');
+        err.style.display = 'block';
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/prospects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ restaurant_name, contact_name, phone, email, website }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          err.textContent = data.error || t('demo.lead.err');
+          err.style.display = 'block';
+          btn.disabled = false;
+          return;
+        }
+        ok.style.display = 'block';
+        document.getElementById('lead-form').reset();
+      } catch {
+        err.textContent = t('demo.lead.err');
+        err.style.display = 'block';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -193,6 +193,46 @@
       color: var(--ivory); font-weight: 700; cursor: pointer; font-family: var(--font-body);
     }
     .notice { color: var(--green); font-size: .88rem; margin-top: 10px; display: none; }
+    .scan-box {
+      background: var(--ivory); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 20px; color: var(--ink);
+    }
+    .scan-box h3 { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 6px; }
+    .scan-box .hint { color: var(--muted); font-size: .88rem; margin-bottom: 14px; }
+    .scan-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+    .scan-row .field { margin: 0; min-width: 140px; flex: 1; }
+    .scan-row label { display:block; font-size:.72rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:7px; }
+    .scan-row input[type=text], .scan-row input[type=number], .scan-row input[type=password] {
+      width: 100%; padding: 11px 12px; background: var(--ticket); border: 1px solid var(--line);
+      color: var(--ink); font-size: 1rem; font-family: var(--font-body);
+    }
+    .scan-row .field .sub { color: var(--muted); font-size: .75rem; margin-top: 5px; }
+    .scan-row .field .sub a { color: var(--wine); }
+    .scan-row .ok { color: var(--green); }
+    .badge-google { background: rgba(66,133,244,.12); color: #1a73e8; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
+    .badge-pappers { background: rgba(111,66,193,.12); color: #6f42c1; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
+    .scan-row .chk { display:flex; align-items:center; gap:8px; padding-bottom: 10px; font-size:.88rem; }
+    .badge-form { background: rgba(0,194,255,.12); color: #0088aa; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
+    .badge-osm { background: rgba(255,214,10,.18); color: #8a6d00; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
+    .badge-emailed { background: rgba(0,229,200,.12); color: var(--green); border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
+    .addr { display:block; color:var(--muted); font-size:.78rem; margin-top:2px; }
+    .traffic-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .traffic-head a { color:var(--wine); font-size:.85rem; font-weight:700; }
+    .traffic-bars {
+      display:flex; align-items:flex-end; gap:6px; height:130px; margin-top:8px;
+    }
+    .traffic-col {
+      flex:1; min-width:0; height:100%; display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-end; gap:6px;
+    }
+    .traffic-bar {
+      width:100%; max-width:26px; background:var(--wine); border-radius:4px 4px 0 0;
+      min-height:3px;
+    }
+    .traffic-col.is-today .traffic-bar { background:var(--brass, #c9a227); }
+    .traffic-n { font-size:.68rem; font-weight:700; color:var(--ink); line-height:1; }
+    .traffic-d { font-size:.62rem; color:var(--muted); font-family:var(--font-mono); }
+    .stat-sub { color:var(--muted); font-size:.75rem; margin-top:2px; }
   </style>
 </head>
 <body>
@@ -241,6 +281,109 @@
       <div class="stat-card"><div class="stat-value" id="st-total">–</div><div class="stat-label" data-i18n="sa.stat.total">Restaurants</div></div>
       <div class="stat-card"><div class="stat-value" id="st-active">–</div><div class="stat-label" data-i18n="sa.stat.active">Actifs</div></div>
       <div class="stat-card"><div class="stat-value" id="st-inactive">–</div><div class="stat-label" data-i18n="sa.stat.inactive">Suspendus</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-prospects">–</div><div class="stat-label" data-i18n="sa.stat.prospects">Prospects</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-demo-today">–</div><div class="stat-label" data-i18n="sa.stat.demo.today">Démo aujourd’hui</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-demo-week">–</div><div class="stat-label" data-i18n="sa.stat.demo.week">Démo 7 jours</div></div>
+    </div>
+
+    <div class="section-header" style="margin-top:8px">
+      <div>
+        <div class="traffic-head">
+          <div class="section-title" data-i18n="sa.demo.title">Trafic page démo</div>
+          <a href="/demo?src=admin" target="_blank" rel="noopener" data-i18n="sa.demo.open">Ouvrir</a>
+        </div>
+        <p class="page-desc" style="margin:6px 0 0" data-i18n="sa.demo.desc">Personnes qui ont ouvert restauwheel.com/demo (lien des mails, landing, QR…).</p>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="demo-today">–</div>
+        <div class="stat-label" data-i18n="sa.demo.today">Aujourd’hui</div>
+        <div class="stat-sub" id="demo-today-u"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="demo-week">–</div>
+        <div class="stat-label" data-i18n="sa.demo.week">7 jours</div>
+        <div class="stat-sub" id="demo-week-u"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="demo-month">–</div>
+        <div class="stat-label" data-i18n="sa.demo.month">30 jours</div>
+        <div class="stat-sub" id="demo-month-u"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="demo-total">–</div>
+        <div class="stat-label" data-i18n="sa.demo.total">Total</div>
+        <div class="stat-sub" id="demo-total-u"></div>
+      </div>
+    </div>
+    <div class="scan-box" style="margin-bottom:12px">
+      <h3 data-i18n="sa.demo.chart">14 derniers jours</h3>
+      <div class="traffic-bars" id="demo-chart"></div>
+    </div>
+    <div class="table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="sa.demo.when">Quand</th>
+            <th data-i18n="sa.demo.ref">Provenance</th>
+          </tr>
+        </thead>
+        <tbody id="demo-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-header" style="margin-top:8px">
+      <div class="section-title" data-i18n="sa.prospects.title">Leads prospection</div>
+      <button class="action-btn" type="button" onclick="showAllProspects()" data-i18n="sa.prospects.all">Toutes les villes</button>
+    </div>
+    <div class="scan-box">
+      <h3 data-i18n="sa.scan.h">Prospection auto</h3>
+      <p class="hint" data-i18n="sa.scan.p">OSM trouve les restos. Google Places complète les tél / sites. Pappers (jetons) complète tél / email légaux. Colle les clés ci-dessous — rien n’est envoyé tout seul.</p>
+      <div class="scan-row">
+        <div class="field">
+          <label data-i18n="sa.scan.city">Ville</label>
+          <input type="text" id="scan-city" value="Lauris" placeholder="Lauris" oninput="onScanCityInput()">
+        </div>
+        <div class="field" style="max-width:110px">
+          <label data-i18n="sa.scan.radius">Rayon km</label>
+          <input type="number" id="scan-radius" min="3" max="40" value="12">
+        </div>
+        <label class="chk"><input type="checkbox" id="scan-auto" checked> <span data-i18n="sa.scan.auto">Scan chaque lundi</span></label>
+      </div>
+      <div class="scan-row" style="margin-top:12px">
+        <div class="field">
+          <label data-i18n="sa.scan.google">Clé Google Places</label>
+          <input type="password" id="scan-google-key" autocomplete="off" placeholder="AIza…">
+          <p class="sub" id="google-status"><a href="https://console.cloud.google.com/apis/library/places.googleapis.com" target="_blank" rel="noopener">Places API (New)</a></p>
+        </div>
+        <div class="field">
+          <label data-i18n="sa.scan.pappers">Token Pappers</label>
+          <input type="password" id="scan-pappers-key" autocomplete="off" placeholder="api_token">
+          <p class="sub" id="pappers-status"><a href="https://www.pappers.fr/api" target="_blank" rel="noopener">pappers.fr/api</a> — 1 jeton / tél+email</p>
+        </div>
+      </div>
+      <div class="scan-row" style="margin-top:12px">
+        <button class="btn-add" type="button" onclick="saveScanSettings()" data-i18n="sa.scan.save">Enregistrer</button>
+        <button class="btn-add" type="button" onclick="runProspectScan()" data-i18n="sa.scan.run">Chercher maintenant</button>
+        <button class="btn-add" type="button" onclick="runProspectEnrich()" data-i18n="sa.scan.enrich">Compléter tél / mail</button>
+      </div>
+      <p class="notice" id="scan-notice"></p>
+    </div>
+    <div class="table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="sa.th.resto">Restaurant</th>
+            <th data-i18n="sa.th.phone">Téléphone</th>
+            <th data-i18n="sa.th.email">Email</th>
+            <th data-i18n="sa.th.source">Source</th>
+            <th data-i18n="sa.th.date">Inscrit le</th>
+            <th data-i18n="sa.th.actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="prospect-tbody"></tbody>
+      </table>
     </div>
 
     <div class="section-header">
@@ -337,6 +480,8 @@ let restaurants = [];
 document.addEventListener('rw:lang', () => {
   if (document.getElementById('app').style.display !== 'flex') return;
   loadRestaurants();
+  loadProspects();
+  loadDemoTraffic();
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
@@ -377,7 +522,9 @@ async function doLogout() {
 async function showApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  await Promise.all([loadRestaurants(), loadSMTP()]);
+  await Promise.all([loadRestaurants(), loadSMTP(), loadScanSettings(), loadDemoTraffic()]);
+  prospectFilterCity = document.getElementById('scan-city').value.trim();
+  await loadProspects();
 }
 
 async function loadSMTP() {
@@ -443,6 +590,248 @@ async function loadRestaurants() {
       </td>
     </tr>
   `).join('');
+}
+
+function uniqLabel(n) {
+  return `${n} ${t('sa.demo.uniques')}`;
+}
+
+function demoOriginLabel(row) {
+  const src = String(row.source || '').trim();
+  if (src) {
+    const key = 'sa.demo.src.' + src;
+    const label = t(key);
+    return label !== key ? label : src;
+  }
+  const ref = String(row.referrer || '').trim();
+  if (!ref) return t('sa.demo.direct');
+  try {
+    const u = new URL(ref);
+    const host = u.hostname.replace(/^www\./, '');
+    if (host === 'restauwheel.com' || host === location.hostname) {
+      return (u.pathname.replace(/\/$/, '') || '/') + (u.search || '');
+    }
+    return host;
+  } catch {
+    return ref;
+  }
+}
+
+async function loadDemoTraffic() {
+  const res = await fetch('/api/superadmin/demo-traffic');
+  if (!res.ok) return;
+  const d = await res.json();
+  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  set('st-demo-today', d.today.views);
+  set('st-demo-week', d.days7.views);
+  set('demo-today', d.today.views);
+  set('demo-week', d.days7.views);
+  set('demo-month', d.days30.views);
+  set('demo-total', d.total.views);
+  set('demo-today-u', uniqLabel(d.today.uniques));
+  set('demo-week-u', uniqLabel(d.days7.uniques));
+  set('demo-month-u', uniqLabel(d.days30.uniques));
+  set('demo-total-u', uniqLabel(d.total.uniques));
+
+  const chart = document.getElementById('demo-chart');
+  const daily = d.daily || [];
+  const max = Math.max(1, ...daily.map((x) => x.views || 0));
+  const todayKey = daily.length ? daily[daily.length - 1].day : '';
+  chart.innerHTML = daily.map((x) => {
+    const h = Math.round(((x.views || 0) / max) * 100);
+    const label = x.day ? x.day.slice(8, 10) : '';
+    const todayCls = x.day === todayKey ? ' is-today' : '';
+    return `<div class="traffic-col${todayCls}" title="${esc(x.day)} · ${x.views}">
+      <div class="traffic-n">${x.views || ''}</div>
+      <div class="traffic-bar" style="height:${h}%"></div>
+      <div class="traffic-d">${esc(label)}</div>
+    </div>`;
+  }).join('');
+
+  const tbody = document.getElementById('demo-tbody');
+  const recent = d.recent || [];
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted)">${t('sa.demo.empty')}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recent.map((row) => `
+    <tr>
+      <td>${row.created_at ? new Date(row.created_at).toLocaleString(loc()) : '—'}</td>
+      <td>${esc(demoOriginLabel(row))}</td>
+    </tr>
+  `).join('');
+}
+
+let prospectFilterCity = '';
+
+function onScanCityInput() {
+  prospectFilterCity = document.getElementById('scan-city').value.trim();
+  clearTimeout(onScanCityInput.t);
+  onScanCityInput.t = setTimeout(() => loadProspects(), 250);
+}
+
+function showAllProspects() {
+  prospectFilterCity = '';
+  loadProspects();
+}
+
+async function loadProspects() {
+  const city = prospectFilterCity || '';
+  const q = city ? `?city=${encodeURIComponent(city)}` : '';
+  const res = await fetch('/api/superadmin/prospects' + q);
+  if (!res.ok) return;
+  const rows = await res.json();
+  const st = document.getElementById('st-prospects');
+  if (st) st.textContent = rows.length;
+  const tbody = document.getElementById('prospect-tbody');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">${t('sa.prospects.empty')}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(p => {
+    const src = p.status === 'emailed' ? 'emailed'
+      : p.source === 'google' ? 'google'
+      : p.source === 'pappers' ? 'pappers'
+      : p.source === 'osm' ? 'osm'
+      : 'form';
+    const srcLabel = t('sa.src.' + src);
+    const badge = 'badge-' + src;
+    const mailBtn = p.email && p.status !== 'emailed' && p.status !== 'skipped'
+      ? `<button class="action-btn" onclick="emailProspect(${p.id})">${t('sa.act.email')}</button>`
+      : '';
+    const tel = p.phone ? `<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>` : '—';
+    const mail = p.email ? `<a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : '—';
+    const extra = p.address || p.city
+      ? `<span class="addr">${esc([p.address, p.city].filter(Boolean).join(' · '))}</span>`
+      : (p.contact_name ? `<span class="addr">${esc(p.contact_name)}</span>` : '');
+    return `
+    <tr>
+      <td><strong>${esc(p.restaurant_name)}</strong>${extra}</td>
+      <td>${tel}</td>
+      <td>${mail}</td>
+      <td><span class="${badge}">${srcLabel}</span></td>
+      <td>${p.created_at ? new Date(p.created_at).toLocaleString(loc()) : '—'}</td>
+      <td>${mailBtn}${p.website ? `<a class="action-btn" href="${esc(p.website)}" target="_blank" rel="noopener">Web</a>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadScanSettings() {
+  const res = await fetch('/api/superadmin/prospect-settings');
+  if (!res.ok) return;
+  const s = await res.json();
+  if (s.city) document.getElementById('scan-city').value = s.city;
+  if (s.radius_km) document.getElementById('scan-radius').value = s.radius_km;
+  document.getElementById('scan-auto').checked = !!s.auto;
+  const gInput = document.getElementById('scan-google-key');
+  const pInput = document.getElementById('scan-pappers-key');
+  gInput.value = '';
+  pInput.value = '';
+  gInput.placeholder = s.google_ok ? (s.google_hint || '••••') : 'AIza…';
+  pInput.placeholder = s.pappers_ok ? (s.pappers_hint || '••••') : 'api_token';
+  const gStatus = document.getElementById('google-status');
+  const pStatus = document.getElementById('pappers-status');
+  gStatus.innerHTML = s.google_ok
+    ? `<span class="ok">${t('sa.scan.key.ok')}</span> · <a href="https://console.cloud.google.com/apis/library/places.googleapis.com" target="_blank" rel="noopener">Places API (New)</a>`
+    : `${t('sa.scan.key.no')} · <a href="https://console.cloud.google.com/apis/library/places.googleapis.com" target="_blank" rel="noopener">Places API (New)</a>`;
+  pStatus.innerHTML = s.pappers_ok
+    ? `<span class="ok">${t('sa.scan.key.ok')}</span> · <a href="https://www.pappers.fr/api" target="_blank" rel="noopener">pappers.fr/api</a>`
+    : `${t('sa.scan.key.no')} · <a href="https://www.pappers.fr/api" target="_blank" rel="noopener">pappers.fr/api</a> — 1 jeton / tél+email`;
+}
+
+async function saveScanSettings() {
+  const n = document.getElementById('scan-notice');
+  n.style.color = 'var(--green)';
+  const googleKey = document.getElementById('scan-google-key').value.trim();
+  const pappersKey = document.getElementById('scan-pappers-key').value.trim();
+  const res = await fetch('/api/superadmin/prospect-settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      city: document.getElementById('scan-city').value.trim(),
+      radius_km: document.getElementById('scan-radius').value,
+      auto: document.getElementById('scan-auto').checked,
+      google_places_key: googleKey,
+      pappers_api_token: pappersKey,
+    }),
+  });
+  n.style.display = 'block';
+  n.textContent = res.ok ? t('sa.scan.saved') : t('sa.scan.err');
+  if (res.ok) await loadScanSettings();
+  setTimeout(() => { n.style.display = 'none'; }, 3000);
+}
+
+async function runProspectScan() {
+  const n = document.getElementById('scan-notice');
+  n.style.display = 'block';
+  n.style.color = 'var(--green)';
+  n.textContent = t('sa.scan.running');
+  let res;
+  try {
+    res = await fetch('/api/superadmin/prospects/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        city: document.getElementById('scan-city').value.trim(),
+        radius_km: document.getElementById('scan-radius').value,
+      }),
+    });
+  } catch {
+    n.style.color = 'var(--wine)';
+    n.textContent = t('sa.scan.timeout');
+    return;
+  }
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    n.style.color = 'var(--wine)';
+    n.textContent = d.error || (res.status === 504 || res.status === 502 ? t('sa.scan.timeout') : t('sa.scan.err'));
+    return;
+  }
+  n.textContent = t('sa.scan.done', { found: d.found, added: d.added, skipped: d.skipped });
+  if (d.google_added) n.textContent += ' · Google +' + d.google_added;
+  if (d.osm_error) n.textContent += ' · OSM : ' + d.osm_error;
+  if (d.google_error) {
+    n.style.color = 'var(--wine)';
+    n.textContent += ' · ' + d.google_error;
+  } else if (!d.google_ok) {
+    n.textContent += ' · ' + t('sa.scan.nogoogle');
+  }
+  prospectFilterCity = document.getElementById('scan-city').value.trim();
+  await loadProspects();
+}
+
+async function runProspectEnrich() {
+  const n = document.getElementById('scan-notice');
+  n.style.display = 'block';
+  n.style.color = 'var(--green)';
+  n.textContent = t('sa.scan.enriching');
+  const res = await fetch('/api/superadmin/prospects/enrich', { method: 'POST' });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    n.style.color = 'var(--wine)';
+    n.textContent = d.error || t('sa.scan.err');
+    return;
+  }
+  n.textContent = t('sa.scan.enriched', {
+    updated: d.updated || 0,
+    website: d.website || 0,
+    google: d.google || 0,
+    pappers: d.pappers || 0,
+  });
+  if (d.google_error || d.pappers_error) {
+    n.style.color = 'var(--wine)';
+    n.textContent += ' · ' + (d.google_error || d.pappers_error);
+  }
+  await loadProspects();
+}
+
+async function emailProspect(id) {
+  if (!confirm(t('sa.confirm.email'))) return;
+  const res = await fetch(`/api/superadmin/prospects/${id}/email`, { method: 'POST' });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) { alert(d.error || t('sa.scan.err')); return; }
+  await loadProspects();
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

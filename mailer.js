@@ -189,4 +189,72 @@ async function sendTestEmail(to) {
   }
 }
 
-module.exports = { sendSpinEmail, sendReminderEmail, sendTestEmail };
+function escMail(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function sendProspectEmail({ restaurantName, contactName, phone, email }) {
+  const transport = await getTransporter();
+  if (!transport) return { ok: false, reason: 'smtp_unconfigured' };
+  const to = 'enzodemonchauxacker@gmail.com';
+  const resto = escMail(restaurantName);
+  const who = escMail(contactName);
+  const tel = escMail(phone);
+  const mail = escMail(email);
+  try {
+    await transport.sendMail({
+      from: await getFromAddress({ name: 'Restau Wheel', email_from_name: 'Restau Wheel' }),
+      to,
+      replyTo: email || undefined,
+      subject: `Prospect Restau Wheel — ${String(restaurantName || '').slice(0, 80)}`,
+      html: `
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#0a0a0a">
+  <p style="font-size:12px;letter-spacing:.14em;color:#ff2d6a;font-weight:700">PROSPECTION</p>
+  <h1 style="font-size:22px;margin:8px 0 16px">Nouveau lead</h1>
+  <p><strong>Restaurant :</strong> ${resto}</p>
+  <p><strong>Contact :</strong> ${who || '—'}</p>
+  <p><strong>Téléphone :</strong> <a href="tel:${tel}">${tel}</a></p>
+  <p><strong>Email :</strong> ${mail ? `<a href="mailto:${mail}">${mail}</a>` : '—'}</p>
+</div>`,
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: e.message };
+  }
+}
+
+async function sendOutreachEmail({ restaurantName, email, unsubUrl }) {
+  const transport = await getTransporter();
+  if (!transport) return { ok: false, reason: 'smtp_unconfigured' };
+  const resto = escMail(restaurantName);
+  try {
+    await transport.sendMail({
+      from: await getFromAddress({ name: 'Restau Wheel', email_from_name: 'Enzo · Restau Wheel' }),
+      to: email,
+      replyTo: 'enzodemonchauxacker@gmail.com',
+      subject: `${restaurantName} — une roue de fidélité pour vos tables`,
+      html: `
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;color:#0a0a0a;line-height:1.5">
+  <p>Bonjour,</p>
+  <p>Je me permets de vous écrire au sujet de <strong>${resto}</strong>.</p>
+  <p>Restau Wheel pose une petite roue sur vos tables : les clients scannent, jouent, et reviennent chercher leur lot. Vous gardez les lots et les probabilités. <strong>20 € / mois</strong>.</p>
+  <p>Vous pouvez tester en 30 secondes, sans compte :<br>
+  <a href="https://restauwheel.com/demo?src=email">restauwheel.com/demo</a></p>
+  <p>Je suis Enzo, 07 68 03 68 38. Répondez à cet email ou appelez-moi si vous voulez voir ça en vrai.</p>
+  <p style="margin-top:28px;font-size:12px;color:#666">
+    Prospection B2B Restau Wheel · Lauris<br>
+    <a href="${unsubUrl}">Ne plus recevoir ces emails</a>
+  </p>
+</div>`,
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: e.message };
+  }
+}
+
+module.exports = { sendSpinEmail, sendReminderEmail, sendTestEmail, sendProspectEmail, sendOutreachEmail };

@@ -523,6 +523,13 @@
       margin: 12px 0 16px;
       font-family: var(--font-mono);
     }
+    .qr-resto {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+    .qr-actions { display: flex; flex-wrap: wrap; gap: 8px; }
     .btn-dl {
       display: inline-block;
       padding: 10px 18px;
@@ -710,10 +717,14 @@
       <h2 class="page-title" data-i18n="admin.qr.title">QR Code</h2>
       <p class="page-desc" data-i18n="admin.qr.desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
       <div class="qr-section">
-        <p data-i18n="admin.qr.scan">Scannez pour accéder à la page client :</p>
+        <div class="qr-resto" id="qr-resto-name"></div>
+        <p data-i18n="admin.qr.scan">Scannez pour accéder à la page client de CE restaurant :</p>
         <img id="qr-img" src="" alt="QR Code">
         <div class="qr-url" id="qr-url"></div>
-        <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png" data-i18n="admin.qr.dl">Télécharger</a>
+        <div class="qr-actions">
+          <a id="qr-open" class="btn-dl" href="#" target="_blank" rel="noopener" data-i18n="admin.qr.open">Ouvrir ma roue</a>
+          <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png" data-i18n="admin.qr.dl">Télécharger</a>
+        </div>
       </div>
     </div>
 
@@ -729,8 +740,9 @@
           <input type="text" id="s-name" data-i18n-placeholder="admin.ph.resto" placeholder="Mon Restaurant">
         </div>
         <div class="field">
-          <label data-i18n="admin.set.info.url">URL publique (pour le QR code)</label>
-          <input type="text" id="s-url" placeholder="https://monrestaurant.com">
+          <label data-i18n="admin.set.info.wheel">Lien unique de votre roue</label>
+          <input type="text" id="s-wheel-url" readonly placeholder="https://restauwheel.com/client?r=…">
+          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px" data-i18n="admin.set.info.wheel.hint">Chaque restaurant a son propre lien et son propre QR. Les clients scannent celui-ci, pas celui d’un autre resto.</small>
         </div>
         <div class="field">
           <label data-i18n="admin.set.info.cooldown">Délai entre 2 tirages (heures)</label>
@@ -852,6 +864,17 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closePrizeModal()" data-i18n="admin.prizes.modal.cancel">Annuler</button>
       <button class="btn-save" onclick="savePrize()" data-i18n="admin.prizes.modal.save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="delete-prize-modal">
+  <div class="modal">
+    <h3 data-i18n="admin.prizes.modal.delete">Supprimer le lot</h3>
+    <p id="delete-prize-msg" style="margin:0 0 18px;color:var(--muted);line-height:1.45"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeletePrizeModal()" data-i18n="admin.prizes.modal.cancel">Annuler</button>
+      <button class="btn-save" style="background:var(--red)" onclick="confirmDeletePrize()" data-i18n="admin.prizes.modal.delete.btn">Supprimer</button>
     </div>
   </div>
 </div>
@@ -1079,7 +1102,7 @@ let cachedPrizes = [];
 
 async function loadPrizes() {
   const res = await fetch('/api/admin/prizes');
-  const prizes = await res.json();
+  const prizes = (await res.json()).filter(p => Number(p.active) !== 0);
   cachedPrizes = prizes;
   const total = prizes.reduce((s, p) => s + p.probability, 0) || 1;
   document.getElementById('prizes-grid').innerHTML = prizes.map(p => {
@@ -1189,10 +1212,35 @@ async function savePrize() {
   }
 }
 
-async function deletePrize(id) {
-  if (!confirm(t('admin.prizes.confirm.del'))) return;
-  await fetch(`/api/admin/prizes/${id}`, { method: 'DELETE' });
-  loadPrizes();
+let pendingDeleteId = null;
+
+function deletePrize(id) {
+  pendingDeleteId = id;
+  document.getElementById('delete-prize-msg').textContent = t('admin.prizes.confirm.del');
+  document.getElementById('delete-prize-modal').classList.add('open');
+}
+
+function closeDeletePrizeModal() {
+  document.getElementById('delete-prize-modal').classList.remove('open');
+  pendingDeleteId = null;
+}
+
+async function confirmDeletePrize() {
+  const id = pendingDeleteId;
+  closeDeletePrizeModal();
+  if (!id) return;
+  const res = await fetch(`/api/admin/prizes/${id}/delete`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    alert(e.error || t('admin.error'));
+    return;
+  }
+  cachedPrizes = cachedPrizes.filter(p => Number(p.id) !== Number(id));
+  await loadPrizes();
 }
 
 // ── QR Code ───────────────────────────────────────────────────────────────────
@@ -1202,7 +1250,14 @@ async function loadQR() {
   const img = document.getElementById('qr-img');
   img.src = data.qr;
   document.getElementById('qr-url').textContent = data.url;
-  document.getElementById('qr-dl').href = data.qr;
+  document.getElementById('qr-resto-name').textContent = data.restaurant_name || '';
+  const open = document.getElementById('qr-open');
+  if (open) open.href = data.url || '#';
+  const dl = document.getElementById('qr-dl');
+  dl.href = data.qr;
+  dl.download = `qrcode-${data.public_code || 'restaurant'}.png`;
+  const wheel = document.getElementById('s-wheel-url');
+  if (wheel && data.url) wheel.value = data.url;
 }
 
 // ── Paramètres ────────────────────────────────────────────────────────────────
@@ -1211,9 +1266,9 @@ async function loadSettings() {
   const s = await res.json();
   const e = await resEmail.json();
   document.getElementById('s-name').value = s.restaurant_name || '';
-  document.getElementById('s-url').value = s.restaurant_url || '';
   document.getElementById('s-cooldown').value = s.spin_cooldown_hours ?? 24;
   if (s.theme_accent) setAccent(s.theme_accent, false);
+  loadQR();
   document.getElementById('s-email-name').value = e.email_from_name || '';
   document.getElementById('s-email-replyto').value = e.email_reply_to || '';
   document.getElementById('s-send-win').checked = e.send_win_email !== 0;
@@ -1283,7 +1338,6 @@ async function saveAccent() {
 async function saveSettings() {
   const body = {
     restaurant_name: document.getElementById('s-name').value.trim(),
-    restaurant_url: document.getElementById('s-url').value.trim(),
     spin_cooldown_hours: parseInt(document.getElementById('s-cooldown').value, 10) || 24,
     theme_accent: document.getElementById('s-accent').value,
   };
@@ -1392,6 +1446,9 @@ function escHtml(s) {
 // Fermer modal en cliquant dehors
 document.getElementById('prize-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('prize-modal')) closePrizeModal();
+});
+document.getElementById('delete-prize-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('delete-prize-modal')) closeDeletePrizeModal();
 });
 
 checkAuth();
