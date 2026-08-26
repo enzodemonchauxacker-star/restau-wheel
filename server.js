@@ -777,6 +777,41 @@ app.get('/api/superadmin/restaurants', requireSuperAdmin, async (req, res) => {
   res.json(rows);
 });
 
+app.get('/api/superadmin/customers', requireSuperAdmin, async (req, res) => {
+  const q = String(req.query.q || '').trim();
+  const rid = parseInt(req.query.restaurant_id, 10);
+  const clauses = [];
+  const params = [];
+  if (rid > 0) {
+    clauses.push('c.restaurant_id=?');
+    params.push(rid);
+  }
+  if (q.length >= 2) {
+    const term = `%${q}%`;
+    clauses.push("(c.first_name ILIKE ? OR c.last_name ILIKE ? OR c.email ILIKE ? OR COALESCE(c.phone,'') ILIKE ? OR r.name ILIKE ?)");
+    params.push(term, term, term, term, term);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  try {
+    const customers = await db.prepare(`
+      SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at, c.restaurant_id,
+             r.name AS restaurant_name,
+             (SELECT COUNT(*)::int FROM spins s WHERE s.customer_id=c.id) AS spin_count,
+             (SELECT MAX(s.won_at) FROM spins s WHERE s.customer_id=c.id) AS last_spin_at
+      FROM customers c
+      JOIN restaurants r ON r.id = c.restaurant_id
+      ${where}
+      ORDER BY c.created_at DESC
+      LIMIT 400
+    `).all(...params);
+    const total = await db.prepare('SELECT COUNT(*)::int AS n FROM customers').get();
+    res.json({ total: total?.n || 0, customers: customers || [] });
+  } catch (e) {
+    console.error('[sa-customers]', e.message);
+    res.status(500).json({ error: 'Impossible de charger les clients' });
+  }
+});
+
 app.get('/api/superadmin/demo-traffic', requireSuperAdmin, async (req, res) => {
   try {
     const todayStart = `(date_trunc('day', NOW() AT TIME ZONE 'Europe/Paris') AT TIME ZONE 'Europe/Paris')`;

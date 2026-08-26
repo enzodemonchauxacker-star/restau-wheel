@@ -113,7 +113,17 @@
     }
     .btn-logout:hover { color: var(--ivory); }
     .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .main { padding: 32px 28px; max-width: 1000px; margin: 0 auto; width: 100%; }
+    .topbar-nav { display: flex; align-items: center; gap: 4px; margin-left: 18px; flex-wrap: wrap; }
+    .topbar-nav button {
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(255,248,231,.58); font-size: .88rem; font-weight: 600;
+      font-family: var(--font-body); padding: 7px 12px; border-radius: var(--radius);
+    }
+    .topbar-nav button:hover { color: var(--ivory); }
+    .topbar-nav button.active {
+      color: var(--brass); background: rgba(255,214,10,.14);
+    }
+    .main { padding: 32px 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
     .page-title { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
     .page-desc { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
     .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 14px; margin-bottom: 32px; }
@@ -212,6 +222,14 @@
     .badge-google { background: rgba(66,133,244,.12); color: #1a73e8; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
     .badge-pappers { background: rgba(111,66,193,.12); color: #6f42c1; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
     .scan-row .chk { display:flex; align-items:center; gap:8px; padding-bottom: 10px; font-size:.88rem; }
+    .clients-bar { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+    .clients-bar input, .clients-bar select {
+      padding: 11px 12px; background: var(--ivory); border: 1px solid var(--line);
+      color: var(--ink); font-size: .95rem; font-family: var(--font-body); border-radius: var(--radius);
+    }
+    .clients-bar input { flex: 1; min-width: 200px; }
+    .clients-bar select { min-width: 180px; }
+    .muted { color: var(--muted); }
     .badge-form { background: rgba(0,194,255,.12); color: #0088aa; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
     .badge-osm { background: rgba(255,214,10,.18); color: #8a6d00; border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
     .badge-emailed { background: rgba(0,229,200,.12); color: var(--green); border-radius: var(--radius); padding: 3px 10px; font-size:.72rem; font-weight:700; font-family: var(--font-mono); }
@@ -263,6 +281,10 @@
       <span class="topbar-logo">🔐</span>
       <h2>Restau Wheel</h2>
       <span class="topbar-badge" data-i18n="sa.top.badge">SUPER ADMIN</span>
+      <nav class="topbar-nav" aria-label="Super admin">
+        <button type="button" class="active" data-page="dash" onclick="showPage('dash')" data-i18n="sa.nav.dash">Tableau de bord</button>
+        <button type="button" data-page="clients" onclick="showPage('clients')" data-i18n="sa.nav.clients">Clients</button>
+      </nav>
     </div>
     <div class="topbar-right">
       <div class="lang-switch" role="group" aria-label="Language">
@@ -274,6 +296,7 @@
   </div>
 
   <div class="main">
+    <div id="page-dash">
     <div class="page-title" data-i18n="sa.dash.title">Tableau de bord</div>
     <p class="page-desc" data-i18n="sa.dash.desc">Gérez tous les restaurants inscrits sur la plateforme</p>
 
@@ -443,6 +466,35 @@
       <button class="btn-save-pwd" onclick="savePwd()" data-i18n="sa.pwd.btn">Changer</button>
       <p class="notice" id="pwd-notice" data-i18n="sa.pwd.ok">✓ Mot de passe mis à jour !</p>
     </div>
+    </div>
+
+    <div id="page-clients" style="display:none">
+      <div class="page-title" data-i18n="sa.clients.title">Clients</div>
+      <p class="page-desc" data-i18n="sa.clients.desc">Tous les joueurs de tous les restaurants. Filtrez par nom, email, téléphone ou resto.</p>
+      <div class="clients-bar">
+        <input type="text" id="clients-q" data-i18n-placeholder="sa.clients.ph" placeholder="Nom, email, téléphone, restaurant…" oninput="onClientsSearch()" onkeydown="if(event.key==='Enter') loadCustomers()">
+        <select id="clients-resto" onchange="loadCustomers()">
+          <option value="" data-i18n="sa.clients.all">Tous les restaurants</option>
+        </select>
+      </div>
+      <p class="page-desc" id="clients-count" style="margin-bottom:12px"></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="sa.th.name">Nom</th>
+              <th data-i18n="sa.th.email">Email</th>
+              <th data-i18n="sa.th.phone">Téléphone</th>
+              <th data-i18n="sa.th.resto">Restaurant</th>
+              <th data-i18n="sa.th.spins">Tirages</th>
+              <th data-i18n="sa.th.lastspin">Dernier tirage</th>
+              <th data-i18n="sa.th.date">Inscrit le</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -476,12 +528,15 @@ const t = (k, v) => window.RW_I18N.t(k, v);
 const loc = () => window.RW_I18N.locale();
 let editingId = null;
 let restaurants = [];
+let currentPage = 'dash';
 
 document.addEventListener('rw:lang', () => {
   if (document.getElementById('app').style.display !== 'flex') return;
   loadRestaurants();
   loadProspects();
   loadDemoTraffic();
+  fillClientsRestoFilter();
+  if (currentPage === 'clients') loadCustomers();
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
@@ -525,6 +580,8 @@ async function showApp() {
   await Promise.all([loadRestaurants(), loadSMTP(), loadScanSettings(), loadDemoTraffic()]);
   prospectFilterCity = document.getElementById('scan-city').value.trim();
   await loadProspects();
+  const hash = (location.hash || '').replace('#', '');
+  showPage(hash === 'clients' ? 'clients' : 'dash');
 }
 
 async function loadSMTP() {
@@ -590,6 +647,7 @@ async function loadRestaurants() {
       </td>
     </tr>
   `).join('');
+  fillClientsRestoFilter();
 }
 
 function uniqLabel(n) {
@@ -897,6 +955,69 @@ async function savePwd() {
 }
 
 // Vérifier si déjà connecté
+function showPage(name) {
+  currentPage = name === 'clients' ? 'clients' : 'dash';
+  document.getElementById('page-dash').style.display = currentPage === 'dash' ? 'block' : 'none';
+  document.getElementById('page-clients').style.display = currentPage === 'clients' ? 'block' : 'none';
+  document.querySelectorAll('.topbar-nav [data-page]').forEach((el) => {
+    el.classList.toggle('active', el.getAttribute('data-page') === currentPage);
+  });
+  const nextHash = currentPage === 'clients' ? '#clients' : '#dash';
+  if (location.hash !== nextHash) history.replaceState(null, '', nextHash);
+  if (currentPage === 'clients') loadCustomers();
+}
+
+function fillClientsRestoFilter() {
+  const sel = document.getElementById('clients-resto');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${t('sa.clients.all')}</option>` +
+    restaurants.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  if ([...sel.options].some((o) => o.value === current)) sel.value = current;
+}
+
+function onClientsSearch() {
+  clearTimeout(onClientsSearch.t);
+  onClientsSearch.t = setTimeout(() => loadCustomers(), 250);
+}
+
+async function loadCustomers() {
+  const q = document.getElementById('clients-q').value.trim();
+  const rid = document.getElementById('clients-resto').value;
+  const params = new URLSearchParams();
+  if (q.length >= 2) params.set('q', q);
+  if (rid) params.set('restaurant_id', rid);
+  const res = await fetch('/api/superadmin/customers' + (params.toString() ? `?${params}` : ''));
+  const tbody = document.getElementById('clients-tbody');
+  const countEl = document.getElementById('clients-count');
+  if (!res.ok) {
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">${t('sa.clients.err')}</td></tr>`;
+    return;
+  }
+  const data = await res.json();
+  const rows = data.customers || [];
+  countEl.textContent = t('sa.clients.count', { n: rows.length, total: data.total || rows.length });
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">${t('sa.clients.empty')}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((c) => {
+    const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || '—';
+    const last = c.last_spin_at ? new Date(c.last_spin_at).toLocaleString(loc()) : '—';
+    const tel = c.phone ? `<a href="tel:${esc(c.phone)}">${esc(c.phone)}</a>` : '—';
+    const mail = c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '—';
+    return `<tr>
+      <td><strong>${esc(name)}</strong></td>
+      <td>${mail}</td>
+      <td>${tel}</td>
+      <td>${esc(c.restaurant_name || '—')}</td>
+      <td>${c.spin_count || 0}</td>
+      <td>${last}</td>
+      <td>${c.created_at ? new Date(c.created_at).toLocaleDateString(loc()) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
 (async () => {
   const res = await fetch('/api/superadmin/me');
   const d   = await res.json();
