@@ -37,30 +37,56 @@
     }
     .wrap { position: relative; z-index: 1; }
 
-    /* NAV */
+    /* Chrome — couche translucide, le contenu défile dessous */
+    .chrome {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(10, 10, 10, 0.78);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+    }
+    .chrome::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -18px;
+      height: 18px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.32), transparent);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .chrome.is-scrolled::after { opacity: 1; }
+    .chrome.is-scrolled {
+      background: rgba(10, 10, 10, 0.88);
+    }
+
     .nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.25rem clamp(1.25rem, 4vw, 4rem);
+      padding: 0.85rem clamp(1.25rem, 4vw, 4rem);
       max-width: 1440px;
       margin: 0 auto;
-      animation: fadeUp 0.7s var(--ease) both;
     }
     .brand {
       font-family: var(--font-display);
       font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: 0.04em;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+      font-optical-sizing: auto;
     }
-    .nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-actions { display: flex; align-items: center; gap: 1.15rem; }
     .nav-link {
       font-size: 0.9rem;
-      font-weight: 500;
-      color: rgba(255,248,231,0.7);
-      transition: color 0.2s;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: rgba(255,248,231,0.82);
+      padding: 0.35rem 0;
+      transition: color 80ms ease-out, transform 80ms ease-out;
     }
     .nav-link:hover { color: var(--ivory); }
+    .nav-link:active { transform: scale(0.97); color: var(--ivory); }
     .nav .btn { padding: 0.65rem 1.1rem; font-size: 0.82rem; }
 
     /* HERO */
@@ -72,7 +98,7 @@
       max-width: 1440px;
       margin: 0 auto;
       padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 6rem);
-      min-height: calc(100vh - 80px);
+      min-height: calc(100vh - 4.5rem);
     }
     .tag {
       display: inline-block;
@@ -89,27 +115,39 @@
       font-size: clamp(2.6rem, 6vw, 4.2rem);
       font-weight: 700;
       line-height: 1.05;
+      letter-spacing: -0.03em;
+      font-optical-sizing: auto;
       margin-bottom: 1.25rem;
       max-width: 12ch;
     }
     .hero-sub {
       font-size: 1.1rem;
       line-height: 1.55;
+      letter-spacing: 0.005em;
       color: rgba(255,248,231,0.72);
       max-width: 36ch;
       margin-bottom: 2rem;
     }
     .cta-row { display: flex; flex-wrap: wrap; gap: 0.9rem; }
 
-    /* Ticket visual */
+    /* Ticket — physique via --tx/--ty/--rx/--ry/--rz */
     .hero-visual {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1rem;
+    }
+    .ticket-stage {
+      perspective: 920px;
+      width: min(100%, 400px);
     }
     .ticket {
-      --tilt: 2deg;
-      --lift: 0px;
-      width: min(100%, 400px);
+      --tx: 0px;
+      --ty: 0px;
+      --rx: 0deg;
+      --ry: 0deg;
+      --rz: 2deg;
+      width: 100%;
       background: var(--ivory);
       color: var(--ink);
       padding: 2rem 1.75rem;
@@ -118,13 +156,18 @@
       box-shadow:
         10px 10px 0 #ff2d6a,
         0 30px 60px rgba(0,0,0,0.35);
-      transform: translateY(var(--lift)) rotate(var(--tilt));
-      transition: transform 0.45s var(--ease);
+      transform:
+        translate3d(var(--tx), var(--ty), 0)
+        rotateX(var(--rx))
+        rotateY(var(--ry))
+        rotateZ(var(--rz));
+      transform-style: preserve-3d;
+      will-change: transform;
+      cursor: grab;
+      touch-action: pan-y;
+      user-select: none;
     }
-    .ticket.is-in:hover {
-      --tilt: 0deg;
-      --lift: -4px;
-    }
+    .ticket.is-held { cursor: grabbing; }
     .ticket::before,
     .ticket::after {
       content: '';
@@ -152,6 +195,8 @@
     .ticket h2 {
       font-family: var(--font-display);
       font-size: 2rem;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
       margin-bottom: 0.35rem;
     }
     .ticket-meta {
@@ -178,9 +223,12 @@
           #fff8e7 315deg 360deg
         );
       position: relative;
-      animation: spinSlow 18s linear infinite;
       box-shadow: inset 0 0 0 3px var(--ink);
+      cursor: grab;
+      touch-action: none;
+      will-change: transform;
     }
+    .wheel-mini:active { cursor: grabbing; }
     .wheel-mini::after {
       content: '';
       position: absolute;
@@ -188,8 +236,8 @@
       border-radius: 50%;
       background: var(--brass);
       box-shadow: 0 0 0 3px var(--ink);
+      pointer-events: none;
     }
-    @keyframes spinSlow { to { transform: rotate(360deg); } }
     .ticket-note {
       font-size: 0.82rem;
       line-height: 1.45;
@@ -208,6 +256,15 @@
       animation: stampIn 0.6s var(--ease) 0.8s both;
       background: rgba(255,45,106,0.08);
     }
+    .ticket-hint {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,248,231,0.45);
+      transition: opacity 0.4s ease;
+    }
+    .ticket-hint.is-gone { opacity: 0; }
 
     /* HOW */
     .how {
@@ -220,7 +277,8 @@
       font-family: var(--font-mono);
       font-size: 0.72rem;
       letter-spacing: 0.18em;
-      color: var(--brass);
+      color: var(--wine);
+      font-weight: 500;
       margin-bottom: 0.75rem;
     }
     .how h2,
@@ -230,6 +288,8 @@
       font-size: clamp(2rem, 4vw, 2.7rem);
       font-weight: 700;
       line-height: 1.1;
+      letter-spacing: -0.025em;
+      font-optical-sizing: auto;
       margin-bottom: 2.5rem;
     }
     .steps {
@@ -241,12 +301,13 @@
       background: var(--ticket);
       border: 3px solid var(--ink);
       padding: 1.75rem 1.5rem;
-      transition: transform 0.35s var(--ease), box-shadow 0.35s, opacity 0.7s var(--ease);
+      transition: transform 100ms ease-out, box-shadow 0.35s, opacity 0.7s var(--ease);
     }
     .step.is-in:hover {
       transform: translateY(-4px);
       box-shadow: 6px 6px 0 #ff2d6a;
     }
+    .step.is-in:active { transform: scale(0.985); }
     .step-num {
       font-family: var(--font-mono);
       font-size: 0.8rem;
@@ -256,6 +317,8 @@
     .step h3 {
       font-family: var(--font-display);
       font-size: 1.6rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
       margin-bottom: 0.7rem;
     }
     .step p {
@@ -276,10 +339,15 @@
       gap: 1rem;
     }
     .feat {
-      border: 3px solid var(--brass);
-      background: #141414;
+      border: 3px solid rgba(255, 214, 10, 0.55);
+      background: rgba(20, 20, 20, 0.72);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
       padding: 1.5rem 1.25rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+      transition: transform 100ms ease-out;
     }
+    .feat:active { transform: scale(0.985); }
     .feat-bar {
       width: 2rem;
       height: 3px;
@@ -289,12 +357,14 @@
     .feat h3 {
       font-family: var(--font-display);
       font-size: 1.15rem;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
       margin-bottom: 0.6rem;
     }
     .feat p {
       font-size: 0.88rem;
-      line-height: 1.45;
-      color: rgba(255,248,231,0.6);
+      line-height: 1.5;
+      color: rgba(255,248,231,0.68);
     }
 
     /* CTA */
@@ -307,6 +377,13 @@
       color: rgba(255,248,231,0.75);
       margin: -1.5rem auto 1.75rem;
       max-width: 40ch;
+      line-height: 1.5;
+    }
+
+    #comment,
+    .features,
+    .cta-band {
+      scroll-margin-top: 4.25rem;
     }
 
     /* FOOTER */
@@ -325,6 +402,11 @@
       font-size: 0.9rem;
       color: rgba(255,248,231,0.55);
     }
+    .footer a {
+      color: rgba(255,248,231,0.7);
+      font-weight: 500;
+    }
+    .footer a:hover { color: var(--ivory); }
 
     /* ── Scroll reveals ── */
     .reveal {
@@ -337,26 +419,11 @@
       will-change: opacity, transform;
     }
     .reveal.from-left { transform: translateX(-40px); }
-    .reveal.from-right { transform: translateX(40px) rotate(4deg); }
+    .reveal.from-right { transform: translateX(40px); }
     .reveal.scale-up { transform: translateY(24px) scale(0.94); }
-    .reveal.clip-up {
-      transform: none;
-      clip-path: inset(0 0 100% 0);
-      transition:
-        opacity 0.7s var(--ease),
-        clip-path 0.9s var(--ease);
-      transition-delay: var(--d, 0ms);
-    }
     .reveal.is-in {
       opacity: 1;
       transform: none;
-      clip-path: inset(0 0 0 0);
-    }
-    .ticket.reveal.from-right {
-      transform: translateX(48px) rotate(6deg);
-    }
-    .ticket.reveal.is-in {
-      transform: translateY(var(--lift)) rotate(var(--tilt));
     }
     .feat.reveal.is-in .feat-bar {
       animation: barGrow 0.55s var(--ease) both;
@@ -371,73 +438,110 @@
       .hero { grid-template-columns: 1fr; min-height: auto; text-align: left; }
       .hero h1 { max-width: none; }
       .steps, .feat-grid { grid-template-columns: 1fr; }
-      .ticket { --tilt: 0deg; margin-top: 0.5rem; }
+      .nav-how { display: none; }
       .reveal.from-left,
       .reveal.from-right { transform: translateY(28px); }
+    }
+    @media (max-width: 480px) {
+      .brand { font-size: 0.95rem; }
+      .nav { padding: 0.7rem 1rem; gap: 0.5rem; }
+      .nav-actions { gap: 0.55rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .reveal,
-      .reveal.clip-up,
       .reveal.from-left,
       .reveal.from-right,
       .reveal.scale-up {
         opacity: 1 !important;
         transform: none !important;
-        clip-path: none !important;
         transition: none !important;
       }
-      .wheel-mini { animation: none; }
+      .ticket { cursor: default; }
+      .wheel-mini { cursor: default; }
+      .stamp { animation: none; }
       .feat.reveal.is-in .feat-bar { animation: none; }
+      .step.is-in:hover,
+      .step.is-in:active,
+      .feat:active,
+      .nav-link:active { transform: none; }
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      .chrome {
+        background: #0a0a0a;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      .feat {
+        background: #141414;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+    @media (prefers-contrast: more) {
+      .chrome {
+        background: #000;
+        border-bottom: 2px solid var(--brass);
+      }
+      .chrome::after { display: none; }
+      .feat { border-color: var(--brass); background: #000; }
+      .nav-link { color: var(--ivory); }
+      .hero-sub { color: var(--ivory); }
+      .feat p { color: var(--ivory); }
     }
   </style>
 </head>
 <body>
 <div class="wrap">
 
-  <nav class="nav">
-    <a href="/" class="brand">RESTAU WHEEL</a>
-    <div class="nav-actions">
-      <div class="lang-switch" role="group" aria-label="Language">
-        <button type="button" data-lang-btn="fr">FR</button>
-        <button type="button" data-lang-btn="en">EN</button>
+  <header class="chrome" id="chrome">
+    <nav class="nav">
+      <a href="/" class="brand">RESTAU WHEEL</a>
+      <div class="nav-actions">
+        <a class="nav-link nav-how" href="#comment" data-i18n="nav.how">Comment ça marche</a>
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang-btn="fr">FR</button>
+          <button type="button" data-lang-btn="en">EN</button>
+        </div>
+        <a class="nav-link" href="/admin" data-i18n="nav.login">Connexion</a>
+        <a class="btn btn-brass" href="/register" data-i18n="nav.start">Commencer</a>
       </div>
-      <a class="nav-link" href="/admin" data-i18n="nav.login">Connexion</a>
-      <a class="btn btn-brass" href="/register" data-i18n="nav.start">Commencer</a>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
   <section class="hero">
     <div class="hero-copy">
-      <div class="tag reveal" style="--d:0ms" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
-      <h1 class="reveal clip-up" style="--d:80ms" data-i18n="land.h1">Faites tourner la chance à table.</h1>
-      <p class="hero-sub reveal" style="--d:180ms" data-i18n="land.sub">Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.</p>
-      <div class="cta-row reveal" style="--d:280ms">
+      <div class="tag reveal is-in" style="--d:0ms" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
+      <h1 class="reveal is-in" style="--d:80ms" data-i18n="land.h1">Faites tourner la chance à table.</h1>
+      <p class="hero-sub reveal is-in" style="--d:180ms" data-i18n="land.sub">Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.</p>
+      <div class="cta-row reveal is-in" style="--d:280ms">
         <a class="btn btn-wine" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
         <a class="btn btn-brass" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
-        <a class="btn btn-ghost" href="#comment" data-i18n="land.how">Voir comment</a>
       </div>
     </div>
 
     <div class="hero-visual">
-      <div class="ticket reveal from-right" style="--d:200ms" aria-hidden="true" id="hero-ticket">
-        <div class="ticket-top">
-          <span data-i18n="land.ticket.top">BON DE CHANCE</span>
-          <span class="warn" data-i18n="land.ticket.warn">VALABLE 7 J</span>
+      <div class="ticket-stage reveal from-right is-in" style="--d:200ms">
+        <div class="ticket" id="hero-ticket">
+          <div class="ticket-top">
+            <span data-i18n="land.ticket.top">BON DE CHANCE</span>
+            <span class="warn" data-i18n="land.ticket.warn">VALABLE 7 J</span>
+          </div>
+          <h2 data-i18n="land.ticket.h2">Dessert offert</h2>
+          <p class="ticket-meta" data-i18n="land.ticket.meta">Gagné au tirage · Table 12</p>
+          <div class="wheel-mini" id="hero-wheel" role="img" aria-label="Roue"></div>
+          <p class="ticket-note" data-i18n="land.ticket.note">Présentez ce ticket à votre prochaine visite. Le restaurateur valide le lot.</p>
+          <span class="stamp" data-i18n="land.ticket.stamp">À RÉCLAMER</span>
         </div>
-        <h2 data-i18n="land.ticket.h2">Dessert offert</h2>
-        <p class="ticket-meta" data-i18n="land.ticket.meta">Gagné au tirage · Table 12</p>
-        <div class="wheel-mini"></div>
-        <p class="ticket-note" data-i18n="land.ticket.note">Présentez ce ticket à votre prochaine visite. Le restaurateur valide le lot.</p>
-        <span class="stamp" data-i18n="land.ticket.stamp">À RÉCLAMER</span>
       </div>
+      <p class="ticket-hint" id="ticket-hint" data-i18n="land.ticket.hint">Glissez le ticket · Tournez la roue</p>
     </div>
   </section>
 
   <section class="how" id="comment">
     <div class="how-inner">
       <p class="eyebrow reveal" style="--d:0ms" data-i18n="land.steps.eyebrow">03 ÉTAPES</p>
-      <h2 class="reveal clip-up" style="--d:60ms" data-i18n="land.steps.h2">Simple comme un ticket.</h2>
+      <h2 class="reveal" style="--d:60ms" data-i18n="land.steps.h2">Simple comme un ticket.</h2>
       <div class="steps">
         <article class="step reveal" style="--d:0ms">
           <div class="step-num">01</div>
@@ -460,7 +564,7 @@
 
   <section class="features">
     <div class="features-inner">
-      <h2 class="reveal clip-up" data-i18n="land.feat.h2" data-i18n-keep-br>Tout ce qu'il faut<br>pour faire revenir.</h2>
+      <h2 class="reveal" data-i18n="land.feat.h2" data-i18n-keep-br>Tout ce qu'il faut<br>pour faire revenir.</h2>
       <div class="feat-grid">
         <article class="feat reveal" style="--d:0ms">
           <div class="feat-bar"></div>
@@ -505,7 +609,6 @@
 </div>
 <script src="/js/i18n.js"></script>
 <script>
-  // Sync document title
   document.title = window.RW_I18N ? window.RW_I18N.t('land.title') : document.title;
   document.addEventListener('rw:lang', () => {
     document.title = window.RW_I18N.t('land.title');
@@ -529,24 +632,13 @@
     reveals.forEach(el => io.observe(el));
   }
 
-  // Ticket parallax on scroll
-  const ticket = document.getElementById('hero-ticket');
-  if (ticket && !reduce) {
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const lift = Math.max(-28, -y * 0.08);
-        const tilt = 2 + Math.min(4, y * 0.01);
-        ticket.style.setProperty('--lift', `${lift}px`);
-        ticket.style.setProperty('--tilt', `${tilt}deg`);
-        ticking = false;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
+  // Chrome : masque de bordure au scroll (pas un divider dur)
+  const chrome = document.getElementById('chrome');
+  const onChromeScroll = () => {
+    chrome.classList.toggle('is-scrolled', window.scrollY > 8);
+  };
+  onChromeScroll();
+  window.addEventListener('scroll', onChromeScroll, { passive: true });
 
   // Smooth scroll for in-page anchors
   document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -558,6 +650,223 @@
       target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     });
   });
+
+  /* ── Physique Apple : springs, 1:1, velocity, rubber-band ── */
+  (function () {
+    const ticket = document.getElementById('hero-ticket');
+    const wheel = document.getElementById('hero-wheel');
+    const hint = document.getElementById('ticket-hint');
+    if (!ticket || !wheel) return;
+
+    const IDLE_SPIN = 20; // deg/s — même rythme que l’ancienne anim 18s
+    const REST_RZ = 2;
+
+    function springStep(state, target, dt, response, damping) {
+      const omega = (2 * Math.PI) / response;
+      const accel = (target - state.x) * omega * omega - state.v * (2 * damping * omega);
+      state.v += accel * dt;
+      state.x += state.v * dt;
+    }
+    function rubberband(overshoot, dimension, constant) {
+      return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
+    }
+    function hideHint() {
+      if (hint && !hint.classList.contains('is-gone')) hint.classList.add('is-gone');
+    }
+
+    const tx = { x: 0, v: 0 };
+    const ty = { x: 0, v: 0 };
+    const rx = { x: 0, v: 0 };
+    const ry = { x: 0, v: 0 };
+    const rz = { x: REST_RZ, v: 0 };
+
+    let dragging = false;
+    let spinning = false;
+    let pointerId = null;
+    let startX = 0, startY = 0;
+    let restTx = 0, restTy = 0;
+    let hover = false;
+    let hoverRx = 0, hoverRy = 0;
+    const samples = [];
+
+    let wheelAngle = 0;
+    let flickVel = 0;
+    let lastWheelAng = null;
+    const wheelSamples = [];
+
+    function tiltFromEvent(e) {
+      const r = ticket.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      hoverRy = px * 16;
+      hoverRx = -py * 12;
+    }
+    function pushSample(arr, t, a, b) {
+      arr.push({ t, a, b });
+      while (arr.length > 5) arr.shift();
+    }
+    function velocity(arr, key) {
+      if (arr.length < 2) return 0;
+      const a = arr[0], b = arr[arr.length - 1];
+      const dt = (b.t - a.t) / 1000;
+      if (dt <= 0) return 0;
+      return (b[key] - a[key]) / dt;
+    }
+    function applyTicket() {
+      ticket.style.setProperty('--tx', tx.x + 'px');
+      ticket.style.setProperty('--ty', ty.x + 'px');
+      ticket.style.setProperty('--rx', rx.x + 'deg');
+      ticket.style.setProperty('--ry', ry.x + 'deg');
+      ticket.style.setProperty('--rz', rz.x + 'deg');
+    }
+    function applyWheel() {
+      wheel.style.transform = 'rotate(' + wheelAngle + 'deg)';
+    }
+    function angleAt(e) {
+      const r = wheel.getBoundingClientRect();
+      return Math.atan2(
+        e.clientY - (r.top + r.height / 2),
+        e.clientX - (r.left + r.width / 2)
+      ) * (180 / Math.PI);
+    }
+
+    if (!reduce) {
+      let lastT = performance.now();
+      function loop(now) {
+        const dt = Math.min(0.032, (now - lastT) / 1000);
+        lastT = now;
+
+        if (!dragging) {
+          springStep(tx, 0, dt, 0.4, 1.0);
+          springStep(ty, 0, dt, 0.4, 1.0);
+          springStep(rz, REST_RZ, dt, 0.4, 1.0);
+          const tRx = hover ? hoverRx : 0;
+          const tRy = hover ? hoverRy : 0;
+          springStep(rx, tRx, dt, 0.3, 1.0);
+          springStep(ry, tRy, dt, 0.3, 1.0);
+        }
+        applyTicket();
+
+        if (!spinning) {
+          // Friction exponentielle vers l’idle (Apple 0.998 / ms)
+          flickVel *= Math.pow(0.998, dt * 1000);
+          wheelAngle += (IDLE_SPIN + flickVel) * dt;
+        }
+        applyWheel();
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    ticket.addEventListener('pointerenter', (e) => {
+      if (reduce) return;
+      hover = true;
+      tiltFromEvent(e);
+    });
+    ticket.addEventListener('pointerleave', () => {
+      hover = false;
+    });
+    ticket.addEventListener('pointermove', (e) => {
+      if (reduce || dragging || spinning) return;
+      if (hover) tiltFromEvent(e);
+    });
+
+    ticket.addEventListener('pointerdown', (e) => {
+      if (reduce || e.button) return;
+      const onWheel = e.target.closest('.wheel-mini');
+      startX = e.clientX;
+      startY = e.clientY;
+      restTx = tx.x;
+      restTy = ty.x;
+      pointerId = e.pointerId;
+      samples.length = 0;
+      wheelSamples.length = 0;
+      hideHint();
+
+      if (onWheel) {
+        spinning = true;
+        dragging = false;
+        ticket.classList.add('is-held');
+        lastWheelAng = angleAt(e);
+        flickVel = 0;
+        ticket.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        return;
+      }
+      // Ticket : tracking 1:1 après ~10 px d’hystérésis
+    });
+
+    ticket.addEventListener('pointermove', (e) => {
+      if (reduce || e.pointerId !== pointerId) return;
+
+      if (spinning) {
+        const ang = angleAt(e);
+        let delta = ang - lastWheelAng;
+        if (delta > 180) delta -= 360;
+        if (delta < -180) delta += 360;
+        wheelAngle += delta;
+        lastWheelAng = ang;
+        pushSample(wheelSamples, performance.now(), wheelAngle, 0);
+        applyWheel();
+        return;
+      }
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const dist = Math.hypot(dx, dy);
+
+      if (!dragging) {
+        if (dist < 10) return;
+        const isTouch = e.pointerType === 'touch';
+        if (isTouch && Math.abs(dy) > Math.abs(dx) * 1.35) {
+          pointerId = null;
+          return;
+        }
+        dragging = true;
+        hover = true;
+        ticket.classList.add('is-held');
+        ticket.style.touchAction = 'none';
+        ticket.setPointerCapture(e.pointerId);
+      }
+
+      let nx = restTx + dx;
+      let ny = restTy + dy;
+      const limit = 90;
+      if (Math.abs(nx) > limit) nx = Math.sign(nx) * limit + rubberband(nx - Math.sign(nx) * limit, 280, 0.55);
+      if (Math.abs(ny) > limit) ny = Math.sign(ny) * limit + rubberband(ny - Math.sign(ny) * limit, 360, 0.55);
+      tx.x = nx;
+      ty.x = ny;
+      tiltFromEvent(e);
+      rx.x = hoverRx;
+      ry.x = hoverRy;
+      pushSample(samples, performance.now(), nx, ny);
+      applyTicket();
+    });
+
+    function endGesture(e) {
+      if (e && pointerId != null && e.pointerId !== pointerId) return;
+
+      if (spinning) {
+        const v = velocity(wheelSamples, 'a');
+        flickVel = wheelSamples.length >= 2 ? v : 480;
+        lastWheelAng = null;
+      }
+      if (dragging) {
+        tx.v = velocity(samples, 'a');
+        ty.v = velocity(samples, 'b');
+        rx.v = 0;
+        ry.v = 0;
+      }
+      dragging = false;
+      spinning = false;
+      pointerId = null;
+      ticket.classList.remove('is-held');
+      ticket.style.touchAction = 'pan-y';
+    }
+
+    ticket.addEventListener('pointerup', endGesture);
+    ticket.addEventListener('pointercancel', endGesture);
+  })();
 </script>
 </body>
 </html>
