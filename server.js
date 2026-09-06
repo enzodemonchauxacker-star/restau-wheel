@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo)\/?$/.test(req.path)
+    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video)\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -1253,6 +1253,7 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
+app.get('/video',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'video', 'index.html')));
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────
