@@ -1,0 +1,4 @@
+# Keep large promo videos out of the Vercel serverless bundle.
+# They are served via jsDelivr from GitHub instead.
+public/video/*.mp4
+public/restau_wheel_promo.mp4
