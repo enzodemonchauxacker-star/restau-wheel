@@ -20,7 +20,9 @@ a{display:inline-block;margin-top:1rem;padding:.8rem 1.3rem;border-radius:999px;
 <a id="dl" download="restau_wheel_promo_20s.mp4">Télécharger</a>
 <script>
 const local='/video/restau_wheel_promo_20s.mp4?v=11';
+const cdn='https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@0b8dee4256bb820d7984031fa29f9ea831842dc3/public/video/restau_wheel_promo_20s.mp4';
 const v=document.getElementById('v'); const dl=document.getElementById('dl');
 v.src=local; dl.href=local;
+v.addEventListener('error',()=>{v.src=cdn; dl.href=cdn;});
 </script>
 </div></body></html>
