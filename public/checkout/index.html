@@ -352,6 +352,8 @@
       .vcard { max-width: 100%; }
     }
   </style>
+<link rel="stylesheet" href="/css/meta-consent.css">
+<script defer src="/js/meta-consent.js"></script>
 </head>
 <body>
   <div class="shell">
@@ -597,6 +599,7 @@
           body: JSON.stringify({
             email,
             name,
+            ads: window.rwAdsMetadata?.() || { consent: false },
             demo: true,
             last4: number.slice(-4),
             brand: detectBrand(number),

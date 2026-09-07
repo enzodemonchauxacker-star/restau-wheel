@@ -17,6 +17,10 @@ if (process.env.VERCEL) {
   app.set('trust proxy', 1);
 }
 
+const metaSales = require('./lib/meta-sales');
+app.post('/api/webhooks/stripe-meta', express.raw({ type: 'application/json' }),
+  metaSales.createHandler({ getStripe: () => stripe, store: metaSales.sqlStore(db) }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
@@ -1207,7 +1211,7 @@ app.post('/api/checkout', async (req, res) => {
         line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
         success_url: `${origin}/admin?paid=1`,
         cancel_url: `${origin}/checkout?canceled=1`,
-        metadata: { customer_name: name },
+        metadata: { customer_name: name, ...metaSales.checkoutMetadata(req.body?.ads) },
       });
       return res.json({ checkoutUrl: session.url });
     } catch (e) {

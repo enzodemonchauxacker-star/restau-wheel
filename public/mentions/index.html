@@ -127,6 +127,7 @@
     }
     a.inline { color: var(--wine); text-decoration: underline; text-underline-offset: 2px; }
   </style>
+<link rel="stylesheet" href="/css/meta-consent.css">
 </head>
 <body>
   <div class="shell">
@@ -188,6 +189,12 @@
       <p data-i18n="legal.db.p">Les données applicatives sont stockées sur Neon (Postgres serverless), connecté via l’intégration Vercel Marketplace.</p>
     </section>
 
+    <section class="panel" id="meta-publicite">
+      <h2>Mesure publicitaire Meta</h2>
+      <p>Avec votre consentement, nous utilisons le pixel Meta sur nos pages commerciales pour mesurer les visites issues de nos publicités. Il peut transmettre à Meta l’adresse de la page consultée, votre adresse IP, des informations sur votre navigateur et des identifiants de cookies publicitaires. Meta peut rapprocher ces informations de votre compte Meta.</p>
+      <p>Le pixel ne se charge pas avant votre accord. Le refus ne bloque pas le service. Vous pouvez retirer votre accord via le bouton « Cookies publicitaires ». Votre choix est conservé au maximum 180 jours dans ce navigateur. Le pixel ne se charge pas sur la roue des clients, les espaces administrateurs ni la page de paiement. Avec votre accord au moment de lancer le paiement, la confirmation du premier paiement est transmise à Meta par notre serveur : montant, devise, date, identifiant de transaction, email haché et identifiants publicitaires disponibles. Les renouvellements mensuels sont exclus. Le hachage permet à Meta de rapprocher votre email de ses comptes ; il ne rend pas cette donnée anonyme.</p>
+      <p>Consultez la <a href="https://www.facebook.com/privacy/policy/">politique de confidentialité Meta</a>. Pour toute question, contactez contact@restauwheel.com.</p>
+    </section>
     <section class="panel" id="privacy">
       <h2 data-i18n="legal.privacy.h">Données personnelles</h2>
       <p data-i18n="legal.privacy.p1">Restau Wheel traite des données nécessaires au service de fidélisation (identité du client restaurant, email, téléphone, historique de tirages et gains), ainsi que les données de compte restaurateur et de facturation.</p>
@@ -215,5 +222,6 @@
       document.title = window.RW_I18N.t('legal.title');
     });
   </script>
+<script src="/js/meta-consent.js"></script>
 </body>
 </html>
