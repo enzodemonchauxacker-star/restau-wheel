@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <title>Restau Wheel – Vidéo Promo (typewriter)</title>
+  <title>Restau Wheel – Vidéo Promo (SFX)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -19,11 +18,7 @@
       justify-content: center;
       padding: 1.5rem;
     }
-    .container {
-      max-width: 480px;
-      width: 100%;
-      text-align: center;
-    }
+    .container { max-width: 480px; width: 100%; text-align: center; }
     .badge {
       display: inline-block;
       margin-bottom: 0.85rem;
@@ -36,16 +31,8 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: #ffd60a;
-    }
-    p {
-      color: #a0a0b0;
-      font-size: 0.95rem;
-      margin-bottom: 1.25rem;
-    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #ffd60a; }
+    p { color: #a0a0b0; font-size: 0.95rem; margin-bottom: 1.25rem; }
     .video-wrap {
       position: relative;
       width: 100%;
@@ -56,18 +43,8 @@
       box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 0 2px #ffd60a;
       background: #000;
     }
-    video {
-      width: 100%;
-      height: auto;
-      display: block;
-      aspect-ratio: 9/16;
-    }
-    .actions {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    video { width: 100%; height: auto; display: block; aspect-ratio: 9/16; }
+    .actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
     a.btn {
       display: inline-block;
       padding: 0.8rem 1.4rem;
@@ -75,45 +52,33 @@
       text-decoration: none;
       font-weight: 700;
       font-size: 0.95rem;
-      transition: transform 0.15s ease;
     }
-    a.btn-primary {
-      background: #ffd60a;
-      color: #0a0a0a;
-    }
-    a.btn-secondary {
-      background: #1a1a24;
-      color: #fff8e7;
-      border: 1px solid #333345;
-    }
-    a.btn:hover {
-      transform: scale(1.03);
-    }
+    a.btn-primary { background: #ffd60a; color: #0a0a0a; }
+    a.btn-secondary { background: #1a1a24; color: #fff8e7; border: 1px solid #333345; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="badge">Version machine à écrire • v3</div>
+    <div class="badge">v4 • Typewriter + SFX phonk</div>
     <h1>Restau Wheel — Motion Video</h1>
-    <p>Le texte s’écrit lettre par lettre (comme un clavier). 9:16 • 20s</p>
-    
+    <p>Texte machine à écrire + beat phonk + whoosh / ticks / impacts. 9:16 • 20s</p>
     <div class="video-wrap">
-      <video
-        controls
-        playsinline
-        preload="auto"
-        src="https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@d729af2/public/video/restau_wheel_promo_typewriter.mp4"
-      ></video>
+      <video id="promo" controls playsinline preload="auto"></video>
     </div>
-
     <div class="actions">
-      <a
-        class="btn btn-primary"
-        href="https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@d729af2/public/video/restau_wheel_promo_typewriter.mp4"
-        download="restau_wheel_promo.mp4"
-      >Télécharger le MP4</a>
+      <a class="btn btn-primary" id="dl" download="restau_wheel_promo.mp4">Télécharger le MP4</a>
       <a class="btn btn-secondary" href="/">← Retour au site</a>
     </div>
   </div>
+  <script>
+    // Prefer local path; fall back to CDN after push
+    const local = '/video/restau_wheel_promo_sfx.mp4';
+    const cdn = 'https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@303ac6239464f12e5c8d825fa1e927c06f9ed9ae/public/video/restau_wheel_promo_sfx.mp4';
+    const v = document.getElementById('promo');
+    const dl = document.getElementById('dl');
+    v.src = local;
+    dl.href = local;
+    v.addEventListener('error', () => { v.src = cdn; dl.href = cdn; });
+  </script>
 </body>
 </html>
