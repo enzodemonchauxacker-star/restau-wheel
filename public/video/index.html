@@ -32,11 +32,9 @@ a.sec{background:#1c1c24;color:#fff8e7;border:1px solid #333}
 <a class="sec" id="cdn" target="_blank" rel="noopener">Ouvrir CDN</a>
 </div>
 <script>
-const CDN_SHA = '272387082772a480021f5f91630d1169d235d7a9';
-const cdn = 'https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@' + CDN_SHA + '/public/video/restau_wheel_promo_v15.mp4';
+const cdn = 'https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@272387082772a480021f5f91630d1169d235d7a9/public/video/restau_wheel_promo_v15.mp4';
 const local = '/video/restau_wheel_promo_v15.mp4?v=16';
-// CDN first (correct video/mp4 MIME), then local
-const sources = CDN_SHA === '272387082772a480021f5f91630d1169d235d7a9' ? [local] : [cdn, local];
+const sources = [cdn, local];
 
 const v = document.getElementById('v');
 const dl = document.getElementById('dl');
@@ -44,8 +42,8 @@ const cdnA = document.getElementById('cdn');
 const err = document.getElementById('err');
 const status = document.getElementById('status');
 
-cdnA.href = CDN_SHA === '272387082772a480021f5f91630d1169d235d7a9' ? local : cdn;
-dl.href = sources[0];
+cdnA.href = cdn;
+dl.href = cdn;
 let i = 0;
 
 function load(idx) {
