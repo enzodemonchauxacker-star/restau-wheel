@@ -15,29 +15,58 @@ video{width:100%;display:block;aspect-ratio:9/16;background:#000}
 a{display:inline-block;padding:.8rem 1.2rem;border-radius:999px;background:#ffd60a;color:#0a0a0a;font-weight:700;text-decoration:none}
 a.sec{background:#1c1c24;color:#fff8e7;border:1px solid #333}
 .err{color:#ff8a8a;font-size:.85rem;margin-top:.8rem;display:none}
+.status{color:#7dd3a7;font-size:.8rem;margin-top:.6rem;min-height:1.2em}
 </style></head><body><div class="wrap">
-<div class="badge">v15b • web-ready</div>
+<div class="badge">v16 • lite 720p</div>
 <h1>Restau Wheel</h1>
-<p>4 plans 3D cohérents + texte + SFX. Fichier allégé pour mobile.</p>
-<div class="video-wrap"><video id="v" controls playsinline preload="metadata" muted></video></div>
-<p class="err" id="err">Si ça ne charge pas, utilise le lien CDN / téléchargement ci-dessous.</p>
+<p>4 plans 3D + texte + SFX. Version ultra-légère (~4 Mo) pour mobile / Cursor.</p>
+<div class="video-wrap">
+<video id="v" controls playsinline webkit-playsinline preload="auto" muted>
+  Your browser does not support MP4.
+</video>
+</div>
+<p class="status" id="status">Chargement…</p>
+<p class="err" id="err">Échec de lecture. Utilise « Ouvrir CDN » ou « Télécharger ».</p>
 <div class="links">
 <a id="dl" download="restau_wheel_promo_v15.mp4">Télécharger</a>
 <a class="sec" id="cdn" target="_blank" rel="noopener">Ouvrir CDN</a>
 </div>
 <script>
-const local='/video/restau_wheel_promo_v15.mp4?v=15b';
-const cdn='https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@4d930dc2d2917244321cdaba312aa4d0b8d16e73/public/video/restau_wheel_promo_v15.mp4';
-const v=document.getElementById('v');
-const dl=document.getElementById('dl');
-const cdnA=document.getElementById('cdn');
-const err=document.getElementById('err');
-v.src=local; dl.href=local; cdnA.href=cdn;
-let tried=false;
-v.addEventListener('error',()=>{
-  if(!tried){ tried=true; v.src=cdn; dl.href=cdn; err.style.display='block'; }
+const CDN_SHA = 'REPLACE_AFTER_PUSH';
+const cdn = 'https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@' + CDN_SHA + '/public/video/restau_wheel_promo_v15.mp4';
+const local = '/video/restau_wheel_promo_v15.mp4?v=16';
+// CDN first (correct video/mp4 MIME), then local
+const sources = CDN_SHA === 'REPLACE_AFTER_PUSH' ? [local] : [cdn, local];
+
+const v = document.getElementById('v');
+const dl = document.getElementById('dl');
+const cdnA = document.getElementById('cdn');
+const err = document.getElementById('err');
+const status = document.getElementById('status');
+
+cdnA.href = CDN_SHA === 'REPLACE_AFTER_PUSH' ? local : cdn;
+dl.href = sources[0];
+let i = 0;
+
+function load(idx) {
+  if (idx >= sources.length) {
+    status.textContent = '';
+    err.style.display = 'block';
+    return;
+  }
+  status.textContent = sources[idx].includes('jsdelivr') ? 'Chargement CDN…' : 'Chargement local…';
+  v.src = sources[idx];
+  dl.href = sources[idx];
+  v.load();
+}
+
+v.addEventListener('error', () => { i += 1; load(i); });
+v.addEventListener('loadeddata', () => {
+  status.textContent = 'Prêt — appuie sur Lecture';
+  err.style.display = 'none';
 });
-// unmute after load for SFX when user presses play
-v.addEventListener('play',()=>{ v.muted=false; }, {once:true});
+v.addEventListener('play', () => { v.muted = false; }, { once: true });
+
+load(0);
 </script>
 </div></body></html>
