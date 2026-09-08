@@ -17,9 +17,9 @@ a.sec{background:#1c1c24;color:#fff8e7;border:1px solid #333}
 .err{color:#ff8a8a;font-size:.85rem;margin-top:.8rem;display:none}
 .status{color:#7dd3a7;font-size:.8rem;margin-top:.6rem;min-height:1.2em}
 </style></head><body><div class="wrap">
-<div class="badge">v16 • lite 720p</div>
+<div class="badge">v17 • SFX cohérents</div>
 <h1>Restau Wheel</h1>
-<p>4 plans 3D + texte + SFX. Version ultra-légère (~4 Mo) pour mobile / Cursor.</p>
+<p>4 plans 3D + texte. SFX calés sur les plans (whoosh / papier / coins / UI) — plus de clavier aléatoire.</p>
 <div class="video-wrap">
 <video id="v" controls playsinline webkit-playsinline preload="auto" muted>
   Your browser does not support MP4.
@@ -28,13 +28,13 @@ a.sec{background:#1c1c24;color:#fff8e7;border:1px solid #333}
 <p class="status" id="status">Chargement…</p>
 <p class="err" id="err">Échec de lecture. Utilise « Ouvrir CDN » ou « Télécharger ».</p>
 <div class="links">
-<a id="dl" download="restau_wheel_promo_v15.mp4">Télécharger</a>
+<a id="dl" download="restau_wheel_promo_v17.mp4">Télécharger</a>
 <a class="sec" id="cdn" target="_blank" rel="noopener">Ouvrir CDN</a>
 </div>
 <script>
-const cdn = 'https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@272387082772a480021f5f91630d1169d235d7a9/public/video/restau_wheel_promo_v15.mp4';
-const local = '/video/restau_wheel_promo_v15.mp4?v=16';
-const sources = [cdn, local];
+const cdn = 'CDN_URL_PLACEHOLDER';
+const local = '/video/restau_wheel_promo_v15.mp4?v=17';
+const sources = cdn.startsWith('http') ? [cdn, local] : [local];
 
 const v = document.getElementById('v');
 const dl = document.getElementById('dl');
@@ -42,8 +42,8 @@ const cdnA = document.getElementById('cdn');
 const err = document.getElementById('err');
 const status = document.getElementById('status');
 
-cdnA.href = cdn;
-dl.href = cdn;
+cdnA.href = sources[0];
+dl.href = sources[0];
 let i = 0;
 
 function load(idx) {
@@ -60,7 +60,7 @@ function load(idx) {
 
 v.addEventListener('error', () => { i += 1; load(i); });
 v.addEventListener('loadeddata', () => {
-  status.textContent = 'Prêt — appuie sur Lecture';
+  status.textContent = 'Prêt — appuie sur Lecture (son activé)';
   err.style.display = 'none';
 });
 v.addEventListener('play', () => { v.muted = false; }, { once: true });
