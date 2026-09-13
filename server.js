@@ -9,6 +9,7 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const { calibratePrizeWeights } = require('./lib/prize-calibrate');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -578,7 +579,7 @@ app.post('/api/admin/prizes/:id/delete', requireRestaurant, deactivatePrize);
 /**
  * Calibre les probabilités :
  * ex. 100 couverts/jour, 15 cadeaux → ~15% de gains réels, 85% « Rien ».
- * Les lots avec deadline_days>0 se partagent le budget cadeaux (au prorata de leur poids actuel).
+ * Les lots cadeaux (deadline_days>0) se partagent le budget à parts égales.
  */
 app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
   const rid = req.session.restaurantId;
@@ -588,7 +589,7 @@ app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
     return res.status(400).json({ error: 'Les cadeaux / jour ne peuvent pas dépasser les couverts / jour' });
   }
 
-  const prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(rid);
+  let prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(rid);
   if (!prizes.length) return res.status(400).json({ error: 'Aucun lot actif' });
 
   let real = prizes.filter(p => p.deadline_days > 0);
@@ -607,46 +608,21 @@ app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
       '#374151'
     );
     lose = [await db.prepare('SELECT * FROM prizes WHERE id=?').get(ins.lastInsertRowid)];
+    prizes = [...real, ...lose];
   }
 
   if (!real.length && gifts > 0) {
     return res.status(400).json({ error: 'Ajoutez au moins un vrai lot (avec validité > 0 jours) avant de calibrer' });
   }
 
-  const TOTAL = 100;
-  const winWeight = Math.round((gifts / covers) * TOTAL);
-  const loseWeight = TOTAL - winWeight;
-
+  const { realWeights, loseWeights } = calibratePrizeWeights(prizes, covers, gifts);
   const upd = db.prepare('UPDATE prizes SET probability=? WHERE id=? AND restaurant_id=?');
 
-  if (real.length) {
-    if (winWeight === 0) {
-      for (const p of real) await upd.run(0, p.id, rid);
-    } else {
-      const realSum = real.reduce((s, p) => s + Math.max(1, p.probability), 0);
-      let assigned = 0;
-      for (let i = 0; i < real.length; i++) {
-        const p = real[i];
-        let w;
-        if (i === real.length - 1) {
-          w = Math.max(1, winWeight - assigned);
-        } else {
-          w = Math.max(1, Math.round((Math.max(1, p.probability) / realSum) * winWeight));
-          assigned += w;
-        }
-        if (assigned > winWeight && i < real.length - 1) {
-          w = Math.max(1, w - (assigned - winWeight));
-          assigned = winWeight;
-        }
-        await upd.run(w, p.id, rid);
-      }
-    }
+  for (let i = 0; i < real.length; i++) {
+    await upd.run(realWeights[i] ?? 0, real[i].id, rid);
   }
-
-  if (lose.length) {
-    for (let i = 0; i < lose.length; i++) {
-      await upd.run(i === 0 ? Math.max(0, loseWeight) : 0, lose[i].id, rid);
-    }
+  for (let i = 0; i < lose.length; i++) {
+    await upd.run(loseWeights[i] ?? 0, lose[i].id, rid);
   }
 
   await db.prepare('UPDATE restaurants SET daily_covers=?, daily_gifts=? WHERE id=?').run(covers, gifts, rid);
