@@ -473,82 +473,22 @@ let formData = {};
 let angle    = 0;
 let spinning = false;
 
-// ─── Chargement lots → ~12 cases visuelles (les % restent côté serveur) ──────
-const VISUAL_SLICES = 12;
-
+// ─── Chargement lots → 1 part égale par lot (les % restent côté serveur) ─────
 async function loadPrizes() {
   const res = await fetch(`/api/prizes?r=${RESTAURANT_ID}`);
   prizes = await res.json();
-  slots  = [];
-  visualCounts(prizes, VISUAL_SLICES).forEach(({ prize: p, n }) => {
-    const baseRgb = hexToRgb(p.color);
-    for (let i = 0; i < n; i++) {
-      slots.push({
-        id:         p.id,
-        name:       p.name,
-        is_real:    p.deadline_days > 0,
-        baseRgb,
-        offset:     0,
-        shortLabel: shortLabel(p.name),
-      });
-    }
-  });
-  slots = spreadSlots(slots);
-  const seen = {};
-  slots.forEach(s => {
-    seen[s.id] = (seen[s.id] || 0) + 1;
-    s.offset = seen[s.id] % 2 === 0 ? -28 : 0;
-  });
-}
-
-/** Répartit les lots sur `target` parts lisibles. Chaque lot a au moins 1 case. */
-function visualCounts(list, target) {
-  const active = (list || []).filter(p => (p.probability || 0) > 0);
-  if (!active.length) return [];
-  const goal = Math.max(target, active.length);
-  const total = active.reduce((s, p) => s + p.probability, 0) || 1;
-  const counts = active.map(p => ({
-    prize: p,
-    n: Math.max(1, Math.round((p.probability / total) * goal)),
-  }));
-  let sum = counts.reduce((s, c) => s + c.n, 0);
-  const fattest = () => counts.reduce((a, b) => (a.n >= b.n ? a : b));
-  while (sum > goal && counts.some(c => c.n > 1)) {
-    const row = fattest();
-    if (row.n <= 1) break;
-    row.n--;
-    sum--;
-  }
-  while (sum < goal) {
-    fattest().n++;
-    sum++;
-  }
-  return counts;
-}
-
-/** Évite que deux parts du même lot se collent (sinon le rouge a l’air 2× plus gros). */
-function spreadSlots(items) {
-  const piles = new Map();
-  for (const s of items) {
-    if (!piles.has(s.id)) piles.set(s.id, []);
-    piles.get(s.id).push(s);
-  }
-  for (const pile of piles.values()) {
-    for (let i = pile.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pile[i], pile[j]] = [pile[j], pile[i]];
-    }
-  }
-  const out = [];
-  const remaining = () => [...piles.values()].filter(p => p.length).sort((a, b) => b.length - a.length);
-  while (out.length < items.length) {
-    const ordered = remaining();
-    if (!ordered.length) break;
-    const lastId = out.length ? out[out.length - 1].id : null;
-    const next = ordered.find(p => p[0].id !== lastId) || ordered[0];
-    out.push(next.pop());
-  }
-  return out;
+  // Une case visuelle par lot actif : la roue est équitable à l'œil ;
+  // le tirage pondéré se fait toujours côté serveur (probability).
+  slots = (prizes || [])
+    .filter(p => (p.probability || 0) > 0)
+    .map(p => ({
+      id:         p.id,
+      name:       p.name,
+      is_real:    p.deadline_days > 0,
+      baseRgb:    hexToRgb(p.color),
+      offset:     0,
+      shortLabel: shortLabel(p.name),
+    }));
 }
 
 // ─── Dessin de la roue ────────────────────────────────────────────────────────
