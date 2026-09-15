@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "{views/**,lib/**,public/css/**,public/js/**,public/3d/**,public/*.png,public/*.svg,public/*.vcf,database.js,mailer.js,server.js,sms.js,wallet.js,wallet/**,prospector.js}",
+      "includeFiles": "{public/**,views/**,lib/**,database.js,mailer.js,server.js,sms.js,wallet.js,wallet/**,prospector.js}",
       "maxDuration": 60
     }
   },
