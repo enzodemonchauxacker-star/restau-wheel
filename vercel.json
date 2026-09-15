@@ -1,35 +1,12 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public/**,views/**,lib/**,database.js,mailer.js,server.js,sms.js,wallet.js,wallet/**,prospector.js}",
+      "includeFiles": "{public/**,lib/**,database.js,mailer.js,server.js,sms.js,wallet.js,wallet/**,prospector.js}",
       "maxDuration": 60
     }
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/api" }
-  ],
-  "headers": [
-    {
-      "source": "/client(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "Pragma", "value": "no-cache" }
-      ]
-    },
-    {
-      "source": "/admin(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "Pragma", "value": "no-cache" }
-      ]
-    },
-    {
-      "source": "/demo(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "Pragma", "value": "no-cache" }
-      ]
-    }
   ],
   "crons": [
     {

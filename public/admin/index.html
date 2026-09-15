@@ -1129,23 +1129,13 @@ function updateCalcPreview() {
   const gifts = parseInt(document.getElementById('calc-gifts')?.value, 10);
   const el = document.getElementById('calc-result');
   if (!el || !covers || covers < 1 || isNaN(gifts) || gifts < 0) return;
-  const winPct = Math.min(100, Math.round((gifts / covers) * 100));
-  const giftPrizes = cachedPrizes.filter(p => Number(p.deadline_days) > 0);
-  const nGifts = giftPrizes.length;
-  const eachPct = nGifts > 0 ? Math.floor(winPct / nGifts) : 0;
-  const rem = nGifts > 0 ? winPct - eachPct * nGifts : 0;
-  const splitLabel = nGifts
-    ? t('admin.prizes.preview.split', {
-        n: nGifts,
-        each: rem ? `${eachPct}–${eachPct + 1}` : String(eachPct),
-      })
-    : t('admin.prizes.preview.nogifts');
-  const total = cachedPrizes.reduce((s, p) => s + Number(p.probability || 0), 0) || 1;
-  const curWin = giftPrizes.reduce((s, p) => s + Number(p.probability || 0), 0);
+  const winPct = Math.min(100, Math.round((gifts / covers) * 1000) / 10);
+  const total = cachedPrizes.reduce((s, p) => s + p.probability, 0) || 1;
+  const curWin = cachedPrizes.filter(p => p.deadline_days > 0).reduce((s, p) => s + p.probability, 0);
   const curPct = Math.round((curWin / total) * 1000) / 10;
   const curExpected = Math.round((curPct / 100) * covers * 10) / 10;
   el.classList.add('show');
-  el.innerHTML = t('admin.prizes.preview', { winPct, gifts, curPct, curExpected, covers, split: splitLabel });
+  el.innerHTML = t('admin.prizes.preview', { winPct, gifts, curPct, curExpected, covers });
 }
 
 async function applyPrizeCalculator() {
@@ -1214,10 +1204,8 @@ async function savePrize() {
   });
 
   if (res.ok) {
-    const data = await res.json().catch(() => ({}));
     closePrizeModal();
-    if (data.prizes) cachedPrizes = data.prizes;
-    await loadPrizes();
+    loadPrizes();
   } else {
     const e = await res.json();
     alert(e.error || t('admin.error'));
@@ -1251,9 +1239,7 @@ async function confirmDeletePrize() {
     alert(e.error || t('admin.error'));
     return;
   }
-  const data = await res.json().catch(() => ({}));
-  if (data.prizes) cachedPrizes = data.prizes;
-  else cachedPrizes = cachedPrizes.filter(p => Number(p.id) !== Number(id));
+  cachedPrizes = cachedPrizes.filter(p => Number(p.id) !== Number(id));
   await loadPrizes();
 }
 
