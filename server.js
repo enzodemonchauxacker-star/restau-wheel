@@ -551,49 +551,22 @@ app.get('/api/admin/prizes', requireRestaurant, async (req, res) => {
   res.json(await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1 ORDER BY probability DESC').all(req.session.restaurantId));
 });
 
-app.post('/api/admin/prizes', requireRestaurant, async (req, res) => {
-  const { name, description, probability, deadline_days, color } = req.body;
-  if (!name || probability == null || deadline_days == null) return res.status(400).json({ error: 'Champs requis manquants' });
-  const r = await db.prepare('INSERT INTO prizes (restaurant_id, name, description, probability, deadline_days, color) VALUES (?,?,?,?,?,?)').run(req.session.restaurantId, name, description || '', parseInt(probability), parseInt(deadline_days), color || '#FF6B6B');
-  res.json(await db.prepare('SELECT * FROM prizes WHERE id=?').get(r.lastInsertRowid));
-});
-
-app.put('/api/admin/prizes/:id', requireRestaurant, async (req, res) => {
-  const { name, description, probability, deadline_days, color, active } = req.body;
-  const id = parseInt(req.params.id);
-  await db.prepare('UPDATE prizes SET name=COALESCE(?,name), description=COALESCE(?,description), probability=COALESCE(?,probability), deadline_days=COALESCE(?,deadline_days), color=COALESCE(?,color), active=COALESCE(?,active) WHERE id=? AND restaurant_id=?').run(name, description, probability != null ? parseInt(probability) : null, deadline_days != null ? parseInt(deadline_days) : null, color, active != null ? (active ? 1 : 0) : null, id, req.session.restaurantId);
-  res.json(await db.prepare('SELECT * FROM prizes WHERE id=?').get(id));
-});
-
-async function deactivatePrize(req, res) {
-  const updated = await db.prepare(
-    'UPDATE prizes SET active=0 WHERE id=? AND restaurant_id=? AND active=1 RETURNING id'
-  ).get(parseInt(req.params.id, 10), req.session.restaurantId);
-  if (!updated) return res.status(404).json({ error: 'Lot introuvable' });
-  res.json({ success: true });
-}
-
-app.delete('/api/admin/prizes/:id', requireRestaurant, deactivatePrize);
-app.post('/api/admin/prizes/:id/delete', requireRestaurant, deactivatePrize);
-
 /**
- * Calibre les probabilités :
- * ex. 100 couverts/jour, 15 cadeaux → ~15% de gains réels, 85% « Rien ».
- * Les lots cadeaux (deadline_days>0) se partagent le budget à parts égales.
+ * Applique une répartition égale des % cadeaux pour un restaurant.
+ * @returns {{ ok: true, covers: number, gifts: number, win_percent: number, expected_gifts_per_day: number, prizes: any[] } | { ok: false, error: string, status: number }}
  */
-app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
-  const rid = req.session.restaurantId;
-  const covers = Math.max(1, parseInt(req.body?.covers, 10) || 0);
-  const gifts  = Math.max(0, parseInt(req.body?.gifts, 10) || 0);
+async function applyEqualPrizeCalibration(rid, coversIn, giftsIn, { persistSettings = true } = {}) {
+  const covers = Math.max(1, parseInt(coversIn, 10) || 0);
+  const gifts = Math.max(0, parseInt(giftsIn, 10) || 0);
   if (gifts > covers) {
-    return res.status(400).json({ error: 'Les cadeaux / jour ne peuvent pas dépasser les couverts / jour' });
+    return { ok: false, status: 400, error: 'Les cadeaux / jour ne peuvent pas dépasser les couverts / jour' };
   }
 
   let prizes = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1').all(rid);
-  if (!prizes.length) return res.status(400).json({ error: 'Aucun lot actif' });
+  if (!prizes.length) return { ok: false, status: 400, error: 'Aucun lot actif' };
 
-  let real = prizes.filter(p => p.deadline_days > 0);
-  let lose = prizes.filter(p => !(p.deadline_days > 0));
+  let real = prizes.filter(p => Number(p.deadline_days) > 0);
+  let lose = prizes.filter(p => !(Number(p.deadline_days) > 0));
 
   // Crée un lot « Rien » si absent
   if (!lose.length && gifts < covers) {
@@ -612,33 +585,98 @@ app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
   }
 
   if (!real.length && gifts > 0) {
-    return res.status(400).json({ error: 'Ajoutez au moins un vrai lot (avec validité > 0 jours) avant de calibrer' });
+    return { ok: false, status: 400, error: 'Ajoutez au moins un vrai lot (avec validité > 0 jours) avant de calibrer' };
   }
 
-  const { realWeights, loseWeights } = calibratePrizeWeights(prizes, covers, gifts);
+  const { updates } = calibratePrizeWeights(prizes, covers, gifts);
   const upd = db.prepare('UPDATE prizes SET probability=? WHERE id=? AND restaurant_id=?');
-
-  for (let i = 0; i < real.length; i++) {
-    await upd.run(realWeights[i] ?? 0, real[i].id, rid);
-  }
-  for (let i = 0; i < lose.length; i++) {
-    await upd.run(loseWeights[i] ?? 0, lose[i].id, rid);
+  for (const row of updates) {
+    if (row.id == null) continue;
+    await upd.run(row.probability, row.id, rid);
   }
 
-  await db.prepare('UPDATE restaurants SET daily_covers=?, daily_gifts=? WHERE id=?').run(covers, gifts, rid);
+  if (persistSettings) {
+    await db.prepare('UPDATE restaurants SET daily_covers=?, daily_gifts=? WHERE id=?').run(covers, gifts, rid);
+  }
 
   const updated = await db.prepare('SELECT * FROM prizes WHERE restaurant_id=? AND active=1 ORDER BY probability DESC').all(rid);
-  const totalW = updated.reduce((s, p) => s + p.probability, 0) || 1;
-  const winW = updated.filter(p => p.deadline_days > 0).reduce((s, p) => s + p.probability, 0);
+  const totalW = updated.reduce((s, p) => s + Number(p.probability || 0), 0) || 1;
+  const winW = updated.filter(p => Number(p.deadline_days) > 0).reduce((s, p) => s + Number(p.probability || 0), 0);
   const winPct = Math.round((winW / totalW) * 1000) / 10;
 
-  res.json({
-    success: true,
+  return {
+    ok: true,
     covers,
     gifts,
     win_percent: winPct,
     expected_gifts_per_day: Math.round((winPct / 100) * covers * 10) / 10,
     prizes: updated,
+  };
+}
+
+/** Si le resto a déjà un objectif couverts/cadeaux, ré-égalise après ajout/modif/suppression. */
+async function maybeRecalibrateRestaurant(rid) {
+  const r = await db.prepare('SELECT daily_covers, daily_gifts FROM restaurants WHERE id=?').get(rid);
+  if (!r || r.daily_covers == null || r.daily_gifts == null) return null;
+  const covers = Number(r.daily_covers);
+  const gifts = Number(r.daily_gifts);
+  if (!covers || covers < 1 || isNaN(gifts) || gifts < 0) return null;
+  return applyEqualPrizeCalibration(rid, covers, gifts, { persistSettings: false });
+}
+
+app.post('/api/admin/prizes', requireRestaurant, async (req, res) => {
+  const { name, description, probability, deadline_days, color } = req.body;
+  if (!name || probability == null || deadline_days == null) return res.status(400).json({ error: 'Champs requis manquants' });
+  const rid = req.session.restaurantId;
+  const r = await db.prepare('INSERT INTO prizes (restaurant_id, name, description, probability, deadline_days, color) VALUES (?,?,?,?,?,?)').run(rid, name, description || '', parseInt(probability), parseInt(deadline_days), color || '#FF6B6B');
+  const created = await db.prepare('SELECT * FROM prizes WHERE id=?').get(r.lastInsertRowid);
+  const recal = await maybeRecalibrateRestaurant(rid);
+  if (recal?.ok) return res.json({ ...created, probability: recal.prizes.find(p => p.id === created.id)?.probability ?? created.probability, recalibrated: true, prizes: recal.prizes });
+  res.json(created);
+});
+
+app.put('/api/admin/prizes/:id', requireRestaurant, async (req, res) => {
+  const { name, description, probability, deadline_days, color, active } = req.body;
+  const id = parseInt(req.params.id);
+  const rid = req.session.restaurantId;
+  await db.prepare('UPDATE prizes SET name=COALESCE(?,name), description=COALESCE(?,description), probability=COALESCE(?,probability), deadline_days=COALESCE(?,deadline_days), color=COALESCE(?,color), active=COALESCE(?,active) WHERE id=? AND restaurant_id=?').run(name, description, probability != null ? parseInt(probability) : null, deadline_days != null ? parseInt(deadline_days) : null, color, active != null ? (active ? 1 : 0) : null, id, rid);
+  const row = await db.prepare('SELECT * FROM prizes WHERE id=?').get(id);
+  const recal = await maybeRecalibrateRestaurant(rid);
+  if (recal?.ok) return res.json({ ...(recal.prizes.find(p => Number(p.id) === id) || row), recalibrated: true, prizes: recal.prizes });
+  res.json(row);
+});
+
+async function deactivatePrize(req, res) {
+  const rid = req.session.restaurantId;
+  const updated = await db.prepare(
+    'UPDATE prizes SET active=0 WHERE id=? AND restaurant_id=? AND active=1 RETURNING id'
+  ).get(parseInt(req.params.id, 10), rid);
+  if (!updated) return res.status(404).json({ error: 'Lot introuvable' });
+  const recal = await maybeRecalibrateRestaurant(rid);
+  res.json({ success: true, recalibrated: !!(recal?.ok), prizes: recal?.prizes || null });
+}
+
+app.delete('/api/admin/prizes/:id', requireRestaurant, deactivatePrize);
+app.post('/api/admin/prizes/:id/delete', requireRestaurant, deactivatePrize);
+
+/**
+ * Calibre les probabilités :
+ * ex. 100 couverts/jour, 15 cadeaux → ~15% de gains réels, 85% « Rien ».
+ * Les lots cadeaux (deadline_days>0) se partagent le budget à parts égales.
+ */
+app.post('/api/admin/prizes/calibrate', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const covers = Math.max(1, parseInt(req.body?.covers, 10) || 0);
+  const gifts  = Math.max(0, parseInt(req.body?.gifts, 10) || 0);
+  const result = await applyEqualPrizeCalibration(rid, covers, gifts, { persistSettings: true });
+  if (!result.ok) return res.status(result.status || 400).json({ error: result.error });
+  res.json({
+    success: true,
+    covers: result.covers,
+    gifts: result.gifts,
+    win_percent: result.win_percent,
+    expected_gifts_per_day: result.expected_gifts_per_day,
+    prizes: result.prizes,
   });
 });
 
@@ -1206,16 +1244,23 @@ app.post('/api/checkout', async (req, res) => {
 });
 
 // ─── Pages HTML ───────────────────────────────────────────────────────────────
-app.get('/client',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'client',     'index.html')));
-app.get('/admin',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin',      'index.html')));
-app.get('/register',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'register',   'index.html')));
-app.get('/superadmin',  async (req, res) => res.sendFile(path.join(__dirname, 'public', 'superadmin', 'index.html')));
-app.get('/checkout',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'checkout',   'index.html')));
-app.get('/cancel',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel',     'index.html')));
-app.get('/carte',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'index.html')));
+const views = (...parts) => path.join(__dirname, 'views', ...parts);
+const sendView = (res, ...parts) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  return res.sendFile(views(...parts));
+};
+
+app.get('/client',      async (req, res) => sendView(res, 'client', 'index.html'));
+app.get('/admin',       async (req, res) => sendView(res, 'admin', 'index.html'));
+app.get('/register',    async (req, res) => sendView(res, 'register', 'index.html'));
+app.get('/superadmin',  async (req, res) => sendView(res, 'superadmin', 'index.html'));
+app.get('/checkout',    async (req, res) => sendView(res, 'checkout', 'index.html'));
+app.get('/cancel',      async (req, res) => sendView(res, 'cancel', 'index.html'));
+app.get('/carte',       async (req, res) => sendView(res, 'carte', 'index.html'));
 app.get('/pro',         async (req, res) => res.redirect(301, '/carte'));
-app.get('/demo',        async (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo',       'index.html')));
-app.get('/demo/qr',     async (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo',       'qr.html')));
+app.get('/demo',        async (req, res) => sendView(res, 'demo', 'index.html'));
+app.get('/demo/qr',     async (req, res) => sendView(res, 'demo', 'qr.html'));
 app.get('/demo-qr.png', async (req, res) => {
   try {
     const url = `${getPublicBaseUrl(req)}/demo`;
@@ -1227,18 +1272,25 @@ app.get('/demo-qr.png', async (req, res) => {
     res.status(500).json({ error: 'QR indisponible' });
   }
 });
-app.get('/carte/qr',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'carte',      'qr.html')));
-app.get('/mentions',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'mentions',   'index.html')));
+app.get('/carte/qr',    async (req, res) => sendView(res, 'carte', 'qr.html'));
+app.get('/mentions',    async (req, res) => sendView(res, 'mentions', 'index.html'));
 app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'));
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
-app.get('/video',       async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'video', 'index.html'));
+app.get('/video',       async (req, res) => sendView(res, 'video', 'index.html'));
+app.get('/',            async (req, res) => sendView(res, 'index.html'));
+
+// Marqueur de build (vérifie que la prod a bien le dernier déploiement)
+app.get('/api/build', async (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    build: 'equal-segments-v2',
+    equal_prize_split: true,
+    equal_wheel_segments: true,
+    views_via_api: true,
+  });
 });
-app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────
 async function runReminderJob() {

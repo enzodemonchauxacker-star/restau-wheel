@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="rw-build" content="equal-segments-v2">
   <title>Tentez votre chance !</title>
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -473,22 +475,22 @@ let formData = {};
 let angle    = 0;
 let spinning = false;
 
-// ─── Chargement lots → 1 part égale par lot (les % restent côté serveur) ─────
+// ─── Chargement lots → 1 part visuelle ÉGALE par lot actif ───────────────────
+// BUILD:equal-segments-v2 — ne plus pondérer la taille des parts par probability
 async function loadPrizes() {
-  const res = await fetch(`/api/prizes?r=${RESTAURANT_ID}`);
+  const res = await fetch(`/api/prizes?r=${RESTAURANT_ID}&_v=equal2`);
   prizes = await res.json();
-  // Une case visuelle par lot actif : la roue est équitable à l'œil ;
-  // le tirage pondéré se fait toujours côté serveur (probability).
-  slots = (prizes || [])
-    .filter(p => (p.probability || 0) > 0)
-    .map(p => ({
-      id:         p.id,
-      name:       p.name,
-      is_real:    p.deadline_days > 0,
-      baseRgb:    hexToRgb(p.color),
-      offset:     0,
-      shortLabel: shortLabel(p.name),
-    }));
+  // Une case visuelle par lot actif (même taille), y compris probabilité 0.
+  // Le tirage pondéré reste côté serveur via probability.
+  const list = Array.isArray(prizes) ? prizes : [];
+  slots = list.map(p => ({
+    id:         p.id,
+    name:       p.name,
+    is_real:    Number(p.deadline_days) > 0,
+    baseRgb:    hexToRgb(p.color || '#374151'),
+    offset:     0,
+    shortLabel: shortLabel(p.name),
+  }));
 }
 
 // ─── Dessin de la roue ────────────────────────────────────────────────────────
