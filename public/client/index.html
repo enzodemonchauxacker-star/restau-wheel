@@ -108,6 +108,31 @@
     }
     .field input::placeholder { color: rgba(107,99,88,0.5); }
     .err { color: var(--wine); text-align: left; }
+    .consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      margin: 0.85rem 0 0.35rem;
+      text-align: left;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--muted, #6b6358);
+    }
+    .consent input {
+      width: 1.05rem;
+      height: 1.05rem;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .consent label { cursor: pointer; flex: 1; }
+    .consent a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
     .btn-gold {
       width: 100%;
       padding: 0.9rem;
@@ -288,6 +313,13 @@
   <div class="field">
     <label data-i18n="client.phone">Téléphone</label>
     <input type="tel" id="phone" data-i18n-placeholder="client.ph.phone" placeholder="06 12 34 56 78" autocomplete="tel" inputmode="tel">
+  </div>
+  <div class="consent">
+    <input type="checkbox" id="privacy_consent" name="privacy_consent" required>
+    <label for="privacy_consent" data-i18n="client.consent" data-i18n-html>
+      J’accepte que mes informations (prénom, nom, email, téléphone) soient collectées pour participer à la roue et recevoir mon lot.
+      <a href="/mentions#privacy" target="_blank" rel="noopener">Politique de confidentialité</a>
+    </label>
   </div>
   <p class="err" id="form-err">Veuillez remplir tous les champs correctement.</p>
   <button class="btn-gold" id="btn-next" data-i18n="client.next">Accéder à la roue →</button>
@@ -935,6 +967,7 @@ document.getElementById('btn-next').addEventListener('click', async () => {
   const ln  = document.getElementById('last_name').value.trim();
   const em  = document.getElementById('email').value.trim();
   const ph  = document.getElementById('phone').value.trim();
+  const consent = document.getElementById('privacy_consent')?.checked;
   const err = document.getElementById('form-err');
 
   const phoneOk = /^(\+33|0)[1-9]([\s.\-]?\d{2}){4}$/.test(ph.replace(/\s/g, ' ').trim())
@@ -945,8 +978,13 @@ document.getElementById('btn-next').addEventListener('click', async () => {
     err.style.display = 'block';
     return;
   }
+  if (!consent) {
+    err.textContent = tr('client.err.consent');
+    err.style.display = 'block';
+    return;
+  }
   err.style.display = 'none';
-  formData = { first_name: fn, last_name: ln, email: em, phone: ph };
+  formData = { first_name: fn, last_name: ln, email: em, phone: ph, privacy_consent: true };
 
   // Soft check navigateur (email + appareil)
   try {
@@ -975,6 +1013,9 @@ document.getElementById('btn-next').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-spin').addEventListener('click', doSpin);
+document.querySelector('.consent')?.addEventListener('click', (e) => {
+  if (e.target.closest('a')) e.stopPropagation();
+});
 document.getElementById('btn-demo-again')?.addEventListener('click', () => {
   document.getElementById('result-section').style.display = 'none';
   document.getElementById('wheel-section').style.display = 'flex';

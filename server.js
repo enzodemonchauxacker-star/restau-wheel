@@ -211,7 +211,7 @@ async function jsonDemoSpin(resto, res) {
 
 // Tirage de la roue
 app.post('/api/spin', async (req, res) => {
-  const { email, first_name, last_name, phone, restaurant_id, device_id } = req.body;
+  const { email, first_name, last_name, phone, restaurant_id, device_id, privacy_consent } = req.body;
   const resto = await findRestaurantByRef(restaurant_id);
   if (!resto) return res.status(404).json({ error: 'Restaurant introuvable' });
   if (String(resto.public_code || '').toLowerCase() === 'demo') {
@@ -221,6 +221,9 @@ app.post('/api/spin', async (req, res) => {
 
   if (!email || !first_name || !last_name || !phone) {
     return res.status(400).json({ error: 'Tous les champs sont requis (dont le téléphone)' });
+  }
+  if (!(privacy_consent === true || privacy_consent === 1 || privacy_consent === 'true' || privacy_consent === '1' || privacy_consent === 'on')) {
+    return res.status(400).json({ error: 'Le consentement RGPD est requis pour participer', code: 'privacy_consent_required' });
   }
   const phoneNorm = normalizePhone(phone);
   if (!phoneNorm) {
@@ -285,12 +288,15 @@ app.post('/api/spin', async (req, res) => {
   // Créer ou retrouver le client pour CE restaurant
   let customer = await db.prepare('SELECT * FROM customers WHERE lower(email)=lower(?) AND restaurant_id=? ').get(emailNorm, rid);
   if (!customer) {
-    const r = await db.prepare('INSERT INTO customers (restaurant_id, email, first_name, last_name, phone) VALUES (?,?,?,?,?)')
-      .run(rid, emailNorm, first_name.trim(), last_name.trim(), phoneNorm);
+    const r = await db.prepare(
+      'INSERT INTO customers (restaurant_id, email, first_name, last_name, phone, privacy_consent_at) VALUES (?,?,?,?,?,NOW())'
+    ).run(rid, emailNorm, first_name.trim(), last_name.trim(), phoneNorm);
     customer = await db.prepare('SELECT * FROM customers WHERE id=?').get(r.lastInsertRowid);
-  } else if (!customer.phone || customer.phone !== phoneNorm) {
-    await db.prepare('UPDATE customers SET phone=? WHERE id=?').run(phoneNorm, customer.id);
-    customer = { ...customer, phone: phoneNorm };
+  } else {
+    await db.prepare(
+      'UPDATE customers SET phone=COALESCE(?, phone), first_name=COALESCE(?, first_name), last_name=COALESCE(?, last_name), privacy_consent_at=NOW() WHERE id=?'
+    ).run(phoneNorm, first_name.trim(), last_name.trim(), customer.id);
+    customer = await db.prepare('SELECT * FROM customers WHERE id=?').get(customer.id);
   }
 
   // Tirage pondéré
