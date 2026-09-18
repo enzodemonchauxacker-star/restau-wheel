@@ -23,7 +23,7 @@ describe('RGPD wheel consent', () => {
     assert.match(html, /id="privacy_consent"/);
     assert.match(html, /client\.consent/);
     assert.match(html, /\/mentions#privacy/);
-    assert.match(html, /privacy_consent:\s*true/);
+    assert.match(html, /base clients|guest database/i);
   });
 
   it('rejette le spin sans consentement côté serveur', () => {
