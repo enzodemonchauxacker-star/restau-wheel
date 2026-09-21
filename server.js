@@ -541,6 +541,67 @@ app.get('/api/admin/search', requireRestaurant, async (req, res) => {
   res.json(result);
 });
 
+/** Export CSV (compatible Excel) de la base clients du restaurant */
+app.get('/api/admin/customers/export', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const q = String(req.query.q || '').trim();
+
+  let customers;
+  if (q.length >= 2) {
+    const term = `%${q}%`;
+    customers = await db.prepare(`
+      SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
+      FROM customers
+      WHERE restaurant_id=? AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR IFNULL(phone,'') LIKE ?)
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid, term, term, term, term);
+  } else {
+    customers = await db.prepare(`
+      SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
+      FROM customers
+      WHERE restaurant_id=?
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid);
+  }
+
+  const escapeCsv = (v) => {
+    const s = v == null ? '' : String(v);
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try {
+      return new Date(d).toISOString();
+    } catch {
+      return String(d);
+    }
+  };
+
+  const header = ['prenom', 'nom', 'email', 'telephone', 'inscrit_le', 'consentement_rgpd_le'];
+  const lines = [header.join(';')];
+  for (const c of customers || []) {
+    lines.push([
+      escapeCsv(c.first_name),
+      escapeCsv(c.last_name),
+      escapeCsv(c.email),
+      escapeCsv(c.phone),
+      escapeCsv(fmtDate(c.created_at)),
+      escapeCsv(fmtDate(c.privacy_consent_at)),
+    ].join(';'));
+  }
+
+  // BOM UTF-8 + séparateur ; → s’ouvre correctement dans Excel FR
+  const csv = `\uFEFF${lines.join('\r\n')}\r\n`;
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="clients-restauwheel-${stamp}.csv"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(csv);
+});
+
 app.put('/api/admin/spins/:id/use', requireRestaurant, async (req, res) => {
   const rid  = req.session.restaurantId;
   const spin = await db.prepare('SELECT s.* FROM spins s JOIN customers c ON s.customer_id=c.id WHERE s.id=? AND c.restaurant_id=?').get(parseInt(req.params.id), rid);
