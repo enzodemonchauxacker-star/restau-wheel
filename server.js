@@ -546,29 +546,41 @@ app.get('/api/admin/customers/export', requireRestaurant, async (req, res) => {
   const rid = req.session.restaurantId;
   const q = String(req.query.q || '').trim();
 
-  let customers;
-  if (q.length >= 2) {
-    const term = `%${q}%`;
-    customers = await db.prepare(`
+  const selectWithConsent = `
       SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
-      FROM customers
+      FROM customers`;
+  const selectBasic = `
+      SELECT id, first_name, last_name, email, phone, created_at
+      FROM customers`;
+
+  async function load(selectSql) {
+    if (q.length >= 2) {
+      const term = `%${q}%`;
+      return db.prepare(`
+      ${selectSql}
       WHERE restaurant_id=? AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR IFNULL(phone,'') LIKE ?)
       ORDER BY created_at DESC
       LIMIT 10000
     `).all(rid, term, term, term, term);
-  } else {
-    customers = await db.prepare(`
-      SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
-      FROM customers
+    }
+    return db.prepare(`
+      ${selectSql}
       WHERE restaurant_id=?
       ORDER BY created_at DESC
       LIMIT 10000
     `).all(rid);
   }
 
+  let customers;
+  try {
+    customers = await load(selectWithConsent);
+  } catch {
+    customers = await load(selectBasic);
+  }
+
   const escapeCsv = (v) => {
     const s = v == null ? '' : String(v);
-    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    if (/[",\n\r;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   };
   const fmtDate = (d) => {
