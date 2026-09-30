@@ -376,6 +376,6 @@ export default async ({ project }) => {
   await p.render("renders/restau-wheel-motion-30s.mp4", {
     draft: false,
     depth: 8,
-    bitrate: "10M",
+    bitrate: 10_000_000,
   });
 };
