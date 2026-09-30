@@ -636,7 +636,7 @@ def init_assets():
     r = np.sqrt(((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2) / math.sqrt(2)
     A["vignette"] = (1 - 0.42 * r ** 2.2)[..., None].astype(np.float32)
     rng = np.random.default_rng(7)
-    A["grain"] = [rng.normal(0, 4.5, (H, W, 1)).astype(np.float32) for _ in range(4)]
+    A["grain"] = [rng.normal(0, 2.0, (H, W, 1)).astype(np.float32) for _ in range(4)]
 
     rng = np.random.default_rng(3)
     pal = [PINK, YELLOW, CYAN, WHITE]
@@ -1660,7 +1660,8 @@ def encode(frames_src, audio, out_mp4, workers, png_dir=None):
            ["-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-"])
     ain = ["-i", audio] if audio else []
     cmd = ["ffmpeg", "-v", "error", "-y"] + vin + ain + ["-map", "0:v"] + (["-map", "1:a"] if audio else [])
-    cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", "17", "-pix_fmt", "yuv420p", "-profile:v", "high",
+    cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "19", "-maxrate", "12M", "-bufsize", "24M",
+            "-pix_fmt", "yuv420p", "-profile:v", "high",
             "-r", str(FPS), "-t", str(DUR), "-movflags", "+faststart"]
     if audio:
         cmd += ["-c:a", "aac", "-b:a", "192k", "-ar", str(SR)]
@@ -1718,20 +1719,25 @@ def main():
     if audio:
         print(f"[audio] {len(events)} événements SFX, VO: {vo_src}")
     t0 = time.time()
+    # Encodage en local : certains montages (artifacts) refusent la réécriture +faststart.
+    tmp_mp4 = os.path.join(WORK_DIR, os.path.basename(args.out))
     if args.png_frames:
         png_dir = os.path.join(WORK_DIR, "frames")
         render_pngs(png_dir, args.workers)
-        encode(None, audio, args.out, args.workers, png_dir)
+        encode(None, audio, tmp_mp4, args.workers, png_dir)
     else:
-        encode(None, audio, args.out, args.workers)
+        encode(None, audio, tmp_mp4, args.workers)
+    shutil.copyfile(tmp_mp4, args.out)
     print(f"[video] rendu+encodage {time.time() - t0:.0f}s -> {args.out}")
 
     out_dir = os.path.dirname(args.out)
     for ts in (1, 8, 16, 28):
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", args.out, "-ss", str(ts), "-frames:v", "1",
-                        os.path.join(out_dir, f"frame-{ts:02d}s.png")], check=True)
+        still = os.path.join(WORK_DIR, f"frame-{ts:02d}s.png")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", tmp_mp4, "-ss", str(ts), "-frames:v", "1", still],
+                       check=True)
+        shutil.copyfile(still, os.path.join(out_dir, os.path.basename(still)))
     if audio:
-        shutil.copy(os.path.join(WORK_DIR, "sfx_timeline.json"), os.path.join(out_dir, "sfx_timeline.json"))
+        shutil.copyfile(os.path.join(WORK_DIR, "sfx_timeline.json"), os.path.join(out_dir, "sfx_timeline.json"))
     print("OK")
 
 
