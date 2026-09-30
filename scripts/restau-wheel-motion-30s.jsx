@@ -32,6 +32,8 @@ export default async ({ project }) => {
   p.compose(
     <frame width={W} height={H} layout="none" background="#0A0A0A">
       <rect
+        x={0}
+        y={0}
         width={W}
         height={H}
         fill={{
@@ -77,7 +79,18 @@ export default async ({ project }) => {
         letterSpacing={8}
         color={white}
         align="center"
-        animate={[{ property: "opacity", keyframes: [{ at: 0, value: 0 }, { at: 0.4, value: 1 }, { at: 4.8, value: 1 }, { at: 5.4, value: 0 }] }, { property: "offsetY", from: 28, to: 0, duration: 0.55, easing: "house" }]}
+        animate={[
+          {
+            property: "opacity",
+            keyframes: [
+              { at: 0, value: 0 },
+              { at: 0.4, value: 1 },
+              { at: 4.8, value: 1 },
+              { at: 5.4, value: 0 },
+            ],
+          },
+          { property: "offsetY", from: 28, to: 0, duration: 0.55, easing: "house" },
+        ]}
       >
         RESTAU WHEEL
       </text>
@@ -91,7 +104,18 @@ export default async ({ project }) => {
         fontSize={48}
         color={yellow}
         align="center"
-        animate={[{ property: "opacity", keyframes: [{ at: 0, value: 0 }, { at: 0.7, value: 1 }, { at: 4.8, value: 1 }, { at: 5.4, value: 0 }] }, { property: "offsetY", from: 20, to: 0, at: 0.25, duration: 0.5, easing: "house" }]}
+        animate={[
+          {
+            property: "opacity",
+            keyframes: [
+              { at: 0, value: 0 },
+              { at: 0.7, value: 1 },
+              { at: 4.8, value: 1 },
+              { at: 5.4, value: 0 },
+            ],
+          },
+          { property: "offsetY", from: 20, to: 0, at: 0.25, duration: 0.5, easing: "house" },
+        ]}
       >
         Une roue de fortune sur chaque table
       </text>
@@ -104,7 +128,17 @@ export default async ({ project }) => {
         fontSize={28}
         color={muted}
         align="center"
-        animate={[{ property: "opacity", keyframes: [{ at: 0, value: 0 }, { at: 1.1, value: 1 }, { at: 4.8, value: 1 }, { at: 5.4, value: 0 }] }]}
+        animate={[
+          {
+            property: "opacity",
+            keyframes: [
+              { at: 0, value: 0 },
+              { at: 1.1, value: 1 },
+              { at: 4.8, value: 1 },
+              { at: 5.4, value: 0 },
+            ],
+          },
+        ]}
       >
         Le SaaS de fidélisation pour restaurants
       </text>
@@ -124,57 +158,103 @@ export default async ({ project }) => {
         fontSize={56}
         letterSpacing={4}
         color={pink}
-        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.4 }, { property: "offsetX", from: -40, to: 0, duration: 0.5, easing: "house" }]}
+        animate={[
+          { property: "opacity", from: 0, to: 1, duration: 0.4 },
+          { property: "offsetX", from: -40, to: 0, duration: 0.5, easing: "house" },
+        ]}
       >
         COMMENT ÇA MARCHE
       </text>
 
-      {/* Step cards */}
-      <frame
-        x={80}
-        y={180}
-        width={560}
-        height={720}
-        layout="column"
-        gap={18}
-        padding={28}
-        background="rgba(255,255,255,0.04)"
-        radius={24}
-        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.45 }, { property: "offsetY", from: 30, to: 0, duration: 0.5, easing: "house" }]}
+      <text
+        x={108}
+        y={200}
+        width={520}
+        height={40}
+        fontFamily="DM Sans"
+        fontWeight={700}
+        fontSize={28}
+        color={yellow}
+        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.4 }]}
       >
-        <text width={500} height={40} fontFamily="DM Sans" fontWeight={700} fontSize={26} color={yellow}>
-          1 · Scan QR
-        </text>
-        <text width={500} height={70} fontFamily="DM Sans" fontSize={24} color={muted} lineHeight={1.35}>
-          Le client scanne le QR sur la table
-        </text>
-        <text width={500} height={40} fontFamily="DM Sans" fontWeight={700} fontSize={26} color={yellow} at={1.2} duration={6}>
-          2 · Ticket
-        </text>
-        <text width={500} height={70} fontFamily="DM Sans" fontSize={24} color={muted} lineHeight={1.35} at={1.2} duration={6}>
-          Il remplit son ticket d'entrée
-        </text>
-        <text width={500} height={40} fontFamily="DM Sans" fontWeight={700} fontSize={26} color={yellow} at={2.4} duration={5}>
-          3 · TOURNER
-        </text>
-        <text width={500} height={70} fontFamily="DM Sans" fontSize={24} color={muted} lineHeight={1.35} at={2.4} duration={5}>
-          Il fait tourner la roue et gagne un lot
-        </text>
-      </frame>
+        1 · Scan QR
+      </text>
+      <text
+        x={108}
+        y={250}
+        width={520}
+        height={70}
+        fontFamily="DM Sans"
+        fontSize={24}
+        color={muted}
+        animate={[{ property: "opacity", from: 0, to: 1, at: 0.1, duration: 0.4 }]}
+      >
+        Le client scanne le QR sur la table
+      </text>
+      <text
+        x={108}
+        y={360}
+        width={520}
+        height={40}
+        fontFamily="DM Sans"
+        fontWeight={700}
+        fontSize={28}
+        color={yellow}
+        animate={[{ property: "opacity", from: 0, to: 1, at: 1.2, duration: 0.4 }]}
+      >
+        2 · Ticket
+      </text>
+      <text
+        x={108}
+        y={410}
+        width={520}
+        height={70}
+        fontFamily="DM Sans"
+        fontSize={24}
+        color={muted}
+        animate={[{ property: "opacity", from: 0, to: 1, at: 1.3, duration: 0.4 }]}
+      >
+        Il remplit son ticket d'entrée
+      </text>
+      <text
+        x={108}
+        y={520}
+        width={520}
+        height={40}
+        fontFamily="DM Sans"
+        fontWeight={700}
+        fontSize={28}
+        color={yellow}
+        animate={[{ property: "opacity", from: 0, to: 1, at: 2.4, duration: 0.4 }]}
+      >
+        3 · TOURNER
+      </text>
+      <text
+        x={108}
+        y={570}
+        width={520}
+        height={80}
+        fontFamily="DM Sans"
+        fontSize={24}
+        color={muted}
+        animate={[{ property: "opacity", from: 0, to: 1, at: 2.5, duration: 0.4 }]}
+      >
+        Il fait tourner la roue et gagne un lot
+      </text>
 
-      <frame
+      <media
+        file={landing}
         x={720}
         y={160}
         width={1080}
         height={760}
-        layout="none"
+        fit="cover"
         radius={28}
-        clip
-        background="#111"
-        animate={[{ property: "opacity", from: 0, to: 1, at: 0.15, duration: 0.5 }, { property: "offsetX", from: 60, to: 0, at: 0.15, duration: 0.55, easing: "house" }]}
-      >
-        <media file={landing} width={1080} height={760} fit="cover" />
-      </frame>
+        animate={[
+          { property: "opacity", from: 0, to: 1, at: 0.15, duration: 0.5 },
+          { property: "offsetX", from: 60, to: 0, at: 0.15, duration: 0.55, easing: "house" },
+        ]}
+      />
     </frame>,
     { at: 5.5, dur: 8.5, name: "howto" },
   );
@@ -197,33 +277,33 @@ export default async ({ project }) => {
         VOS CLIENTS REVIENNENT
       </text>
 
-      <frame
+      <media
+        file={client}
         x={80}
         y={160}
         width={860}
         height={780}
-        layout="none"
+        fit="cover"
         radius={28}
-        clip
-        background="#111"
-        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.45 }, { property: "offsetY", from: 24, to: 0, duration: 0.5, easing: "house" }]}
-      >
-        <media file={client} width={860} height={780} fit="cover" />
-      </frame>
+        animate={[
+          { property: "opacity", from: 0, to: 1, duration: 0.45 },
+          { property: "offsetY", from: 24, to: 0, duration: 0.5, easing: "house" },
+        ]}
+      />
 
-      <frame
+      <media
+        file={phone}
         x={1000}
         y={160}
         width={840}
         height={780}
-        layout="none"
+        fit="contain"
         radius={28}
-        clip
-        background="#111"
-        animate={[{ property: "opacity", from: 0, to: 1, at: 0.2, duration: 0.45 }, { property: "offsetY", from: 24, to: 0, at: 0.2, duration: 0.5, easing: "house" }]}
-      >
-        <media file={phone} width={840} height={780} fit="contain" />
-      </frame>
+        animate={[
+          { property: "opacity", from: 0, to: 1, at: 0.2, duration: 0.45 },
+          { property: "offsetY", from: 24, to: 0, at: 0.2, duration: 0.5, easing: "house" },
+        ]}
+      />
 
       <text
         x={100}
@@ -234,7 +314,15 @@ export default async ({ project }) => {
         fontSize={26}
         color={muted}
         align="center"
-        animate={[{ property: "opacity", keyframes: [{ at: 0, value: 0 }, { at: 0.6, value: 1 }] }]}
+        animate={[
+          {
+            property: "opacity",
+            keyframes: [
+              { at: 0, value: 0 },
+              { at: 0.6, value: 1 },
+            ],
+          },
+        ]}
       >
         Dessert · Boisson · Réduction — vous gardez la main
       </text>
@@ -246,6 +334,8 @@ export default async ({ project }) => {
   p.compose(
     <frame width={W} height={H} layout="none" background="#0A0A0A">
       <rect
+        x={0}
+        y={0}
         width={W}
         height={H}
         fill={{
@@ -266,7 +356,10 @@ export default async ({ project }) => {
         letterSpacing={4}
         color={white}
         align="center"
-        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.4 }, { property: "offsetY", from: 20, to: 0, duration: 0.45, easing: "house" }]}
+        animate={[
+          { property: "opacity", from: 0, to: 1, duration: 0.4 },
+          { property: "offsetY", from: 20, to: 0, duration: 0.45, easing: "house" },
+        ]}
       >
         VOUS CONTRÔLEZ TOUT
       </text>
@@ -284,29 +377,45 @@ export default async ({ project }) => {
         Lots · probabilités · QR unique par restaurant
       </text>
 
-      <frame
+      <rect
         x={660}
         y={500}
         width={600}
         height={160}
-        layout="column"
-        align="center"
-        justify="center"
-        gap={8}
-        background={yellow}
         radius={28}
+        fill={yellow}
         animate={[
           { property: "opacity", from: 0, to: 1, at: 0.4, duration: 0.35 },
           { property: "scale", from: 0.9, to: 1, at: 0.4, duration: 0.4, easing: "house" },
         ]}
+      />
+      <text
+        x={680}
+        y={530}
+        width={560}
+        height={70}
+        fontFamily="Bebas Neue"
+        fontSize={64}
+        color="#0A0A0A"
+        align="center"
+        animate={[{ property: "opacity", from: 0, to: 1, at: 0.45, duration: 0.3 }]}
       >
-        <text width={560} height={70} fontFamily="Bebas Neue" fontSize={64} color="#0A0A0A" align="center">
-          20 € / mois
-        </text>
-        <text width={560} height={36} fontFamily="DM Sans" fontWeight={700} fontSize={22} color="#0A0A0A" align="center">
-          Simple. Sans engagement caché.
-        </text>
-      </frame>
+        20 € / mois
+      </text>
+      <text
+        x={680}
+        y={600}
+        width={560}
+        height={36}
+        fontFamily="DM Sans"
+        fontWeight={700}
+        fontSize={22}
+        color="#0A0A0A"
+        align="center"
+        animate={[{ property: "opacity", from: 0, to: 1, at: 0.5, duration: 0.3 }]}
+      >
+        Simple. Sans engagement caché.
+      </text>
     </frame>,
     { at: 21, dur: 5, name: "pricing" },
   );
@@ -333,29 +442,39 @@ export default async ({ project }) => {
         letterSpacing={6}
         color={white}
         align="center"
-        animate={[{ property: "opacity", from: 0, to: 1, duration: 0.4 }, { property: "offsetY", from: 24, to: 0, duration: 0.45, easing: "house" }]}
+        animate={[
+          { property: "opacity", from: 0, to: 1, duration: 0.4 },
+          { property: "offsetY", from: 24, to: 0, duration: 0.45, easing: "house" },
+        ]}
       >
         RESTAU WHEEL
       </text>
-      <frame
+      <rect
         x={610}
         y={460}
         width={700}
         height={90}
-        layout="column"
-        align="center"
-        justify="center"
-        background={pink}
         radius={45}
+        fill={pink}
         animate={[
           { property: "opacity", from: 0, to: 1, at: 0.3, duration: 0.35 },
           { property: "scale", from: 0.92, to: 1, at: 0.3, duration: 0.4, easing: "house" },
         ]}
+      />
+      <text
+        x={630}
+        y={485}
+        width={660}
+        height={50}
+        fontFamily="DM Sans"
+        fontWeight={700}
+        fontSize={32}
+        color={white}
+        align="center"
+        animate={[{ property: "opacity", from: 0, to: 1, at: 0.35, duration: 0.3 }]}
       >
-        <text width={660} height={50} fontFamily="DM Sans" fontWeight={700} fontSize={32} color={white} align="center">
-          Créer mon restaurant →
-        </text>
-      </frame>
+        Créer mon restaurant →
+      </text>
       <text
         x={120}
         y={590}
