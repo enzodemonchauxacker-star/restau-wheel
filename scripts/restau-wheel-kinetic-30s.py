@@ -1789,8 +1789,10 @@ def main():
             "-shortest", "-movflags", "+faststart", tmp,
         ], check=True)
         shutil.copyfile(tmp, args.out)
-        shutil.copyfile(os.path.join(WORK_DIR, "sfx_timeline.json"),
-                        os.path.join(os.path.dirname(args.out), "sfx_timeline.json"))
+        timeline_src = os.path.join(WORK_DIR, "sfx_timeline.json")
+        timeline_dst = os.path.join(os.path.dirname(args.out) or ".", "sfx_timeline.json")
+        if os.path.abspath(timeline_src) != os.path.abspath(timeline_dst):
+            shutil.copyfile(timeline_src, timeline_dst)
         print(f"[video] remux audio OK -> {args.out}")
         return
 
