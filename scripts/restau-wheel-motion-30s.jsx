@@ -12,10 +12,11 @@ export default async ({ project }) => {
     background: "#0A0A0A",
   });
 
-  const landing = await p.add("work/assets/landing.png");
-  const client = await p.add("work/assets/client.png");
-  const phone = await p.add("work/assets/phone.jpg");
-  const voice = await p.add("work/assets/voice.mp3");
+  // Paths relative to project dir (work/restau-wheel-md)
+  const landing = await p.add("assets/landing.png");
+  const client = await p.add("assets/client.png");
+  const phone = await p.add("assets/phone.jpg");
+  const voice = await p.add("assets/voice.mp3");
 
   // Full voice bed
   p.cut(voice, { from: 0, dur: 30, at: 0, fit: "none" });
