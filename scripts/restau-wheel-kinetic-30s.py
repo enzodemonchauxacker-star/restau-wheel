@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Restau Wheel — motion design kinétique 30 s (1920x1080, 30 fps).
+"""Restau Wheel — motion design kinétique 30 s (30 fps).
 
 Pipeline 100 % local : rendu image par image PIL/numpy (vrais visuels produit),
 SFX procéduraux générés par ffmpeg (aevalsrc), mix VO + SFX + bed en numpy,
 puis encodage H.264/AAC avec ffmpeg.
 
 Usage :
-    python3 scripts/restau-wheel-kinetic-30s.py                 # rendu complet
-    python3 scripts/restau-wheel-kinetic-30s.py --preview 1,8,16 # quelques frames PNG
-    python3 scripts/restau-wheel-kinetic-30s.py --png-frames     # garde les frames PNG
+    python3 scripts/restau-wheel-kinetic-30s.py                 # 16:9 1920x1080
+    python3 scripts/restau-wheel-kinetic-30s.py --vertical      # 9:16 1080x1920
+    python3 scripts/restau-wheel-kinetic-30s.py --preview 1,8,16
+    python3 scripts/restau-wheel-kinetic-30s.py --png-frames
 
 Dépendances : Python 3.9+, Pillow, numpy, ffmpeg/ffprobe dans le PATH.
 """
@@ -30,7 +31,11 @@ from multiprocessing import Pool
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-W, H, FPS, DUR = 1920, 1080, 30, 30.0
+# Espace design (scènes écrites en 16:9) — le canvas peut être 9:16 via --vertical.
+DW, DH = 1920, 1080
+W, H = DW, DH
+VERTICAL = False
+FPS, DUR = 30, 30.0
 NFRAMES = int(round(FPS * DUR))
 SR = 48000
 
@@ -88,7 +93,7 @@ GLITCHES = [(0.48, 0.58, 0.6), (6.64, 6.78, 0.8), (18.80, 19.12, 1.0), (23.56, 2
 # (temps de coupe, type, direction)
 TRANSITIONS = [(5.0, "whip_h", -1), (7.4, "whip_v", -1), (9.2, "zoom", 0), (23.0, "whip_h", 1)]
 
-BURSTS = [
+BURSTS_DESIGN = [
     (0.50, 960, 440, 70, (PINK, YELLOW, WHITE), 1.0, "dot"),
     (3.80, 420, 760, 45, (YELLOW, CYAN), 0.8, "dot"),
     (6.68, 1330, 540, 70, (CYAN, WHITE), 1.0, "dot"),
@@ -104,6 +109,39 @@ BURSTS = [
     (26.10, 960, 300, 60, (PINK, YELLOW, CYAN), 1.0, "dot"),
     (29.35, 960, 820, 90, (PINK, YELLOW, CYAN, WHITE), 1.2, "confetti"),
 ]
+BURSTS = list(BURSTS_DESIGN)
+
+
+def configure_format(vertical: bool = False):
+    """Active le canvas 9:16 (1080x1920) ou 16:9 (1920x1080). Les scènes restent en coords design."""
+    global W, H, VERTICAL, OUT_DIR, WORK_DIR, BURSTS
+    VERTICAL = vertical
+    if vertical:
+        W, H = 1080, 1920
+        OUT_DIR = os.environ.get("RW_OUT", "/opt/cursor/artifacts/restau-wheel-kinetic-30s-9x16")
+        WORK_DIR = os.environ.get("RW_WORK", "/tmp/restau-wheel-kinetic-30s-9x16")
+        BURSTS = [(t, x * W / DW, y * H / DH, n, c, p, k) for (t, x, y, n, c, p, k) in BURSTS_DESIGN]
+    else:
+        W, H = DW, DH
+        OUT_DIR = os.environ.get("RW_OUT", "/opt/cursor/artifacts/restau-wheel-kinetic-30s")
+        WORK_DIR = os.environ.get("RW_WORK", "/tmp/restau-wheel-kinetic-30s")
+        BURSTS = list(BURSTS_DESIGN)
+
+
+def d2c(cx, cy, scale=1.0):
+    """Design (DW×DH) → canvas (W×H). En vertical : X shrink, Y stretch (plus d'air)."""
+    if not VERTICAL:
+        return cx, cy, scale
+    return cx * W / DW, cy * H / DH, scale * (W / DW)
+
+
+def P(x, y=None):
+    """Remap d'un point (ou d'une abscisse seule) pour ImageDraw sur le canvas."""
+    if y is None:
+        return x * W / DW if VERTICAL else x
+    if not VERTICAL:
+        return x, y
+    return x * W / DW, y * H / DH
 
 # ---------------------------------------------------------------------------
 # Easings : cubic-bezier (comme en CSS/After Effects) + springs amortis.
@@ -319,9 +357,10 @@ def with_alpha(im, alpha):
 
 
 def place(cv, img, cx, cy, scale=1.0, rot=0.0, alpha=1.0, resample=Image.BICUBIC):
-    """Colle img centré en (cx, cy) avec échelle, rotation (degrés, anti-horaire) et opacité."""
+    """Colle img centré en (cx, cy) design avec échelle, rotation (degrés, anti-horaire) et opacité."""
     if alpha <= 0.004 or scale <= 0.01:
         return
+    cx, cy, scale = d2c(cx, cy, scale)
     im = img
     if abs(scale - 1.0) > 1e-3:
         im = im.resize((max(1, int(round(im.width * scale))), max(1, int(round(im.height * scale)))), resample)
@@ -538,7 +577,9 @@ def rays_sprite(size=1700, n=22, color=YELLOW, alpha=34):
     return im
 
 
-def grid_sprite(w=W + 96, h=H + 96, step=48, alpha=34):
+def grid_sprite(w=None, h=None, step=48, alpha=34):
+    w = W + 96 if w is None else w
+    h = H + 96 if h is None else h
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     for y in range(0, h, step):
@@ -624,7 +665,7 @@ def init_assets():
     A["logo"] = logo_sprite(250)
     A["glow"] = {k: glow_sprite(c) for k, c in
                  (("pink", PINK), ("cyan", CYAN), ("yellow", YELLOW), ("white", WHITE))}
-    A["grid"] = grid_sprite()
+    A["grid"] = grid_sprite(W + 96, H + 96)
     A["rays"] = rays_sprite()
     A["streak_p"] = streak_sprite(PINK)
     A["streak_c"] = streak_sprite(CYAN, 900, 60)
@@ -747,10 +788,13 @@ def draw_step(cv, t, t0, n, label, color):
     d = ImageDraw.Draw(cv)
     for i in range(3):
         x0 = 130 + i * 74
-        d.rectangle((x0, 184, x0 + 64, 190), fill=(60, 60, 60, 255))
+        xa, ya = P(x0, 184)
+        xb, yb = P(x0 + 64, 190)
+        d.rectangle((xa, ya, xb, yb), fill=(60, 60, 60, 255))
         fill = 1.0 if i < n - 1 else (E(t, t0 + 0.15, 0.5) if i == n - 1 else 0)
         if fill > 0:
-            d.rectangle((x0, 184, x0 + int(64 * fill), 190), fill=color + (255,))
+            xf, _ = P(x0 + int(64 * fill), 190)
+            d.rectangle((xa, ya, xf, yb), fill=color + (255,))
 
 
 def draw_wheel(cv, img, x, y, scale, angle, alpha, omega=0.0, ghosts=4):
@@ -797,7 +841,9 @@ def scene_hook(cv, t):
             place(cv, img, 960 - tag.width / 2 + img.width / 2, 250 - 80 * E(t, 1.72, 0.2, EI), 1, 0, a)
             d = ImageDraw.Draw(cv)
             if a > 0.5:
-                d.rectangle((960 - tag.width / 2 - 18, 222, 960 + tag.width / 2 + 18, 278), outline=YELLOW + (255,), width=3)
+                x0, y0 = P(960 - tag.width / 2 - 18, 222)
+                x1, y1 = P(960 + tag.width / 2 + 18, 278)
+                d.rectangle((x0, y0, x1, y1), outline=YELLOW + (255,), width=3)
     r_img = text_img("RESTAU", "anton", 300, WHITE)
     w_img = text_img("WHEEL", "anton", 300, YELLOW)
     draw_state(cv, r_img, slam(0.5, 960, 450, s0=1.75, dy=0, rot0=-4, dur=0.28, drift=(0, -8),
@@ -830,7 +876,9 @@ def scene_hook(cv, t):
     if t > 3.95:
         p = E(t, 3.95, 0.3, EBACK)
         y0 = 770 + tb.height / 2 + 14 - 10 * (t - 3.78)
-        ImageDraw.Draw(cv).rectangle((L, y0, L + tb.width * p, y0 + 16), fill=CYAN + (255,))
+        xa, ya = P(L, y0)
+        xb, yb = P(L + tb.width * p, y0 + 16)
+        ImageDraw.Draw(cv).rectangle((xa, ya, xb, yb), fill=CYAN + (255,))
 
     draw_particles(cv, t)
     draw_bursts(cv, t)
@@ -1025,14 +1073,16 @@ def scene_spin(cv, t):
         # coordonnées du bouton TOURNER dans le visuel recadré
         bx = ps[0] + ((322 - 110) * A["phone_scale"] + 8 - A["phone"].width / 2) * ps[2]
         by = ps[1] + ((774 - 330) * A["phone_scale"] + 8 - A["phone"].height / 2) * ps[2]
+        bx, by, _ = d2c(bx, by)
+        rs = W / DW if VERTICAL else 1.0
         lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         d = ImageDraw.Draw(lay)
         for k in range(3):
             dt = t - 9.45 - k * 0.07
             if dt > 0:
-                r = 30 + 420 * EO(clamp01(dt / 0.45))
+                r = (30 + 420 * EO(clamp01(dt / 0.45))) * rs
                 d.ellipse((bx - r, by - r, bx + r, by + r), outline=WHITE + (int(255 * (1 - clamp01(dt / 0.45))),),
-                          width=8)
+                          width=max(2, int(8 * rs)))
         cv.alpha_composite(lay)
 
     L = 130
@@ -1061,7 +1111,12 @@ def scene_win(cv, t):
             p = E(t, tp, 0.45, EIO)
             lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
             x = lerp(-900, 2800, p)
-            ImageDraw.Draw(lay).polygon([(x, 0), (x + 420, 0), (x + 120, H), (x - 300, H)], fill=col + (150,))
+            sx = W / DW if VERTICAL else 1.0
+            x *= sx
+            ImageDraw.Draw(lay).polygon(
+                [(x, 0), (x + 420 * sx, 0), (x + 120 * sx, H), (x - 300 * sx, H)],
+                fill=col + (150,),
+            )
             cv.alpha_composite(lay)
 
     def tst(tt):
@@ -1227,8 +1282,9 @@ def scene_price(cv, t):
         if t > 24.75:
             p = E(t, 24.75, 0.3, EBACK)
             wbar = letter_imgs("/ MOIS", "anton", 150, WHITE)[2]
-            ImageDraw.Draw(cv).rectangle((cx + 60 - wbar / 2, 915, cx + 60 - wbar / 2 + wbar * p, 931),
-                                         fill=YELLOW + (255,))
+            xa, ya = P(cx + 60 - wbar / 2, 915)
+            xb, yb = P(cx + 60 - wbar / 2 + wbar * p, 931)
+            ImageDraw.Draw(cv).rectangle((xa, ya, xb, yb), fill=YELLOW + (255,))
 
     # Bandeau défilant
     strip = A["marquee"]
@@ -1380,7 +1436,10 @@ def render_frame(i):
     name, t0, t1 = next(s for s in SCENES if s[1] <= t < s[2] or (s == SCENES[-1] and t >= s[1]))
     cv = Image.new("RGBA", (W, H), BLACK + (255,))
     zoom, rot, fx, fy = SCENE_FUNCS[name](cv, t)
+    fx, fy, _ = d2c(fx, fy)
     sdx, sdy, srot = camera_shake(t)
+    if VERTICAL:
+        sdx, sdy = sdx * W / DW, sdy * H / DH
     th = math.radians(abs(rot + srot))
     cover = math.cos(th) + math.sin(th) * W / H + 2.2 * max(abs(sdx) / W, abs(sdy) / H)
     img = apply_camera(cv.convert("RGB"), max(zoom, cover), rot + srot, fx, fy, sdx, sdy)
@@ -1694,15 +1753,22 @@ def render_pngs(png_dir, workers):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--vertical", action="store_true", help="rendu 9:16 (1080x1920) pour Stories/Reels/TikTok")
     ap.add_argument("--preview", help="temps (s) séparés par des virgules -> PNG dans WORK_DIR/preview")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2)))
     ap.add_argument("--png-frames", action="store_true", help="exporte les frames PNG avant l'encodage")
     ap.add_argument("--no-audio", action="store_true")
-    ap.add_argument("--out", default=os.path.join(OUT_DIR, "restau-wheel-kinetic-30s.mp4"))
+    ap.add_argument("--out", default=None)
     args = ap.parse_args()
+
+    configure_format(args.vertical)
+    if args.out is None:
+        name = "restau-wheel-kinetic-30s-9x16.mp4" if args.vertical else "restau-wheel-kinetic-30s.mp4"
+        args.out = os.path.join(OUT_DIR, name)
 
     os.makedirs(WORK_DIR, exist_ok=True)
     init_assets()
+    print(f"[format] {'9:16' if VERTICAL else '16:9'}  {W}x{H}", flush=True)
 
     if args.preview:
         pdir = os.path.join(WORK_DIR, "preview")
