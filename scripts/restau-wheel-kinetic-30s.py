@@ -52,7 +52,7 @@ VO_CLIPS_DIR = os.environ.get(
     "RW_VO_CLIPS",
     "/opt/cursor/artifacts/restau-wheel-kinetic-30s-9x16/vo-clips",
 )
-# (fichier local, position timeline s) — voix Celine / elevenlabs_v4
+# (fichier local, position timeline s) — voix homme Andre / elevenlabs_v4
 VO_CLIPS = [
     ("0-hook.wav", 0.50),
     ("1-flow.wav", 5.30),
@@ -63,17 +63,17 @@ VO_CLIPS = [
 ]
 VO_CLIPS_URLS = [
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_eacd1472-581b-41fb-8d0c-eb796b6991c8.mp3",
+    "hf_20260930_175005_d67cc124-71db-4859-b1dd-bbdd83be5108.mp3",
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_87a28fc2-fc66-42bb-9001-08a648e00c49.mp3",
+    "hf_20260930_175004_591767b6-703b-4e65-b1a2-ccbdd0be6d05.mp3",
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_b85c3c62-dd7a-4512-8593-a9dec1563fba.mp3",
+    "hf_20260930_175004_790274e7-2530-4197-a9d0-2501e82fd132.mp3",
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_7de43b79-666a-4351-a025-b78511bb994a.mp3",
+    "hf_20260930_175004_6e14b772-9622-4ba4-8114-fd745379dc19.mp3",
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_7cfc9218-a296-4fd1-8705-bdc380e95ec9.mp3",
+    "hf_20260930_175004_5a8a2ab7-6b6e-4ea8-8e91-01659bd1cb7a.mp3",
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
-    "hf_20260930_174116_7834f2ae-8185-4a1c-b5da-aa1881dce1a6.mp3",
+    "hf_20260930_175005_288dde4f-5079-485a-9670-5a4520a95d62.mp3",
 ]
 
 BLACK = (10, 10, 10)
@@ -1675,6 +1675,9 @@ def load_vo_clips(work):
             src = local_mp3
         else:
             dl = os.path.join(clip_dir, mp3_name)
+            if not url:
+                print(f"[audio] clip VO {fname} manquant (pas d'URL)")
+                return None
             try:
                 if not os.path.exists(dl):
                     urllib.request.urlretrieve(url, dl)
@@ -1763,30 +1766,30 @@ def build_audio(work):
     for t, name, gain_db, pan in events:
         if name not in cache:
             cache[name] = read_wav(os.path.join(sfx_dir, f"{name}.wav"))[:, 0]
-        # +5 dB global pour que les impacts/whooshes percent clairement sous la VO
-        clip = cache[name] * (10 ** ((gain_db + 5) / 20))
+        # SFX discrets : -3 dB vs timeline, la VO reste prioritaire
+        clip = cache[name] * (10 ** ((gain_db - 3) / 20))
         i0 = int(t * SR)
         m = min(clip.size, n - i0)
         if m <= 0:
             continue
         ang = (pan + 1) * math.pi / 4
-        sfx_track[i0:i0 + m, 0] += clip[:m] * math.cos(ang) * 1.45
-        sfx_track[i0:i0 + m, 1] += clip[:m] * math.sin(ang) * 1.45
+        sfx_track[i0:i0 + m, 0] += clip[:m] * math.cos(ang) * 0.95
+        sfx_track[i0:i0 + m, 1] += clip[:m] * math.sin(ang) * 0.95
 
-    bed = read_wav(os.path.join(sfx_dir, "bed.wav"))[:n] * (10 ** (-12 / 20))
-    # Ducking léger : les SFX restent présents sous la VO (hits/whooshes lisibles)
+    bed = read_wav(os.path.join(sfx_dir, "bed.wav"))[:n] * (10 ** (-18 / 20))
+    # Ducking fort sous la VO : les SFX s'effacent quand on parle
     env = np.abs(vo_track).mean(axis=1)
     k = int(0.03 * SR)
     env = np.convolve(env, np.ones(k) / k, mode="same")
-    duck = np.clip(env / 0.05, 0, 1)
-    duck = np.convolve(duck, np.ones(int(0.12 * SR)) / int(0.12 * SR), mode="same")[:, None]
-    mix = vo_track * 0.92 + sfx_track * (1.35 - 0.25 * duck) + bed * (1 - 0.4 * duck)
-    mix = mix / max(1e-6, np.abs(mix).max()) * 0.78
+    duck = np.clip(env / 0.04, 0, 1)
+    duck = np.convolve(duck, np.ones(int(0.16 * SR)) / int(0.16 * SR), mode="same")[:, None]
+    mix = vo_track * 1.05 + sfx_track * (0.72 - 0.55 * duck) + bed * (1 - 0.7 * duck)
+    mix = mix / max(1e-6, np.abs(mix).max()) * 0.76
     pre = os.path.join(work, "premix.wav")
     write_wav(pre, mix)
     final = os.path.join(work, "mix.wav")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", pre, "-af",
-                    "acompressor=threshold=0.35:ratio=2.5:attack=5:release=120,"
+                    "acompressor=threshold=0.32:ratio=2.2:attack=5:release=140,"
                     "loudnorm=I=-14:TP=-1.5:LRA=11,alimiter=limit=0.89",
                     "-ar", str(SR), "-t", str(DUR), "-c:a", "pcm_s16le", final], check=True)
     with open(os.path.join(work, "sfx_timeline.json"), "w") as fh:

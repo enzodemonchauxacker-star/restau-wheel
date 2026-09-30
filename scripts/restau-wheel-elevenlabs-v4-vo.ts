@@ -22,8 +22,9 @@ if (!credentials?.includes(":")) {
 }
 config({ credentials });
 
-/** Voix preset Celine (FR SaaS). */
-const VOICE_ID = process.env.RW_VOICE_ID || "57ccb351-84d7-54ba-afd4-26b566ca6023";
+/** Voix preset Andre (homme, FR SaaS). */
+const VOICE_ID = process.env.RW_VOICE_ID || "f1e8226e-2248-4d5f-b43c-0a79e9949dbf";
+const VOICE_NAME = process.env.RW_VOICE_NAME || "Andre";
 const VOICE_TYPE = "preset";
 const MODEL = "elevenlabs/v4";
 
@@ -31,32 +32,32 @@ const LINES: { name: string; at: number; text: string }[] = [
   {
     name: "hook",
     at: 0.5,
-    text: "[energetic clear French commercial] Restau Wheel. Une roue de fortune sur chaque table.",
+    text: "[energetic clear French commercial male voice] Restau Wheel. Une roue de fortune sur chaque table.",
   },
   {
     name: "flow",
     at: 5.3,
-    text: "[energetic clear French commercial] Vos clients scannent le QR, remplissent leur ticket, et tournent la roue.",
+    text: "[energetic clear French commercial male voice] Vos clients scannent le QR, remplissent leur ticket, et tournent la roue.",
   },
   {
     name: "value",
     at: 12.2,
-    text: "[energetic clear French commercial] Ils gagnent un lot — dessert, boisson, réduction — et reviennent.",
+    text: "[energetic clear French commercial male voice] Ils gagnent un lot — dessert, boisson, réduction — et reviennent.",
   },
   {
     name: "control",
     at: 19.3,
-    text: "[confident clear French commercial] Vous contrôlez les lots et les probabilités.",
+    text: "[confident clear French commercial male voice] Vous contrôlez les lots et les probabilités.",
   },
   {
     name: "price",
     at: 23.2,
-    text: "[punchy clear French commercial] Vingt euros par mois.",
+    text: "[punchy clear French commercial male voice] Vingt euros par mois.",
   },
   {
     name: "cta",
     at: 26.1,
-    text: "[warm clear French commercial] Créez votre restaurant sur restauwheel.com.",
+    text: "[warm clear French commercial male voice] Créez votre restaurant sur restauwheel.com.",
   },
 ];
 
@@ -122,7 +123,7 @@ async function main() {
   const summary = {
     model: "elevenlabs_v4",
     api_model: MODEL,
-    voice: "Celine",
+    voice: VOICE_NAME,
     voice_id: VOICE_ID,
     voice_type: VOICE_TYPE,
     clips,
