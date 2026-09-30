@@ -5,21 +5,22 @@
 export default async ({ project }) => {
   const W = 1920;
   const H = 1080;
+  // Project dir is relative to /home/user/work (Fable cwd) — do NOT prefix with work/
   const p = await project({
-    dir: "work/restau-wheel-md",
+    dir: "restau-wheel-md",
     size: `${W}x${H}`,
     fps: 30,
     background: "#0A0A0A",
   });
 
-  // Paths relative to project dir (work/restau-wheel-md)
+  // Paths relative to project dir (restau-wheel-md)
   const landing = await p.add("assets/landing.png");
   const client = await p.add("assets/client.png");
   const phone = await p.add("assets/phone.jpg");
   const voice = await p.add("assets/voice.mp3");
 
-  // Full voice bed
-  p.cut(voice, { from: 0, dur: 30, at: 0, fit: "none" });
+  // Voice bed (~24.8s); visual timeline continues to 30s for CTA hold
+  p.cut(voice, { from: 0, dur: 24.78, at: 0, fit: "none" });
 
   const pink = "#FF2D6A";
   const yellow = "#F5C518";
@@ -372,7 +373,7 @@ export default async ({ project }) => {
     { at: 26, dur: 4, name: "cta" },
   );
 
-  await p.render("work/output/restau-wheel-motion-30s.mp4", {
+  await p.render("renders/restau-wheel-motion-30s.mp4", {
     draft: false,
     depth: 8,
     bitrate: "10M",
