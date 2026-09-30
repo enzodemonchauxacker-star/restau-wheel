@@ -47,6 +47,34 @@ VO_URL = (
     "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
     "hf_20260930_141010_383d1544-f1f1-45fe-a5ef-1335c12547c1.wav"
 )
+# VO ElevenLabs V4 (API Higgsfield) — clips scène par scène, prioritaire sur VO_LOCAL.
+VO_CLIPS_DIR = os.environ.get(
+    "RW_VO_CLIPS",
+    "/opt/cursor/artifacts/restau-wheel-kinetic-30s-9x16/vo-clips",
+)
+# (fichier local, position timeline s) — voix Celine / elevenlabs_v4
+VO_CLIPS = [
+    ("0-hook.wav", 0.50),
+    ("1-flow.wav", 5.30),
+    ("2-value.wav", 12.20),
+    ("3-control.wav", 19.30),
+    ("4-price.wav", 23.20),
+    ("5-cta.wav", 26.10),
+]
+VO_CLIPS_URLS = [
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_eacd1472-581b-41fb-8d0c-eb796b6991c8.mp3",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_87a28fc2-fc66-42bb-9001-08a648e00c49.mp3",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_b85c3c62-dd7a-4512-8593-a9dec1563fba.mp3",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_7de43b79-666a-4351-a025-b78511bb994a.mp3",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_7cfc9218-a296-4fd1-8705-bdc380e95ec9.mp3",
+    "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/"
+    "hf_20260930_174116_7834f2ae-8185-4a1c-b5da-aa1881dce1a6.mp3",
+]
 
 BLACK = (10, 10, 10)
 PINK = (255, 45, 106)
@@ -1623,8 +1651,45 @@ def write_wav(path, data):
         wf.writeframes((data * 32767).astype(np.int16).tobytes())
 
 
+def _ffmpeg_stereo48(src, dst):
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-i", src, "-ac", "2", "-ar", str(SR), "-c:a", "pcm_s16le", dst],
+        check=True,
+    )
+
+
+def load_vo_clips(work):
+    """Charge les clips ElevenLabs V4 (local → téléchargement CDN). Retourne [(wav, at), ...] ou None."""
+    clip_dir = os.path.join(work, "vo-clips")
+    os.makedirs(clip_dir, exist_ok=True)
+    loaded = []
+    for (fname, at), url in zip(VO_CLIPS, VO_CLIPS_URLS):
+        local = os.path.join(VO_CLIPS_DIR, fname)
+        mp3_name = fname.replace(".wav", ".mp3")
+        local_mp3 = os.path.join(VO_CLIPS_DIR, mp3_name)
+        out = os.path.join(clip_dir, fname)
+        src = None
+        if os.path.exists(local):
+            src = local
+        elif os.path.exists(local_mp3):
+            src = local_mp3
+        else:
+            dl = os.path.join(clip_dir, mp3_name)
+            try:
+                if not os.path.exists(dl):
+                    urllib.request.urlretrieve(url, dl)
+                src = dl
+            except Exception as exc:
+                print(f"[audio] clip VO {fname} indisponible ({exc})")
+                return None
+        if not os.path.exists(out) or os.path.getmtime(src) > os.path.getmtime(out):
+            _ffmpeg_stereo48(src, out)
+        loaded.append((read_wav(out), at))
+    return loaded
+
+
 def get_voice(work):
-    """VO locale > URL CloudFront > placeholder (silence + bips)."""
+    """VO locale mono-fichier > URL CloudFront > placeholder (silence + bips)."""
     src = None
     if os.path.exists(VO_LOCAL):
         src = VO_LOCAL
@@ -1639,9 +1704,21 @@ def get_voice(work):
     if src is None:
         return None, "placeholder"
     out = os.path.join(work, "vo48k.wav")
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-ac", "2", "-ar", str(SR), "-c:a", "pcm_s16le", out],
-                   check=True)
+    _ffmpeg_stereo48(src, out)
     return read_wav(out), src
+
+
+def place_vo_clip(vo_track, clip, dst, n):
+    clip = clip / max(1e-6, np.abs(clip).max()) * 0.89
+    fade = min(int(0.01 * SR), clip.shape[0] // 2)
+    if fade > 0:
+        clip = clip.copy()
+        clip[:fade] *= np.linspace(0, 1, fade)[:, None]
+        clip[-fade:] *= np.linspace(1, 0, fade)[:, None]
+    i0 = int(dst * SR)
+    m = min(clip.shape[0], n - i0)
+    if m > 0:
+        vo_track[i0:i0 + m] += clip[:m]
 
 
 def build_audio(work):
@@ -1650,28 +1727,36 @@ def build_audio(work):
     n = int(DUR * SR)
     vo_track = np.zeros((n, 2), np.float32)
     sfx_track = np.zeros((n, 2), np.float32)
-    vo, vo_src = get_voice(work)
-    if vo is None:
-        beep = np.sin(2 * np.pi * 880 * np.arange(int(0.12 * SR)) / SR) * 0.3
-        for _, _, dst in VO_CHUNKS:
-            i0 = int(dst * SR)
-            vo_track[i0:i0 + beep.size] += beep[:, None]
+
+    clips = load_vo_clips(work)
+    if clips:
+        vo_src = "elevenlabs_v4"
+        for clip, at in clips:
+            place_vo_clip(vo_track, clip, at, n)
+        print(f"[audio] VO ElevenLabs V4 — {len(clips)} clips scène", flush=True)
     else:
-        vo = vo / max(1e-6, np.abs(vo).max()) * 0.89
-        vo_dur = vo.shape[0] / SR
-        if abs(vo_dur - VO_EXPECTED_DUR) < 0.1:
-            for s0, s1, dst in VO_CHUNKS:
-                seg = vo[int(s0 * SR):int(s1 * SR)].copy()
-                fade = min(int(0.01 * SR), seg.shape[0] // 2)
-                seg[:fade] *= np.linspace(0, 1, fade)[:, None]
-                seg[-fade:] *= np.linspace(1, 0, fade)[:, None]
+        vo, vo_src = get_voice(work)
+        if vo is None:
+            beep = np.sin(2 * np.pi * 880 * np.arange(int(0.12 * SR)) / SR) * 0.3
+            for _, _, dst in VO_CHUNKS:
                 i0 = int(dst * SR)
-                m = min(seg.shape[0], n - i0)
-                vo_track[i0:i0 + m] += seg[:m]
-        else:  # autre VO : posée telle quelle
-            i0 = int(0.3 * SR)
-            m = min(vo.shape[0], n - i0)
-            vo_track[i0:i0 + m] += vo[:m]
+                vo_track[i0:i0 + beep.size] += beep[:, None]
+        else:
+            vo = vo / max(1e-6, np.abs(vo).max()) * 0.89
+            vo_dur = vo.shape[0] / SR
+            if abs(vo_dur - VO_EXPECTED_DUR) < 0.1:
+                for s0, s1, dst in VO_CHUNKS:
+                    seg = vo[int(s0 * SR):int(s1 * SR)].copy()
+                    fade = min(int(0.01 * SR), seg.shape[0] // 2)
+                    seg[:fade] *= np.linspace(0, 1, fade)[:, None]
+                    seg[-fade:] *= np.linspace(1, 0, fade)[:, None]
+                    i0 = int(dst * SR)
+                    m = min(seg.shape[0], n - i0)
+                    vo_track[i0:i0 + m] += seg[:m]
+            else:  # autre VO : posée telle quelle
+                i0 = int(0.3 * SR)
+                m = min(vo.shape[0], n - i0)
+                vo_track[i0:i0 + m] += vo[:m]
 
     cache = {}
     events = sfx_timeline()

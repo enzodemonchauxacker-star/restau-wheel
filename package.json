@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node --no-warnings=ExperimentalWarning server.js",
     "dev": "node --no-warnings=ExperimentalWarning --watch server.js",
-    "seedance:example": "tsx index.ts"
+    "seedance:example": "tsx index.ts",
+    "vo:elevenlabs-v4": "tsx scripts/restau-wheel-elevenlabs-v4-vo.ts"
   },
   "dependencies": {
     "@higgsfield/client": "^0.2.6",

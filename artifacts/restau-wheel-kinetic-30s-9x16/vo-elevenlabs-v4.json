@@ -1,0 +1,56 @@
+{
+  "model": "elevenlabs_v4",
+  "voice": "Celine",
+  "voice_id": "57ccb351-84d7-54ba-afd4-26b566ca6023",
+  "voice_type": "preset",
+  "clips": [
+    {
+      "name": "hook",
+      "at": 0.5,
+      "file": "0-hook.mp3",
+      "job_id": "eacd1472-581b-41fb-8d0c-eb796b6991c8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_eacd1472-581b-41fb-8d0c-eb796b6991c8.mp3",
+      "dur": 3.631
+    },
+    {
+      "name": "flow",
+      "at": 5.3,
+      "file": "1-flow.mp3",
+      "job_id": "87a28fc2-fc66-42bb-9001-08a648e00c49",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_87a28fc2-fc66-42bb-9001-08a648e00c49.mp3",
+      "dur": 4.441
+    },
+    {
+      "name": "value",
+      "at": 12.2,
+      "file": "2-value.mp3",
+      "job_id": "b85c3c62-dd7a-4512-8593-a9dec1563fba",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_b85c3c62-dd7a-4512-8593-a9dec1563fba.mp3",
+      "dur": 4.989
+    },
+    {
+      "name": "control",
+      "at": 19.3,
+      "file": "3-control.mp3",
+      "job_id": "7de43b79-666a-4351-a025-b78511bb994a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_7de43b79-666a-4351-a025-b78511bb994a.mp3",
+      "dur": 2.769
+    },
+    {
+      "name": "price",
+      "at": 23.2,
+      "file": "4-price.mp3",
+      "job_id": "7cfc9218-a296-4fd1-8705-bdc380e95ec9",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_7cfc9218-a296-4fd1-8705-bdc380e95ec9.mp3",
+      "dur": 1.724
+    },
+    {
+      "name": "cta",
+      "at": 26.1,
+      "file": "5-cta.mp3",
+      "job_id": "7834f2ae-8185-4a1c-b5da-aa1881dce1a6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/hf_20260930_174116_7834f2ae-8185-4a1c-b5da-aa1881dce1a6.mp3",
+      "dur": 3.396
+    }
+  ]
+}
