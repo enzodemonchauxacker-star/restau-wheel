@@ -20,7 +20,7 @@ export default async ({ project }) => {
   const voice = await p.add("assets/voice.mp3");
 
   // Voice bed (~24.8s); visual timeline continues to 30s for CTA hold
-  p.cut(voice, { from: 0, dur: 24.78, at: 0, fit: "none" });
+  p.cut(voice, { from: 0, dur: 24.78, at: 0 });
 
   const pink = "#FF2D6A";
   const yellow = "#F5C518";
