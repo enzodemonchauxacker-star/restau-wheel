@@ -1678,24 +1678,25 @@ def build_audio(work):
     for t, name, gain_db, pan in events:
         if name not in cache:
             cache[name] = read_wav(os.path.join(sfx_dir, f"{name}.wav"))[:, 0]
-        clip = cache[name] * (10 ** (gain_db / 20))
+        # +5 dB global pour que les impacts/whooshes percent clairement sous la VO
+        clip = cache[name] * (10 ** ((gain_db + 5) / 20))
         i0 = int(t * SR)
         m = min(clip.size, n - i0)
         if m <= 0:
             continue
         ang = (pan + 1) * math.pi / 4
-        sfx_track[i0:i0 + m, 0] += clip[:m] * math.cos(ang) * 1.2
-        sfx_track[i0:i0 + m, 1] += clip[:m] * math.sin(ang) * 1.2
+        sfx_track[i0:i0 + m, 0] += clip[:m] * math.cos(ang) * 1.45
+        sfx_track[i0:i0 + m, 1] += clip[:m] * math.sin(ang) * 1.45
 
-    bed = read_wav(os.path.join(sfx_dir, "bed.wav"))[:n] * (10 ** (-15 / 20))
-    # ducking : le bed et les SFX s'effacent sous la voix
+    bed = read_wav(os.path.join(sfx_dir, "bed.wav"))[:n] * (10 ** (-12 / 20))
+    # Ducking léger : les SFX restent présents sous la VO (hits/whooshes lisibles)
     env = np.abs(vo_track).mean(axis=1)
     k = int(0.03 * SR)
     env = np.convolve(env, np.ones(k) / k, mode="same")
     duck = np.clip(env / 0.05, 0, 1)
     duck = np.convolve(duck, np.ones(int(0.12 * SR)) / int(0.12 * SR), mode="same")[:, None]
-    mix = vo_track * 1.0 + sfx_track * (1 - 0.35 * duck) + bed * (1 - 0.55 * duck)
-    mix = mix / max(1e-6, np.abs(mix).max()) * 0.7
+    mix = vo_track * 0.92 + sfx_track * (1.35 - 0.25 * duck) + bed * (1 - 0.4 * duck)
+    mix = mix / max(1e-6, np.abs(mix).max()) * 0.78
     pre = os.path.join(work, "premix.wav")
     write_wav(pre, mix)
     final = os.path.join(work, "mix.wav")
@@ -1758,6 +1759,8 @@ def main():
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2)))
     ap.add_argument("--png-frames", action="store_true", help="exporte les frames PNG avant l'encodage")
     ap.add_argument("--no-audio", action="store_true")
+    ap.add_argument("--remux-audio", metavar="VIDEO",
+                    help="regénère uniquement le mix VO+SFX et remux sur une vidéo existante (-c:v copy)")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -1767,8 +1770,31 @@ def main():
         args.out = os.path.join(OUT_DIR, name)
 
     os.makedirs(WORK_DIR, exist_ok=True)
-    init_assets()
     print(f"[format] {'9:16' if VERTICAL else '16:9'}  {W}x{H}", flush=True)
+
+    if args.remux_audio:
+        if args.no_audio:
+            raise SystemExit("--remux-audio incompatible avec --no-audio")
+        src = args.remux_audio
+        if not os.path.exists(src):
+            raise SystemExit(f"vidéo introuvable: {src}")
+        audio, events, vo_src = build_audio(WORK_DIR)
+        print(f"[audio] {len(events)} SFX, VO: {vo_src} -> remux {src}")
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        tmp = os.path.join(WORK_DIR, "remux.mp4")
+        subprocess.run([
+            "ffmpeg", "-v", "error", "-y", "-i", src, "-i", audio,
+            "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
+            "-c:a", "aac", "-b:a", "192k", "-ar", str(SR),
+            "-shortest", "-movflags", "+faststart", tmp,
+        ], check=True)
+        shutil.copyfile(tmp, args.out)
+        shutil.copyfile(os.path.join(WORK_DIR, "sfx_timeline.json"),
+                        os.path.join(os.path.dirname(args.out), "sfx_timeline.json"))
+        print(f"[video] remux audio OK -> {args.out}")
+        return
+
+    init_assets()
 
     if args.preview:
         pdir = os.path.join(WORK_DIR, "preview")
