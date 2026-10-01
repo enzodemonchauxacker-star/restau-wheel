@@ -1,0 +1,66 @@
+{
+  "name": "restau-wheel-kinetic-30s-9x16",
+  "description": "Sauvegarde locale motion design 9:16 \u2014 VO Andre ElevenLabs V4 + SFX",
+  "branch_source": "cursor/motion-vertical-9x16-6755",
+  "video": "restau-wheel-kinetic-30s-9x16.mp4",
+  "download_cdn": "https://d2ol7oe51mr4n9.cloudfront.net/user_3FtfBHx3ODuHtkhLTPM9V4BijnV/82a419c2-58e9-4fc2-b10a-8b331dbdd0aa.mp4",
+  "saved_at": "2026-10-01T12:44:00Z",
+  "files": [
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/voice-elevenlabs-v4.mp3",
+      "bytes": 290108
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/restau-wheel-kinetic-30s-9x16.mp4",
+      "bytes": 33583870
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/frame-16s.png",
+      "bytes": 1712258
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/sfx_timeline.json",
+      "bytes": 10740
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-elevenlabs-v4.json",
+      "bytes": 1845
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/frame-01s.png",
+      "bytes": 1714997
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/frame-28s.png",
+      "bytes": 1597708
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/frame-08s.png",
+      "bytes": 1703174
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/4-price.mp3",
+      "bytes": 23868
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/2-value.mp3",
+      "bytes": 71098
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/5-cta.mp3",
+      "bytes": 50618
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/1-flow.mp3",
+      "bytes": 69844
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/3-control.mp3",
+      "bytes": 41422
+    },
+    {
+      "path": "artifacts/restau-wheel-kinetic-30s-9x16/vo-clips/0-hook.mp3",
+      "bytes": 56887
+    }
+  ]
+}
