@@ -52,9 +52,17 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
 });
+const fidelizePage = path.join(__dirname, 'views', 'fidelize', 'index.html');
+
+function sendFidelizePage(res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(fidelizePage);
+}
+
 app.use((req, res, next) => {
   const p = req.path.replace(/\/+$/, '') || '/';
   if (p === '/video' || p.startsWith('/video/')) return res.status(404).type('text/plain').send('Not found');
+  if (p === '/fidelize' || (process.env.VERCEL_ENV === 'preview' && p === '/')) return sendFidelizePage(res);
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
@@ -1356,11 +1364,6 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
-app.get('/fidelize', (req, res) => {
-  if (!req.session?.isSuperAdmin) return res.status(404).type('text/plain').send('Not found');
-  res.setHeader('Cache-Control', 'no-store');
-  res.sendFile(path.join(__dirname, 'views', 'fidelize', 'index.html'));
-});
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────

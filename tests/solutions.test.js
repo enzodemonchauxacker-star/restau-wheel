@@ -21,22 +21,21 @@ describe('famille Fidelize', () => {
     assert.equal(names.toLowerCase().includes('karting'), false);
   });
 
-  it('cache la vitrine aux clients et retire la page vidéo', () => {
+  it('affiche Fidelize sans super-admin et retire la page vidéo', () => {
     const server = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
     const home = fs.readFileSync(path.join(__dirname, '../public/index.html'), 'utf8');
-    const admin = fs.readFileSync(path.join(__dirname, '../public/superadmin/index.html'), 'utf8');
     const hub = fs.readFileSync(path.join(__dirname, '../views/fidelize/index.html'), 'utf8');
 
     assert.match(server, /p === '\/video' \|\| p\.startsWith\('\/video\/'\)/);
     assert.doesNotMatch(server, /public', 'video', 'index\.html'/);
-    assert.match(server, /isSuperAdmin/);
-    assert.match(server, /views', 'fidelize', 'index\.html'/);
+    assert.match(server, /VERCEL_ENV === 'preview' && p === '\/'/);
+    assert.match(server, /p === '\/fidelize'/);
+    assert.doesNotMatch(server, /fidelize[\s\S]{0,180}isSuperAdmin/);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/video/index.html')), false);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/fidelize/index.html')), false);
 
     assert.doesNotMatch(home, /href="\/video"/);
     assert.doesNotMatch(home, /href="\/fidelize"/);
-    assert.match(admin, /href="\/fidelize"/);
     assert.doesNotMatch(hub, /CodeSass|bowling|laser|karting|Bientôt|Coming soon|fid\.more|fid\.status\.soon/i);
     assert.match(hub, /fid\.status\.live/);
   });
