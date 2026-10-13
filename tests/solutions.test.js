@@ -17,6 +17,8 @@ describe('famille Fidelize', () => {
     const names = JSON.stringify(solutions);
     assert.equal(names.toLowerCase().includes('codesass'), false);
     assert.equal(names.toLowerCase().includes('bowling'), false);
+    assert.equal(names.toLowerCase().includes('laser'), false);
+    assert.equal(names.toLowerCase().includes('karting'), false);
   });
 
   it('cache la vitrine aux clients et retire la page vidéo', () => {
@@ -35,7 +37,7 @@ describe('famille Fidelize', () => {
     assert.doesNotMatch(home, /href="\/video"/);
     assert.doesNotMatch(home, /href="\/fidelize"/);
     assert.match(admin, /href="\/fidelize"/);
-    assert.doesNotMatch(hub, /CodeSass/);
-    assert.doesNotMatch(hub, /fid\.more/);
+    assert.doesNotMatch(hub, /CodeSass|bowling|laser|karting|Bientôt|Coming soon|fid\.more|fid\.status\.soon/i);
+    assert.match(hub, /fid\.status\.live/);
   });
 });
