@@ -17,16 +17,14 @@
   <header class="nav" id="nav">
     <a class="logo" href="/fidelize">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-          <path d="M8 3.2a4.8 4.8 0 1 1-3.2 1.4" stroke-linecap="round"/>
-          <path d="M4.6 2.6v2.4h2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3.2a4.8 4.8 0 1 1-3.2 1.4" stroke-linecap="round"/><path d="M4.6 2.6v2.4h2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       Fidelize
     </a>
     <nav class="nav-links" aria-label="Navigation">
-      <a href="https://restauwheel.com" rel="noopener noreferrer">Restau Wheel</a>
-      <a href="/mentions">Mentions</a>
+      <a href="#works">Le retour</a>
+      <a href="#community">La salle</a>
+      <a href="#footer">Contact</a>
     </nav>
     <a class="btn btn-dark" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
   </header>
@@ -34,10 +32,7 @@
   <main id="fid">
     <section class="hero" id="hero" data-theme="light">
       <div class="hero-stage">
-        <p class="badge">
-          <span class="badge-ico" aria-hidden="true"></span>
-          Pour les restaurants
-        </p>
+        <p class="badge"><span class="badge-ico" aria-hidden="true"></span>Pour les restaurants</p>
         <h1 class="hero-title">
           <span class="line" data-reveal>Faites Revenir</span>
           <span class="line" data-reveal>Vos Clients</span>
@@ -45,23 +40,224 @@
         </h1>
         <a class="btn btn-dark hero-cta" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
         <div class="orbit" id="orbit" aria-hidden="true"></div>
-        <div class="phone" aria-hidden="true">
+        <div class="phone hero-phone" aria-hidden="true">
           <div class="phone-frame">
             <div class="island"></div>
-            <div class="status">
-              <span>9:41</span>
-              <span class="status-dots"></span>
-            </div>
+            <div class="status"><span>9:41</span><span class="status-dots"></span></div>
             <div class="screen">
               <p class="screen-name">Restau Wheel</p>
               <div class="mini-wheel"></div>
-              <p class="screen-sub">Le client tourne, puis revient.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
+
+    <section class="band" id="gateway" data-theme="light">
+      <div class="gateway-grid">
+        <h2 class="reveal-title">
+          <span class="line" data-reveal>Votre Porte</span>
+          <span class="line" data-reveal>Vers Le</span>
+          <span class="line" data-reveal>Retour.</span>
+        </h2>
+        <div class="gateway-phone">
+          <div class="phone" id="gate-phone">
+            <div class="phone-frame">
+              <div class="island"></div>
+              <div class="status"><span>9:41</span><span class="status-dots"></span></div>
+              <div class="screen" id="gate-screen">
+                <p class="screen-brand"><span class="mark sm" aria-hidden="true"></span> Fidelize</p>
+                <div class="screen-slots" id="screen-slots" aria-hidden="true"></div>
+                <p class="screen-name">Tourner La Roue</p>
+                <p class="screen-sub">Un lot pour la prochaine visite.</p>
+                <a class="btn btn-dark screen-btn" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir</a>
+              </div>
+            </div>
+          </div>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Clair ou sombre">
+            <span class="sun" aria-hidden="true"></span>
+            <span class="moon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="gateway-copy">Le client scanne le QR, tourne la roue et repart avec un lot pour la prochaine visite. Vous gardez les lots et les probabilités.</p>
+        <div class="flies" id="flies" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="band" id="works" data-theme="dark">
+      <div class="works-view">
+        <h2 class="center-title" data-reveal>Comment Ça Marche</h2>
+        <div class="bento-clip">
+        <div class="bento">
+          <article class="card card-steps">
+            <h3 data-scramble>En Salle</h3>
+            <p>Trois gestes, du scan au retour.</p>
+            <ul class="steps">
+              <li><span class="check"><i></i></span>Scanner le QR</li>
+              <li><span class="check"><i></i></span>Tourner la roue</li>
+              <li><span class="check"><i></i></span>Valider au retour</li>
+            </ul>
+          </article>
+          <article class="card card-people">
+            <div class="avatar-pile">
+              <img src="/img/fidelize/a1.jpg" alt="">
+              <img src="/img/fidelize/a2.jpg" alt="">
+              <img src="/img/fidelize/a3.jpg" alt="">
+              <span class="plus">+</span>
+            </div>
+            <h3 data-scramble>La Salle</h3>
+            <p>Ceux qui reviennent, et ceux qui vont revenir.</p>
+          </article>
+          <article class="card card-tools">
+            <h3 data-scramble>Les Outils</h3>
+            <div class="tool-grid" id="tool-grid"></div>
+            <p>Les leviers de la salle, un par un.</p>
+          </article>
+          <article class="card card-keep">
+            <div>
+              <h3 data-scramble>Ce Que Vous Gardez</h3>
+              <p>Lots, probabilités, retours. Rien ne part tout seul.</p>
+            </div>
+            <div class="vmarquee" aria-hidden="true">
+              <div class="vmarquee-track">
+                <span>Lots</span><span>QR en salle</span><span>Probabilités</span><span>Validation</span><span>Retours</span><span>Équipe</span>
+                <span>Lots</span><span>QR en salle</span><span>Probabilités</span><span>Validation</span><span>Retours</span><span>Équipe</span>
+              </div>
+            </div>
+          </article>
+          <article class="card card-app">
+            <h3 data-scramble>Sans Application</h3>
+            <p>Rien à installer. Le QR suffit.</p>
+            <div class="app-phone" aria-hidden="true">
+              <div class="phone mini">
+                <div class="phone-frame">
+                  <div class="island"></div>
+                  <div class="screen bare"></div>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="card card-topics">
+            <h3 data-scramble>Vos Leviers</h3>
+            <p>Vous choisissez ce qui tourne.</p>
+            <div class="hmarquee" aria-hidden="true">
+              <div class="hrow"><div class="htrack"><span>QR</span><span>Lots</span><span>Probabilités</span><span>Retour</span><span>Service</span><span>QR</span><span>Lots</span><span>Probabilités</span><span>Retour</span><span>Service</span></div></div>
+              <div class="hrow reverse"><div class="htrack"><span>Carte</span><span>Caisse</span><span>Équipe</span><span>Horaires</span><span>Avis</span><span>Carte</span><span>Caisse</span><span>Équipe</span><span>Horaires</span><span>Avis</span></div></div>
+              <div class="hrow"><div class="htrack"><span>Table</span><span>Salle</span><span>Gain</span><span>Visite</span><span>Fidélité</span><span>Table</span><span>Salle</span><span>Gain</span><span>Visite</span><span>Fidélité</span></div></div>
+            </div>
+          </article>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="community" data-theme="light">
+      <div class="community-stage">
+        <div class="avatars" id="avatars">
+          <img src="/img/fidelize/a1.jpg" alt="" style="--x:6%;--y:22%;--s:52px">
+          <img src="/img/fidelize/a2.jpg" alt="" style="--x:12%;--y:74%;--s:44px">
+          <img src="/img/fidelize/a3.jpg" alt="" style="--x:18%;--y:42%;--s:40px">
+          <img class="front" src="/img/fidelize/a4.jpg" alt="" style="--x:76%;--y:10%;--s:56px">
+          <img src="/img/fidelize/a5.jpg" alt="" style="--x:88%;--y:38%;--s:46px">
+          <img src="/img/fidelize/a6.jpg" alt="" style="--x:80%;--y:72%;--s:50px">
+          <img src="/img/fidelize/a7.jpg" alt="" style="--x:64%;--y:84%;--s:42px">
+          <img class="front" src="/img/fidelize/a8.jpg" alt="" style="--x:24%;--y:10%;--s:48px">
+          <img src="/img/fidelize/a9.jpg" alt="" style="--x:48%;--y:86%;--s:40px">
+          <img src="/img/fidelize/a10.jpg" alt="" style="--x:34%;--y:70%;--s:54px">
+        </div>
+        <div class="community-copy">
+          <h2 class="center-title">
+            <span class="line" data-reveal>La Salle</span>
+            <span class="line" data-reveal>Revient.</span>
+          </h2>
+          <p>Vos clients reviennent à table. Fidelize est là pour ça. Restau Wheel est l'outil des restaurants.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="events" data-theme="dark">
+      <h2 class="center-title light" data-reveal>Le Retour En Salle</h2>
+      <div class="events-stage">
+        <a class="pill pill-l" style="--t:12%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Scanner le QR<span class="pill-go">↗</span></a>
+        <a class="pill pill-l" style="--t:38%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Tourner la roue<span class="pill-go">↗</span></a>
+        <a class="pill pill-l" style="--t:64%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Offrir un lot<span class="pill-go">↗</span></a>
+        <a class="pill pill-r" style="--t:16%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Valider le gain<span class="pill-go">↗</span></a>
+        <a class="pill pill-r" style="--t:42%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Régler les chances<span class="pill-go">↗</span></a>
+        <a class="pill pill-r" style="--t:68%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Suivre le retour<span class="pill-go">↗</span></a>
+        <div class="phone events-phone" aria-hidden="true">
+          <div class="phone-frame">
+            <div class="island"></div>
+            <div class="status"><span>9:41</span><span class="status-dots"></span></div>
+            <div class="screen">
+              <p class="eyebrow">Prochaine visite</p>
+              <p class="screen-name">Dès le lendemain</p>
+              <p class="screen-sub">En salle, avec le lot de la roue.</p>
+              <div class="qr-block" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="events-note">Le retour se joue au moment où le client revient.</p>
+    </section>
+
+    <section class="band" id="stories" data-theme="light">
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>En Salle,</span><span class="line" data-reveal>Sans Friction</span></h2>
+          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+        </div>
+        <div class="story-photo"><img src="/img/fidelize/story-1.jpg" alt="Salle de restaurant"></div>
+      </article>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Une Roue</span><span class="line" data-reveal>Pour Revenir</span></h2>
+          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+        </div>
+        <div class="story-photo"><img src="/img/fidelize/story-2.jpg" alt="Service en salle"></div>
+      </article>
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Toute La Salle</span><span class="line" data-reveal>Revient</span></h2>
+          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+        </div>
+        <div class="story-photo"><img src="/img/fidelize/story-3.jpg" alt="Clients à table"></div>
+      </article>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Vous Gardez</span><span class="line" data-reveal>La Main</span></h2>
+          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+        </div>
+        <div class="story-photo"><img src="/img/fidelize/story-4.jpg" alt="Table dressée"></div>
+      </article>
+    </section>
   </main>
+
+  <div class="veil" aria-hidden="true"></div>
+
+  <footer class="band" id="footer" data-theme="dark">
+    <svg class="ribbon" viewBox="0 0 1200 640" aria-hidden="true">
+      <path id="ribbon-path" d="M-30 150 C 80 20, 180 280, 320 140 S 520 20, 640 210 S 820 360, 980 160 S 1140 40, 1260 220 M -20 430 C 140 560, 260 300, 430 470 S 680 600, 860 390 S 1080 240, 1280 420" fill="none" stroke="#E8FF95" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="footer-grid">
+      <form class="fcard" id="news-form">
+        <h3>Restez Informés</h3>
+        <input type="email" name="email" required placeholder="email@restaurant.fr" aria-label="Email">
+        <button class="btn btn-dark" type="submit">S'inscrire</button>
+        <p class="fine">Fidelize · © 2026</p>
+      </form>
+      <div class="fcard">
+        <h3>Contacts</h3>
+        <p>contact@fidelize.si</p>
+        <p>fidelize.si</p>
+        <a class="fcard slim" href="/mentions">Mentions légales</a>
+      </div>
+      <div class="fcard socials">
+        <a href="https://restauwheel.com" aria-label="Restau Wheel" rel="noopener noreferrer">R</a>
+        <a href="https://restauwheel.com" aria-label="Site" rel="noopener noreferrer">W</a>
+        <a href="/mentions" aria-label="Mentions">M</a>
+      </div>
+    </div>
+  </footer>
 
   <script src="/vendor/gsap/gsap.min.js"></script>
   <script src="/vendor/gsap/ScrollTrigger.min.js"></script>
