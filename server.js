@@ -9,6 +9,15 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const fidelize = require('./public/js/solutions');
+
+function htmlPagePattern() {
+  const fixed = ['admin', 'client', 'superadmin', 'register', 'checkout', 'cancel', 'carte', 'demo', 'video', 'fidelize'];
+  const extra = fidelize.detailPaths().map((p) => p.replace(/^\//, '')).filter(Boolean);
+  const all = [...fixed, ...extra].map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^/(${all.join('|')})/?$`);
+}
+const HTML_PAGE = htmlPagePattern();
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +37,7 @@ app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video)\/?$/.test(req.path)
+    HTML_PAGE.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -1308,6 +1317,12 @@ app.post('/api/checkout', async (req, res) => {
   });
 });
 
+// ─── Famille Fidelize ─────────────────────────────────────────────────────────
+app.get('/api/solutions', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(fidelize.list());
+});
+
 // ─── Pages HTML ───────────────────────────────────────────────────────────────
 app.get('/client',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'client',     'index.html')));
 app.get('/admin',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin',      'index.html')));
@@ -1341,6 +1356,11 @@ app.get('/video',       async (req, res) => {
   res.setHeader('Pragma', 'no-cache');
   res.sendFile(path.join(__dirname, 'public', 'video', 'index.html'));
 });
+app.get('/fidelize',   async (req, res) => res.sendFile(path.join(__dirname, 'public', 'fidelize', 'index.html')));
+const fidelizeDetail = path.join(__dirname, 'public', 'outils', 'index.html');
+for (const href of fidelize.detailPaths()) {
+  app.get(href, async (req, res) => res.sendFile(fidelizeDetail));
+}
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────

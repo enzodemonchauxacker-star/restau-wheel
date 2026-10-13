@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fidelize</title>
+  <meta name="description" content="Un outil de la famille Fidelize, pour fidéliser le client.">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      background: var(--felt);
+      color: var(--ivory);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 55% 40% at 0% 0%, color-mix(in srgb, var(--accent, #00c2ff) 35%, transparent), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 100% 100%, rgba(255,214,10,0.16), transparent 50%);
+      pointer-events: none;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 1.25rem clamp(1.25rem, 4vw, 2rem) 3rem; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--brass);
+    }
+    .back {
+      color: rgba(255,248,231,0.7);
+      font-weight: 600;
+    }
+    .back:hover { color: var(--ivory); }
+    .kicker {
+      font-family: var(--font-mono);
+      letter-spacing: 0.16em;
+      font-size: 0.72rem;
+      color: var(--accent, #00c2ff);
+      margin-bottom: 0.9rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.3rem, 6vw, 3.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .summary {
+      font-size: 1.12rem;
+      line-height: 1.55;
+      color: rgba(255,248,231,0.78);
+      max-width: 46ch;
+      margin-bottom: 1.5rem;
+    }
+    .points { list-style: none; margin-bottom: 1.5rem; }
+    .points li {
+      border-top: 1px solid rgba(255,248,231,0.16);
+      padding: 0.85rem 0;
+      font-size: 1.05rem;
+    }
+    .note {
+      border: 3px solid var(--accent, #00c2ff);
+      padding: 1rem 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 1.75rem;
+      max-width: 52ch;
+    }
+    .family { margin-top: 2.5rem; }
+    .family h2 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+    .family a {
+      display: inline-block;
+      margin: 0 0.8rem 0.6rem 0;
+      font-weight: 700;
+      color: var(--brass);
+    }
+    .family a:hover { color: var(--ivory); }
+    .missing { padding: 3rem 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="/fidelize">FIDELIZE</a>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang-btn="fr">FR</button>
+        <button type="button" data-lang-btn="en">EN</button>
+      </div>
+      <a class="back" href="/fidelize" data-i18n="fid.back">← Toutes les solutions</a>
+    </div>
+  </div>
+  <main id="sheet"></main>
+</div>
+<script src="/js/solutions.js"></script>
+<script src="/js/i18n.js"></script>
+<script>
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function current() {
+    const path = location.pathname.replace(/\/$/, '') || '/';
+    return window.Fidelize.byHref(path) || window.Fidelize.byId(path.split('/').pop());
+  }
+
+  function paint() {
+    const lang = window.RW_I18N.getLang() === 'en' ? 'en' : 'fr';
+    const sheet = document.getElementById('sheet');
+    const solution = current();
+    if (!solution) {
+      document.title = window.RW_I18N.t('fid.title');
+      sheet.innerHTML = `<div class="missing"><h1>${esc(window.RW_I18N.t('fid.missing'))}</h1><p><a class="back" href="/fidelize">${esc(window.RW_I18N.t('fid.back'))}</a></p></div>`;
+      return;
+    }
+    document.documentElement.style.setProperty('--accent', solution.accent);
+    const copy = solution[lang];
+    const statusLabel = window.RW_I18N.t(solution.status === 'live' ? 'fid.status.live' : 'fid.status.soon');
+    document.title = `${solution.name} — Fidelize`;
+    const note = copy.note ? `<p class="note">${esc(copy.note)}</p>` : '';
+    const points = (copy.points || []).map((p) => `<li>${esc(p)}</li>`).join('');
+    const siblings = window.Fidelize.list()
+      .filter((s) => s.id !== solution.id)
+      .map((s) => `<a href="${esc(s.href)}">${esc(s.name)}</a>`)
+      .join('');
+    sheet.innerHTML = `
+      <p class="kicker">${esc(solution.name)} · ${esc(statusLabel)}</p>
+      <h1>${esc(copy.tagline)}</h1>
+      <p class="summary">${esc(copy.summary)}</p>
+      <ul class="points">${points}</ul>
+      ${note}
+      <section class="family">
+        <h2 data-i18n="fid.family">${esc(window.RW_I18N.t('fid.family'))}</h2>
+        ${siblings}
+      </section>`;
+  }
+
+  paint();
+  document.addEventListener('rw:lang', paint);
+</script>
+</body>
+</html>

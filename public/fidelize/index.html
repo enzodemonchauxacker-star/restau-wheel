@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr" data-i18n-title="fid.title">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fidelize — Outils pour fidéliser</title>
+  <meta name="description" content="Fidelize regroupe les outils pour faire revenir le client : Restau Wheel, CodeSass, et les suivants.">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    body {
+      background: var(--felt);
+      color: var(--ivory);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 12% 0%, rgba(255,214,10,0.22), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(255,45,106,0.22), transparent 50%),
+        radial-gradient(ellipse 40% 30% at 70% 20%, rgba(0,194,255,0.16), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem clamp(1.25rem, 4vw, 4rem);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 1.15rem;
+    }
+    .nav-actions { display: flex; align-items: center; gap: 1rem; }
+    .nav-link {
+      font-weight: 600;
+      color: rgba(255,248,231,0.8);
+    }
+    .nav-link:hover { color: var(--ivory); }
+
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 4vw, 4rem) 1.5rem;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--brass);
+      color: var(--brass);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6vw, 4.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+      margin-bottom: 1.1rem;
+    }
+    .hero-sub {
+      max-width: 42ch;
+      font-size: 1.12rem;
+      line-height: 1.5;
+      color: rgba(255,248,231,0.74);
+    }
+
+    .solutions {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem clamp(1.25rem, 4vw, 4rem) 3rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      background: #141414;
+      border: 3px solid var(--accent, var(--brass));
+      padding: 1.4rem 1.35rem 1.3rem;
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.35);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+    }
+    .sector {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent, var(--brass));
+    }
+    .status {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.5rem;
+      border: 1px solid var(--brass);
+      color: var(--brass);
+    }
+    .status.live {
+      background: var(--brass);
+      color: var(--ink);
+      border-color: var(--brass);
+    }
+    .card h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 0.7rem;
+    }
+    .tagline {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.65rem;
+    }
+    .summary {
+      color: rgba(255,248,231,0.72);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .points {
+      list-style: none;
+      margin-bottom: 1.3rem;
+    }
+    .points li {
+      position: relative;
+      padding-left: 1rem;
+      margin: 0.35rem 0;
+      color: rgba(255,248,231,0.86);
+    }
+    .points li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 0.45rem;
+      height: 3px;
+      background: var(--accent, var(--brass));
+    }
+    .card .btn { margin-top: auto; align-self: flex-start; }
+
+    .more {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 4vw, 4rem) 4rem;
+    }
+    .more p {
+      max-width: 46ch;
+      color: rgba(255,248,231,0.62);
+      line-height: 1.5;
+      border-top: 1px solid rgba(255,248,231,0.16);
+      padding-top: 1.25rem;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      padding: 1.4rem clamp(1.25rem, 4vw, 4rem);
+      color: rgba(255,248,231,0.5);
+      font-size: 0.82rem;
+    }
+    .footer a { color: rgba(255,248,231,0.75); font-weight: 600; }
+    .footer a:hover { color: var(--ivory); }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="nav">
+      <a class="brand" href="/fidelize">FIDELIZE</a>
+      <div class="nav-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang-btn="fr">FR</button>
+          <button type="button" data-lang-btn="en">EN</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="tag" data-i18n="fid.kicker">FAMILLE D'OUTILS</div>
+    <h1 data-i18n="fid.h1">Faites revenir vos clients.</h1>
+    <p class="hero-sub" data-i18n="fid.sub">Restau Wheel, CodeSass, et les outils qui suivront. Tous restent dans la même branche : fidéliser le client.</p>
+  </section>
+
+  <section class="solutions" id="solutions" aria-label="Solutions">
+    <div class="grid" id="solution-grid"></div>
+  </section>
+
+  <section class="more">
+    <p data-i18n="fid.more">Les prochains outils se posent ici. Même idée, un autre nom.</p>
+  </section>
+
+  <footer class="footer">
+    <span class="brand">FIDELIZE</span>
+    <span>
+      <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
+    </span>
+  </footer>
+</div>
+<script src="/js/solutions.js"></script>
+<script src="/js/i18n.js"></script>
+<script>
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function paintSolutions() {
+    const lang = window.RW_I18N.getLang() === 'en' ? 'en' : 'fr';
+    const grid = document.getElementById('solution-grid');
+    grid.innerHTML = window.Fidelize.list().map((s) => {
+      const copy = s[lang];
+      const statusClass = s.status === 'live' ? 'status live' : 'status';
+      const statusLabel = window.RW_I18N.t(s.status === 'live' ? 'fid.status.live' : 'fid.status.soon');
+      const points = (copy.points || []).map((p) => `<li>${esc(p)}</li>`).join('');
+      return `
+        <article class="card" style="--accent:${esc(s.accent)}">
+          <div class="card-top">
+            <span class="sector">${esc(copy.sector)}</span>
+            <span class="${statusClass}">${esc(statusLabel)}</span>
+          </div>
+          <h2>${esc(s.name)}</h2>
+          <p class="tagline">${esc(copy.tagline)}</p>
+          <p class="summary">${esc(copy.summary)}</p>
+          <ul class="points">${points}</ul>
+          <a class="btn btn-brass" href="${esc(s.href)}">${esc(copy.cta)}</a>
+        </article>`;
+    }).join('');
+  }
+
+  document.title = window.RW_I18N.t('fid.title');
+  paintSolutions();
+  document.addEventListener('rw:lang', () => {
+    document.title = window.RW_I18N.t('fid.title');
+    paintSolutions();
+  });
+</script>
+</body>
+</html>
