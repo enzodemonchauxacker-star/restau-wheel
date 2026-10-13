@@ -10,7 +10,7 @@ Un QR code placé sur chaque table ou carte du restaurant. Le client le scanne, 
 
 Le restaurateur gère tout depuis un dashboard admin : lots, probabilités, délais, et peut valider les gains quand un client revient les réclamer.
 
-**Fidelize** (`/fidelize`) est la page qui présente la famille d'outils de fidélisation. Restau Wheel en est le premier. CodeSass, les codes avantage, est le suivant. Une nouvelle solution s'ajoute dans [`public/js/solutions.js`](public/js/solutions.js) : avec `page: 'detail'`, elle obtient sa page ; sans, le lien ouvre l'outil directement.
+**Fidelize** est la vitrine de la famille, prévue pour fidelize.si. Elle n'est pas sur le site public : seul le super-admin l'ouvre, et le seul outil affiché est Restau Wheel, vers https://restauwheel.com. Une solution prête s'ajoute dans [`public/js/solutions.js`](public/js/solutions.js).
 
 ## Fonctionnalités
 
@@ -42,8 +42,7 @@ L'application démarre sur **http://localhost:3000**
 | Page | URL |
 |---|---|
 | Landing | http://localhost:3000/ |
-| Fidelize (famille d'outils) | http://localhost:3000/fidelize |
-| CodeSass | http://localhost:3000/codesass |
+| Vitrine Fidelize (super-admin seulement) | http://localhost:3000/fidelize |
 | Démo prospection | http://localhost:3000/demo |
 | QR démo (à imprimer) | http://localhost:3000/demo/qr |
 | Page client (QR) | http://localhost:3000/client?r=1 |

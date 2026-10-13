@@ -2,44 +2,40 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { solutions, byId, byHref, detailPaths, list } = require('../public/js/solutions');
+const { solutions, byId, detailPaths, list } = require('../public/js/solutions');
 
 describe('famille Fidelize', () => {
-  it('propose Restau Wheel et CodeSass, et reste extensible', () => {
-    assert.equal(byId('restauwheel').name, 'Restau Wheel');
-    assert.equal(byId('restauwheel').status, 'live');
-    assert.equal(byId('restauwheel').href, '/');
-    assert.equal(byId('restauwheel').page, undefined);
-
-    const codesass = byId('codesass');
-    assert.equal(codesass.name, 'CodeSass');
-    assert.equal(codesass.href, '/codesass');
-    assert.equal(codesass.page, 'detail');
-    assert.notEqual(codesass.name.toLowerCase(), 'restau wheel');
-
-    const ids = solutions.map((s) => s.id);
-    assert.equal(new Set(ids).size, ids.length);
-    for (const s of solutions) {
-      assert.ok(s.fr.tagline && s.en.tagline);
-      assert.ok(s.fr.summary && s.en.summary);
-      assert.ok(s.fr.points.length >= 2 && s.en.points.length >= 2);
-      assert.match(s.status, /^(live|soon)$/);
-    }
-    assert.ok(detailPaths().includes('/codesass'));
-    assert.equal(detailPaths().includes('/'), false);
-    assert.equal(byHref('/codesass').id, 'codesass');
-    assert.equal(list().length, solutions.length);
+  it('ne montre que Restau Wheel, vers restauwheel.com', () => {
+    assert.equal(solutions.length, 1);
+    const wheel = byId('restauwheel');
+    assert.equal(wheel.name, 'Restau Wheel');
+    assert.equal(wheel.status, 'live');
+    assert.equal(wheel.href, 'https://restauwheel.com');
+    assert.equal(byId('codesass'), null);
+    assert.deepEqual(detailPaths(), []);
+    assert.equal(list()[0].id, 'restauwheel');
+    const names = JSON.stringify(solutions);
+    assert.equal(names.toLowerCase().includes('codesass'), false);
+    assert.equal(names.toLowerCase().includes('bowling'), false);
   });
 
-  it('publie la page Fidelize et les routes', () => {
+  it('cache la vitrine aux clients et retire la page vidéo', () => {
     const server = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
-    const hub = fs.readFileSync(path.join(__dirname, '../public/fidelize/index.html'), 'utf8');
     const home = fs.readFileSync(path.join(__dirname, '../public/index.html'), 'utf8');
-    assert.match(server, /\/fidelize/);
-    assert.match(server, /\/api\/solutions/);
-    assert.match(server, /detailPaths\(\)/);
-    assert.match(hub, /FIDELIZE/);
-    assert.match(hub, /Fidelize\.list\(\)/);
-    assert.match(home, /href="\/fidelize"/);
+    const admin = fs.readFileSync(path.join(__dirname, '../public/superadmin/index.html'), 'utf8');
+    const hub = fs.readFileSync(path.join(__dirname, '../views/fidelize/index.html'), 'utf8');
+
+    assert.match(server, /p === '\/video' \|\| p\.startsWith\('\/video\/'\)/);
+    assert.doesNotMatch(server, /public', 'video', 'index\.html'/);
+    assert.match(server, /isSuperAdmin/);
+    assert.match(server, /views', 'fidelize', 'index\.html'/);
+    assert.equal(fs.existsSync(path.join(__dirname, '../public/video/index.html')), false);
+    assert.equal(fs.existsSync(path.join(__dirname, '../public/fidelize/index.html')), false);
+
+    assert.doesNotMatch(home, /href="\/video"/);
+    assert.doesNotMatch(home, /href="\/fidelize"/);
+    assert.match(admin, /href="\/fidelize"/);
+    assert.doesNotMatch(hub, /CodeSass/);
+    assert.doesNotMatch(hub, /fid\.more/);
   });
 });

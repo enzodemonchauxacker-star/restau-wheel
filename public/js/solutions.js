@@ -1,8 +1,7 @@
 /**
  * Famille Fidelize — outils pour fidéliser le client.
  * Ajouter une solution = un objet dans `solutions`.
- * `page: 'detail'` publie une page à `href`.
- * Sans `page`, le lien ouvre l'outil directement (Restau Wheel).
+ * On n'y met que ce qui est prêt à être montré.
  */
 (function (root, factory) {
   const api = factory();
@@ -14,7 +13,7 @@
       id: 'restauwheel',
       name: 'Restau Wheel',
       status: 'live',
-      href: '/',
+      href: 'https://restauwheel.com',
       accent: '#FF2D6A',
       fr: {
         sector: 'Restaurants',
@@ -29,30 +28,6 @@
         summary: 'The guest scans the QR, spins the wheel, and leaves with a prize for the next visit. You keep the prizes and the odds.',
         points: ['QR code in the dining room', 'Prizes and odds', 'Prize check on the return visit'],
         cta: 'Open Restau Wheel',
-      },
-    },
-    {
-      id: 'codesass',
-      name: 'CodeSass',
-      status: 'soon',
-      href: '/codesass',
-      page: 'detail',
-      accent: '#00C2FF',
-      fr: {
-        sector: 'Codes de fidélité',
-        tagline: 'Le code qui fait revenir.',
-        summary: 'Pas de roue. Un code avantage que vous décidez. Le client le garde, le présente, revient. L’offre reste sous votre contrôle.',
-        points: ['Code avantage à présenter', 'Retour mesurable', 'Même famille que Restau Wheel'],
-        cta: 'Voir CodeSass',
-        note: 'CodeSass se prépare. Il reste dans la branche Fidelize, à côté de Restau Wheel : un outil pour fidéliser le client.',
-      },
-      en: {
-        sector: 'Loyalty codes',
-        tagline: 'The code that brings them back.',
-        summary: 'No wheel. A reward code you decide. The customer keeps it, shows it, and comes back. The offer stays under your control.',
-        points: ['A reward code to redeem', 'A return you can measure', 'Same family as Restau Wheel'],
-        cta: 'See CodeSass',
-        note: 'CodeSass is in preparation. It stays in the Fidelize line, next to Restau Wheel: a tool to bring customers back.',
       },
     },
   ];

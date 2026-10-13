@@ -12,7 +12,7 @@ const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: g
 const fidelize = require('./public/js/solutions');
 
 function htmlPagePattern() {
-  const fixed = ['admin', 'client', 'superadmin', 'register', 'checkout', 'cancel', 'carte', 'demo', 'video', 'fidelize'];
+  const fixed = ['admin', 'client', 'superadmin', 'register', 'checkout', 'cancel', 'carte', 'demo', 'fidelize'];
   const extra = fidelize.detailPaths().map((p) => p.replace(/^\//, '')).filter(Boolean);
   const all = [...fixed, ...extra].map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(`^/(${all.join('|')})/?$`);
@@ -51,6 +51,11 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Content-Disposition', 'inline; filename="Enzo-Demonchaux-Acker.vcf"');
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
+});
+app.use((req, res, next) => {
+  const p = req.path.replace(/\/+$/, '') || '/';
+  if (p === '/video' || p.startsWith('/video/')) return res.status(404).type('text/plain').send('Not found');
+  next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -1318,7 +1323,7 @@ app.post('/api/checkout', async (req, res) => {
 });
 
 // ─── Famille Fidelize ─────────────────────────────────────────────────────────
-app.get('/api/solutions', (req, res) => {
+app.get('/api/solutions', requireSuperAdmin, (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json(fidelize.list());
 });
@@ -1351,16 +1356,11 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
-app.get('/video',       async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'video', 'index.html'));
+app.get('/fidelize', (req, res) => {
+  if (!req.session?.isSuperAdmin) return res.status(404).type('text/plain').send('Not found');
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, 'views', 'fidelize', 'index.html'));
 });
-app.get('/fidelize',   async (req, res) => res.sendFile(path.join(__dirname, 'public', 'fidelize', 'index.html')));
-const fidelizeDetail = path.join(__dirname, 'public', 'outils', 'index.html');
-for (const href of fidelize.detailPaths()) {
-  app.get(href, async (req, res) => res.sendFile(fidelizeDetail));
-}
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────
