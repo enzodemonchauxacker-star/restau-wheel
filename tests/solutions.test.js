@@ -37,6 +37,19 @@ describe('famille Fidelize', () => {
     assert.doesNotMatch(home, /href="\/video"/);
     assert.doesNotMatch(home, /href="\/fidelize"/);
     assert.doesNotMatch(hub, /CodeSass|bowling|laser|karting|Bientôt|Coming soon|fid\.more|fid\.status\.soon/i);
-    assert.match(hub, /fid\.status\.live/);
+    assert.match(hub, /\/css\/fidelize\.css/);
+    assert.doesNotMatch(hub, /theme\.css/);
+    assert.match(hub, /ScrollTrigger\.min\.js/);
+
+    const motion = fs.readFileSync(path.join(__dirname, '../public/js/fidelize.js'), 'utf8');
+    const skin = fs.readFileSync(path.join(__dirname, '../public/css/fidelize.css'), 'utf8');
+    assert.match(motion, /fid\.status\.live/);
+    assert.match(motion, /gsap\.registerPlugin\(ScrollTrigger\)/);
+    assert.match(motion, /prefers-reduced-motion/);
+    assert.match(motion, /scrub:/);
+    assert.match(skin, /#0b0c0f/);
+    assert.doesNotMatch(hub + motion + skin, /CodeSass|bowling|laser game|karting|Bientôt|Coming soon|fid\.status\.soon/i);
+    assert.equal(fs.existsSync(path.join(__dirname, '../public/vendor/gsap/gsap.min.js')), true);
+    assert.equal(fs.existsSync(path.join(__dirname, '../public/vendor/gsap/ScrollTrigger.min.js')), true);
   });
 });

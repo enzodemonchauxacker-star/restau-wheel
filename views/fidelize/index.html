@@ -5,313 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fidelize — Outils pour fidéliser</title>
   <meta name="description" content="Fidelize présente Restau Wheel, l'outil pour faire revenir les clients d'un restaurant.">
-  <link rel="stylesheet" href="/css/theme.css">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="/favicon.png" type="image/png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <style>
-    body {
-      background: var(--felt);
-      color: var(--ivory);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 70% 45% at 15% 10%, rgba(255,214,10,0.28), transparent 55%),
-        radial-gradient(ellipse 55% 40% at 90% 75%, rgba(255,45,106,0.32), transparent 50%),
-        radial-gradient(ellipse 40% 30% at 70% 20%, rgba(0,194,255,0.18), transparent 50%),
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 3px,
-          rgba(0,0,0,0.03) 3px,
-          rgba(0,0,0,0.03) 4px
-        );
-      pointer-events: none;
-      z-index: 0;
-    }
-    .wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
-
-    .chrome {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      background: rgba(10, 10, 10, 0.78);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      backdrop-filter: blur(20px) saturate(180%);
-    }
-    .chrome.is-scrolled { background: rgba(10, 10, 10, 0.88); }
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.85rem clamp(1.25rem, 4vw, 4rem);
-      max-width: 1440px;
-      margin: 0 auto;
-    }
-    .brand {
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      font-size: 1.15rem;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: clamp(2rem, 5vw, 4rem);
-      align-items: center;
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 6vw, 4.5rem);
-      width: 100%;
-      flex: 1;
-    }
-    .tag {
-      display: inline-block;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--brass);
-      color: var(--brass);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
-      margin-bottom: 1.5rem;
-    }
-    h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.6rem, 6vw, 4.2rem);
-      font-weight: 700;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-      max-width: 12ch;
-      margin-bottom: 1.25rem;
-    }
-    .hero-sub {
-      max-width: 36ch;
-      font-size: 1.1rem;
-      line-height: 1.55;
-      color: rgba(255,248,231,0.72);
-    }
-
-    .stage { display: flex; justify-content: center; }
-    .ticket {
-      --accent: var(--wine);
-      width: min(100%, 420px);
-      background: var(--ivory);
-      color: var(--ink);
-      padding: 1.7rem 1.55rem 1.45rem;
-      position: relative;
-      border: 3px solid var(--ink);
-      box-shadow: 10px 10px 0 var(--accent), 0 30px 60px rgba(0,0,0,0.35);
-      transform: rotate(1.5deg);
-    }
-    .ticket::before,
-    .ticket::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 12px;
-      background: radial-gradient(circle at 10px 0, transparent 9px, var(--ivory) 10px) repeat-x;
-      background-size: 20px 12px;
-    }
-    .ticket::before { top: -12px; transform: scaleY(-1); }
-    .ticket::after { bottom: -12px; }
-    .ticket-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px dashed var(--line);
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-    .sector { color: var(--muted); }
-    .status {
-      background: var(--brass);
-      color: var(--ink);
-      border: 1px solid var(--ink);
-      padding: 0.28rem 0.5rem;
-    }
-    .ticket h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.8rem, 3vw, 2.2rem);
-      letter-spacing: -0.03em;
-      line-height: 1.05;
-      margin-bottom: 0.45rem;
-    }
-    .tagline {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    .wheel {
-      width: 148px;
-      height: 148px;
-      margin: 0 auto 1.1rem;
-      border-radius: 50%;
-      border: 6px solid var(--brass);
-      background: conic-gradient(
-        from 20deg,
-        #0a0a0a 0 45deg,
-        #ff2d6a 45deg 90deg,
-        #ffd60a 90deg 135deg,
-        #00c2ff 135deg 180deg,
-        #00e5c8 180deg 225deg,
-        #ff2d6a 225deg 270deg,
-        #ffd60a 270deg 315deg,
-        #fff8e7 315deg 360deg
-      );
-      position: relative;
-      box-shadow: inset 0 0 0 3px var(--ink);
-    }
-    .wheel::after {
-      content: '';
-      position: absolute;
-      inset: 38%;
-      border-radius: 50%;
-      background: var(--brass);
-      box-shadow: 0 0 0 3px var(--ink);
-    }
-    .summary {
-      color: var(--muted);
-      line-height: 1.5;
-      margin-bottom: 0.9rem;
-      font-size: 0.95rem;
-    }
-    .points { list-style: none; margin-bottom: 1.2rem; }
-    .points li {
-      position: relative;
-      padding-left: 1rem;
-      margin: 0.35rem 0;
-      color: var(--ink);
-      font-size: 0.92rem;
-    }
-    .points li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.55em;
-      width: 0.45rem;
-      height: 3px;
-      background: var(--accent);
-    }
-    .ticket .btn { width: 100%; }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      padding: 1.5rem clamp(1.25rem, 4vw, 4rem);
-      background: var(--felt-deep);
-      color: rgba(255,248,231,0.45);
-      font-size: 0.8rem;
-    }
-    .footer .brand { font-size: 0.9rem; color: rgba(255,248,231,0.55); }
-    .footer a { color: rgba(255,248,231,0.7); font-weight: 500; }
-    .footer a:hover { color: var(--ivory); }
-
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; }
-      h1 { max-width: none; }
-      .ticket { transform: none; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .ticket { transform: none; }
-    }
-    @media (prefers-reduced-transparency: reduce) {
-      .chrome {
-        background: #0a0a0a;
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-      }
-    }
-  </style>
+  <meta name="theme-color" content="#0b0c0f">
+  <link rel="stylesheet" href="/css/fidelize.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0c0f'/%3E%3Crect x='7' y='9' width='18' height='2' fill='%23d7b48a'/%3E%3Crect x='7' y='15' width='11' height='2' fill='%23ebe6dc'/%3E%3C/svg%3E">
 </head>
 <body>
-<div class="wrap">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
   <header class="chrome" id="chrome">
     <nav class="nav">
-      <a class="brand" href="/fidelize">FIDELIZE</a>
-      <div class="lang-switch" role="group" aria-label="Language">
+      <a class="brand" href="/fidelize">Fidelize</a>
+      <div class="langs" role="group" aria-label="Language">
         <button type="button" data-lang-btn="fr">FR</button>
         <button type="button" data-lang-btn="en">EN</button>
       </div>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="hero-copy">
-      <div class="tag" data-i18n="fid.kicker">FAMILLE D'OUTILS</div>
-      <h1 data-i18n="fid.h1">Faites revenir vos clients.</h1>
-      <p class="hero-sub" data-i18n="fid.sub">Fidelize présente les outils de fidélisation. Restau Wheel est celui des restaurants.</p>
-    </div>
-    <div class="stage" id="solution-grid" aria-label="Solutions"></div>
-  </section>
+  <main id="fid">
+    <section class="hero" id="hero">
+      <div class="hero-pin">
+        <p class="watermark" aria-hidden="true">Fidelize</p>
+        <p class="kicker" data-i18n="fid.kicker">FAMILLE D'OUTILS</p>
+        <h1 data-i18n="fid.h1">Faites revenir vos clients.</h1>
+        <span class="rule" aria-hidden="true"></span>
+        <p class="lede" data-i18n="fid.sub">Fidelize présente les outils de fidélisation. Restau Wheel est celui des restaurants.</p>
+        <p class="cue" data-i18n="fid.cue">Défiler</p>
+      </div>
+    </section>
+
+    <section class="manifesto" id="manifesto">
+      <div class="manifesto-pin">
+        <div class="stage">
+          <p class="line line-1" data-i18n="fid.m1">Le retour compte.</p>
+          <p class="line line-2" data-i18n="fid.m2">Un outil pour le provoquer.</p>
+          <p class="line line-3" data-i18n="fid.m3">Restaurants : Restau Wheel.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="offer" id="offer">
+      <span class="offer-rule" aria-hidden="true"></span>
+      <div id="solution-grid" aria-label="Solutions"></div>
+    </section>
+
+    <section class="steps" id="steps">
+      <div class="steps-head">
+        <p class="kicker" data-i18n="fid.floor">En salle</p>
+      </div>
+      <div class="steps-track" id="steps-track"></div>
+      <div class="steps-bar" aria-hidden="true"><span></span></div>
+    </section>
+
+    <section class="close" id="close">
+      <p class="kicker" data-i18n="fid.kicker">FAMILLE D'OUTILS</p>
+      <p class="close-title" data-i18n="fid.close">L'outil des restaurants est en ligne.</p>
+      <a class="fid-cta" id="close-cta" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
+    </section>
+  </main>
 
   <footer class="footer">
-    <span class="brand">FIDELIZE</span>
+    <span class="brand">Fidelize</span>
     <span data-i18n="fid.footer">Outils de fidélisation</span>
     <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
   </footer>
-</div>
-<script src="/js/solutions.js"></script>
-<script src="/js/i18n.js"></script>
-<script>
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[c]));
-  }
 
-  function paintSolutions() {
-    const lang = window.RW_I18N.getLang() === 'en' ? 'en' : 'fr';
-    const grid = document.getElementById('solution-grid');
-    const live = window.Fidelize.list().filter((s) => s.status === 'live');
-    grid.innerHTML = live.map((s) => {
-      const copy = s[lang];
-      const statusLabel = window.RW_I18N.t('fid.status.live');
-      const points = (copy.points || []).map((p) => `<li>${esc(p)}</li>`).join('');
-      const external = /^https?:\/\//i.test(s.href);
-      const rel = external ? ' rel="noopener noreferrer"' : '';
-      return `
-        <article class="ticket" style="--accent:${esc(s.accent)}">
-          <div class="ticket-top">
-            <span class="sector">${esc(copy.sector)}</span>
-            <span class="status">${esc(statusLabel)}</span>
-          </div>
-          <h2>${esc(s.name)}</h2>
-          <p class="tagline">${esc(copy.tagline)}</p>
-          <div class="wheel" aria-hidden="true"></div>
-          <p class="summary">${esc(copy.summary)}</p>
-          <ul class="points">${points}</ul>
-          <a class="btn btn-wine" href="${esc(s.href)}"${rel}>${esc(copy.cta)}</a>
-        </article>`;
-    }).join('');
-  }
-
-  document.title = window.RW_I18N.t('fid.title');
-  paintSolutions();
-  document.addEventListener('rw:lang', () => {
-    document.title = window.RW_I18N.t('fid.title');
-    paintSolutions();
-  });
-
-  const chrome = document.getElementById('chrome');
-  const onChromeScroll = () => chrome.classList.toggle('is-scrolled', window.scrollY > 8);
-  onChromeScroll();
-  window.addEventListener('scroll', onChromeScroll, { passive: true });
-</script>
+  <script src="/vendor/gsap/gsap.min.js"></script>
+  <script src="/vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="/js/solutions.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/fidelize.js"></script>
 </body>
 </html>
