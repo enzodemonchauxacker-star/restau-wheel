@@ -1,79 +1,72 @@
 <!DOCTYPE html>
-<html lang="fr" data-i18n-title="fid.title">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fidelize — Outils pour fidéliser</title>
-  <meta name="description" content="Fidelize présente Restau Wheel, l'outil pour faire revenir les clients d'un restaurant.">
-  <meta name="theme-color" content="#0b0c0f">
+  <title>Fidelize — Faites revenir vos clients</title>
+  <meta name="description" content="Fidelize présente Restau Wheel, l'outil qui fait revenir les clients d'un restaurant.">
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/vendor/lenis/lenis.css">
   <link rel="stylesheet" href="/css/fidelize.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0c0f'/%3E%3Crect x='7' y='9' width='18' height='2' fill='%23d7b48a'/%3E%3Crect x='7' y='15' width='11' height='2' fill='%23ebe6dc'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
 </head>
 <body>
-  <div class="glow" aria-hidden="true"></div>
-  <div class="progress" aria-hidden="true"></div>
-  <header class="chrome" id="chrome">
-    <nav class="nav">
-      <a class="brand" href="/fidelize">Fidelize</a>
-      <div class="langs" role="group" aria-label="Language">
-        <button type="button" data-lang-btn="fr">FR</button>
-        <button type="button" data-lang-btn="en">EN</button>
-      </div>
+  <header class="nav" id="nav">
+    <a class="logo" href="/fidelize">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M8 3.2a4.8 4.8 0 1 1-3.2 1.4" stroke-linecap="round"/>
+          <path d="M4.6 2.6v2.4h2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      Fidelize
+    </a>
+    <nav class="nav-links" aria-label="Navigation">
+      <a href="https://restauwheel.com" rel="noopener noreferrer">Restau Wheel</a>
+      <a href="/mentions">Mentions</a>
     </nav>
+    <a class="btn btn-dark" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
   </header>
 
   <main id="fid">
-    <section class="hero" id="hero">
-      <div class="hero-pin">
-        <p class="watermark" aria-hidden="true">Fidelize</p>
-        <p class="kicker" data-i18n="fid.kicker">FAMILLE D'OUTILS</p>
-        <h1 data-i18n="fid.h1">Faites revenir vos clients.</h1>
-        <span class="rule" aria-hidden="true"></span>
-        <p class="lede" data-i18n="fid.sub">Fidelize présente les outils de fidélisation. Restau Wheel est celui des restaurants.</p>
-        <p class="cue" data-i18n="fid.cue">Défiler</p>
-      </div>
-    </section>
-
-    <section class="manifesto" id="manifesto">
-      <div class="manifesto-pin">
-        <div class="stage">
-          <p class="line line-1" data-i18n="fid.m1">Le retour compte.</p>
-          <p class="line line-2" data-i18n="fid.m2">Un outil pour le provoquer.</p>
-          <p class="line line-3" data-i18n="fid.m3">Restaurants : Restau Wheel.</p>
+    <section class="hero" id="hero" data-theme="light">
+      <div class="hero-stage">
+        <p class="badge">
+          <span class="badge-ico" aria-hidden="true"></span>
+          Pour les restaurants
+        </p>
+        <h1 class="hero-title">
+          <span class="line" data-reveal>Faites Revenir</span>
+          <span class="line" data-reveal>Vos Clients</span>
+          <span class="line" data-reveal>À Table.</span>
+        </h1>
+        <a class="btn btn-dark hero-cta" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
+        <div class="orbit" id="orbit" aria-hidden="true"></div>
+        <div class="phone" aria-hidden="true">
+          <div class="phone-frame">
+            <div class="island"></div>
+            <div class="status">
+              <span>9:41</span>
+              <span class="status-dots"></span>
+            </div>
+            <div class="screen">
+              <p class="screen-name">Restau Wheel</p>
+              <div class="mini-wheel"></div>
+              <p class="screen-sub">Le client tourne, puis revient.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
-
-    <section class="offer" id="offer">
-      <span class="offer-rule" aria-hidden="true"></span>
-      <div id="solution-grid" aria-label="Solutions"></div>
-    </section>
-
-    <section class="steps" id="steps">
-      <div class="steps-head">
-        <p class="kicker" data-i18n="fid.floor">En salle</p>
-      </div>
-      <div class="steps-track" id="steps-track"></div>
-      <div class="steps-bar" aria-hidden="true"><span></span></div>
-    </section>
-
-    <section class="close" id="close">
-      <p class="kicker" data-i18n="fid.kicker">FAMILLE D'OUTILS</p>
-      <p class="close-title" data-i18n="fid.close">L'outil des restaurants est en ligne.</p>
-      <a class="fid-cta" id="close-cta" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a>
-    </section>
   </main>
-
-  <footer class="footer">
-    <span class="brand">Fidelize</span>
-    <span data-i18n="fid.footer">Outils de fidélisation</span>
-    <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
-  </footer>
 
   <script src="/vendor/gsap/gsap.min.js"></script>
   <script src="/vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="/vendor/lenis/lenis.min.js"></script>
   <script src="/js/solutions.js"></script>
-  <script src="/js/i18n.js"></script>
   <script src="/js/fidelize.js"></script>
 </body>
 </html>

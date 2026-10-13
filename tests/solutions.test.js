@@ -43,11 +43,15 @@ describe('famille Fidelize', () => {
 
     const motion = fs.readFileSync(path.join(__dirname, '../public/js/fidelize.js'), 'utf8');
     const skin = fs.readFileSync(path.join(__dirname, '../public/css/fidelize.css'), 'utf8');
-    assert.match(motion, /fid\.status\.live/);
     assert.match(motion, /gsap\.registerPlugin\(ScrollTrigger\)/);
     assert.match(motion, /prefers-reduced-motion/);
-    assert.match(motion, /scrub:/);
-    assert.match(skin, /#0b0c0f/);
+    assert.match(motion, /scrub:\s*0\.5/);
+    assert.match(motion, /lerp:\s*0\.1/);
+    assert.match(hub, /Ouvrir Restau Wheel/);
+    assert.match(hub, /lenis\.min\.js/);
+    assert.match(skin, /#e8ff95/i);
+    assert.match(skin, /#fff8f1/i);
+    assert.equal(fs.existsSync(path.join(__dirname, '../public/vendor/lenis/lenis.min.js')), true);
     assert.doesNotMatch(hub + motion + skin, /CodeSass|bowling|laser game|karting|Bientôt|Coming soon|fid\.status\.soon/i);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/vendor/gsap/gsap.min.js')), true);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/vendor/gsap/ScrollTrigger.min.js')), true);
