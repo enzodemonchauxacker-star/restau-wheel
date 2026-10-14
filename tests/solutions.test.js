@@ -30,6 +30,8 @@ describe('famille Fidelize', () => {
     assert.doesNotMatch(server, /public', 'video', 'index\.html'/);
     assert.match(server, /VERCEL_ENV === 'preview' && p === '\/'/);
     assert.match(server, /p === '\/fidelize'/);
+    assert.match(server, /host === 'fidelize\.dev'/);
+    assert.match(server, /host === 'www\.fidelize\.dev'/);
     assert.doesNotMatch(server, /fidelize[\s\S]{0,180}isSuperAdmin/);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/video/index.html')), false);
     assert.equal(fs.existsSync(path.join(__dirname, '../public/fidelize/index.html')), false);

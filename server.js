@@ -59,10 +59,20 @@ function sendFidelizePage(res) {
   res.sendFile(fidelizePage);
 }
 
+function isFidelizeHost(req) {
+  const raw = `${req.headers['x-forwarded-host'] || ''},${req.headers.host || ''}`;
+  return raw.split(',').some((part) => {
+    const host = part.trim().replace(/:\d+$/, '').toLowerCase();
+    return host === 'fidelize.dev' || host === 'www.fidelize.dev';
+  });
+}
+
 app.use((req, res, next) => {
   const p = req.path.replace(/\/+$/, '') || '/';
   if (p === '/video' || p.startsWith('/video/')) return res.status(404).type('text/plain').send('Not found');
-  if (p === '/fidelize' || (process.env.VERCEL_ENV === 'preview' && p === '/')) return sendFidelizePage(res);
+  if (p === '/fidelize' || (process.env.VERCEL_ENV === 'preview' && p === '/') || (isFidelizeHost(req) && p === '/')) {
+    return sendFidelizePage(res);
+  }
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
