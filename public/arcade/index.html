@@ -2,782 +2,247 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fidelize - Solution de Fidélisation Client</title>
-  <meta name="description" content="Vos clients méritent mieux qu'une carte papier. Une carte digitale, aux couleurs de votre commerce.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%234FC3F7' d='M8 14h28c10 0 16 7 16 16v1c0 7-5 12-12 14l12 16c2 3 0 7-4 7H34c-2 0-4-1-5-3L20 46H16v12c0 3-2 6-6 6H8V14z'/%3E%3C/svg%3E">
-  <style>
-    @font-face {
-      font-family: Geist;
-      font-style: normal;
-      font-weight: 100 900;
-      font-display: swap;
-      src: url("/arcade/fonts/geist.woff2") format("woff2");
-    }
-    :root {
-      --sky: #8ae0f7;
-      --blue: #4fc3f7;
-      --deep: #1976d2;
-      --ink: #1a1a1a;
-      --muted: #666;
-      --slate: #374151;
-      --line: rgba(138, 224, 247, 0.22);
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: Geist, ui-sans-serif, system-ui, sans-serif;
-      color: var(--ink);
-      background: #fff;
-    }
-    a { color: inherit; }
-    img { max-width: 100%; display: block; }
-    .grid-background {
-      background-color: #fff;
-      background-image:
-        linear-gradient(rgba(186, 214, 232, 0.35) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(186, 214, 232, 0.35) 1px, transparent 1px);
-      background-size: 56px 56px;
-    }
-
-    .navbar {
-      position: fixed;
-      inset: 0 0 auto 0;
-      z-index: 40;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 1rem 0;
-    }
-    .navbar.is-scrolled {
-      background: rgba(255, 255, 255, 0.98);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      padding: 0.75rem 0;
-    }
-    .navbar__container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .navbar__logo { display: flex; align-items: center; text-decoration: none; }
-    .navbar__nav { display: flex; align-items: center; gap: 2rem; }
-    .navbar__link {
-      position: relative;
-      text-decoration: none;
-      color: var(--slate);
-      font-weight: 500;
-      font-size: 1.05rem;
-      padding: 0.75rem 0.2rem;
-    }
-    .navbar__link:hover { color: var(--blue); }
-    .navbar__cta-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      text-decoration: none;
-      color: #fff;
-      background: linear-gradient(135deg, #4fc3f7, #1976d2);
-      padding: 0.9rem 1.5rem 0.9rem 1.35rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1.05rem;
-      box-shadow: 0 8px 22px rgba(79, 195, 247, 0.35);
-    }
-    .navbar__cta-button:hover { transform: translateY(-2px); }
-    .nav-toggle {
-      display: none;
-      border: 0;
-      background: transparent;
-      font-size: 1.6rem;
-      cursor: pointer;
-    }
-
-    .header {
-      position: relative;
-      overflow: hidden;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding: 7.5rem 0 4rem;
-    }
-    .header__orbs { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-    .header__orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(32px);
-      opacity: 0.85;
-    }
-    .orb-1 { width: 220px; height: 220px; left: -40px; top: 12%; background: #b9ecfb; }
-    .orb-2 { width: 160px; height: 160px; right: 4%; bottom: 8%; background: #7fd4f6; }
-    .orb-3 { width: 90px; height: 90px; left: 58%; bottom: 0; background: #d7f6ff; }
-    .header__container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; width: 100%; }
-    .header__content {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 64px;
-      align-items: center;
-    }
-    .header__title {
-      margin: 0 0 24px;
-      font-size: clamp(3rem, 6vw, 4.5rem);
-      font-weight: 800;
-      line-height: 1.1;
-      background: linear-gradient(135deg, #1a1a1a, #8ae0f7 55%, #4fc3f7);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .header__subtitle {
-      margin: 0 0 28px;
-      max-width: 520px;
-      font-size: 1.2rem;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-    .header__stats h2 {
-      margin: 0 0 18px;
-      font-size: 1.35rem;
-      font-weight: 600;
-    }
-    .header__stats-row { display: flex; gap: 36px; flex-wrap: wrap; }
-    .header__stat-number {
-      display: block;
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: var(--sky);
-      line-height: 1;
-    }
-    .header__stat-label { display: block; margin-top: 6px; color: var(--muted); font-size: 0.92rem; max-width: 12ch; }
-    .header__cta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 36px; }
-    .header__cta-primary, .header__cta-secondary {
-      text-decoration: none;
-      border-radius: 12px;
-      padding: 16px 28px;
-      font-size: 1.05rem;
-      font-weight: 600;
-    }
-    .header__cta-primary {
-      color: #fff;
-      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
-      box-shadow: 0 8px 25px rgba(138, 224, 247, 0.45);
-    }
-    .header__cta-secondary {
-      color: #5bc0e6;
-      border: 2px solid #8ae0f7;
-      background: #fff;
-    }
-    .header__visual { position: relative; min-height: 560px; display: flex; align-items: center; justify-content: center; }
-    .pin-slot {
-      width: 260px;
-      height: 540px;
-      transform: rotate(-8deg);
-      filter: drop-shadow(0 18px 36px rgba(79, 195, 247, 0.35));
-    }
-    .pin-slot canvas { width: 100%; height: 100%; display: block; }
-    .float-cards { position: absolute; inset: 0; pointer-events: none; }
-    .header__card {
-      position: absolute;
-      width: 230px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(138, 224, 247, 0.25);
-      border-radius: 16px;
-      padding: 16px 16px 14px;
-      box-shadow: 0 10px 30px rgba(138, 224, 247, 0.16);
-      opacity: 0;
-      transform: scale(0.86);
-      transition: opacity 0.35s ease, transform 0.35s ease;
-    }
-    .header__visual:hover .header__card,
-    .header__visual:focus-within .header__card { opacity: 1; transform: scale(1); }
-    .card-1 { left: -20px; top: 36px; }
-    .card-2 { right: -10px; top: 180px; }
-    .card-3 { left: 18%; bottom: 8px; }
-    .header__card h3 { margin: 6px 0 6px; font-size: 0.98rem; }
-    .header__card p { margin: 0; color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
-
-    .section { padding: 88px 24px; }
-    .wrap { max-width: 1120px; margin: 0 auto; }
-    .center { text-align: center; }
-    .hero-line {
-      margin: 0 0 64px;
-      font-size: clamp(2.2rem, 4vw, 3.3rem);
-      font-weight: 750;
-      line-height: 1.15;
-      color: var(--blue);
-    }
-    .section-title {
-      margin: 0 0 48px;
-      font-size: clamp(2rem, 4vw, 2.7rem);
-      font-weight: 750;
-      line-height: 1.15;
-    }
-    .values {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
-    }
-    .value {
-      background: rgba(255, 255, 255, 0.86);
-      border: 1px solid rgba(138, 224, 247, 0.18);
-      border-radius: 20px;
-      padding: 36px 26px 32px;
-      text-align: center;
-    }
-    .value:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(138, 224, 247, 0.16); }
-    .value .ico { font-size: 2.4rem; margin-bottom: 14px; }
-    .value h3 { margin: 0 0 10px; font-size: 1.35rem; }
-    .value p { margin: 0; color: var(--muted); line-height: 1.55; }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
-    }
-    .step {
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(138, 224, 247, 0.16);
-      border-radius: 20px;
-      padding: 36px 26px;
-      text-align: center;
-    }
-    .step b {
-      display: inline-grid;
-      place-items: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      color: #fff;
-      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
-      margin-bottom: 16px;
-    }
-    .step h3 { margin: 0 0 12px; font-size: 1.25rem; line-height: 1.3; }
-    .step p { margin: 0; color: var(--muted); line-height: 1.55; }
-    .help {
-      margin-top: 36px;
-      background: #e7f7fd;
-      border-radius: 22px;
-      padding: 28px 32px;
-      display: flex;
-      gap: 18px;
-      align-items: flex-start;
-    }
-    .help i {
-      flex: none;
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: #7fd4f8;
-      color: #fff;
-      font-style: normal;
-      font-weight: 800;
-      font-size: 1.4rem;
-    }
-    .help h3 { margin: 0 0 6px; }
-    .help p { margin: 0; color: #3d4a55; line-height: 1.5; }
-    .closer { text-align: center; margin-top: 48px; color: #5c6b78; font-size: 1.15rem; }
-    .closer-actions { display: flex; justify-content: center; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
-
-    .pricing__title { text-align: center; font-size: clamp(2.1rem, 4vw, 3rem); margin: 0 0 28px; }
-    .toggle {
-      width: max-content;
-      margin: 0 auto 28px;
-      background: #fff;
-      border-radius: 999px;
-      padding: 8px;
-      display: flex;
-      gap: 8px;
-      box-shadow: 0 8px 30px rgba(79, 195, 247, 0.12);
-    }
-    .toggle button {
-      border: 0;
-      background: transparent;
-      color: #8ecae0;
-      font: inherit;
-      font-weight: 700;
-      padding: 10px 22px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-    .toggle button.on { background: #e7f6fd; color: #3db7e8; }
-    .trial {
-      max-width: 820px;
-      margin: 0 auto 36px;
-      background: #eef4ff;
-      border-radius: 18px;
-      text-align: center;
-      padding: 22px 18px;
-      color: #3d4f66;
-    }
-    .trial strong { color: #3b82f6; }
-    .plans {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-      align-items: stretch;
-    }
-    .plan {
-      background: #fff;
-      border: 1px solid #e6f4fb;
-      border-radius: 24px;
-      padding: 28px 22px 24px;
-      box-shadow: 0 10px 30px rgba(79, 195, 247, 0.08);
-      display: flex;
-      flex-direction: column;
-    }
-    .plan.popular {
-      border: 2px solid #7fd4f6;
-      box-shadow: 0 16px 40px rgba(79, 195, 247, 0.2);
-      position: relative;
-    }
-    .badge {
-      position: absolute;
-      top: -14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(90deg, #8ae0f7, #4fc3f7);
-      color: #fff;
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-    .plan h3 { margin: 8px 0 8px; font-size: 1.45rem; }
-    .plan .desc { margin: 0 0 16px; color: var(--muted); min-height: 4.6em; line-height: 1.45; }
-    .price { font-size: 2.4rem; font-weight: 800; margin-bottom: 16px; }
-    .price span { font-size: 1rem; font-weight: 600; color: var(--muted); }
-    .plan ul { list-style: none; margin: 0 0 18px; padding: 0; }
-    .plan li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; color: #3a4654; }
-    .plan li i {
-      flex: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #4fc3f7;
-      color: #fff;
-      font-style: normal;
-      font-size: 0.75rem;
-      display: grid;
-      place-items: center;
-      margin-top: 2px;
-    }
-    .choose, .choose-fill {
-      margin-top: auto;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 14px;
-      padding: 16px 12px;
-      font-weight: 700;
-    }
-    .choose { color: #3db7e8; border: 2px solid #8ae0f7; }
-    .choose-fill { color: #fff; background: linear-gradient(135deg, #7fd8f8, #49b7ef); }
-
-    .sur {
-      margin-top: 54px;
-      position: relative;
-      background: linear-gradient(180deg, #f3f9ff, #fff);
-      border: 2px solid #d7ebfa;
-      border-radius: 28px;
-      padding: 42px 36px 32px;
-    }
-    .sur-badge {
-      position: absolute;
-      top: -18px;
-      left: 28px;
-      background: linear-gradient(90deg, #1976d2, #4fc3f7);
-      color: #fff;
-      border-radius: 999px;
-      padding: 10px 18px;
-      font-weight: 700;
-    }
-    .sur h3 { margin: 8px 0; font-size: 1.6rem; color: var(--deep); }
-    .sur .lead { color: var(--deep); font-weight: 600; max-width: 62ch; }
-    .sur-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 22px;
-      margin: 18px 0 8px;
-      padding: 0;
-      list-style: none;
-    }
-    .sur-grid li {
-      background: rgba(25, 118, 210, 0.05);
-      color: var(--deep);
-      border-radius: 10px;
-      padding: 10px 12px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .sur .choose-fill { display: inline-block; margin-top: 18px; min-width: 240px; background: linear-gradient(135deg, #1976d2, #4fc3f7); }
-
-    .faq-title { text-align: center; margin: 72px 0 28px; font-size: clamp(2rem, 4vw, 2.8rem); }
-    .faq {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-    .faq article {
-      background: #fff;
-      border-radius: 18px;
-      padding: 26px 24px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-    }
-    .faq h3 { margin: 0 0 8px; font-size: 1.15rem; }
-    .faq p { margin: 0; color: #4b5563; line-height: 1.5; }
-    .pricing-cta { text-align: center; margin-top: 64px; }
-    .pricing-cta h3 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0 0 8px; }
-    .pricing-cta p { color: var(--muted); margin: 0 0 18px; }
-
-    .testimonies { padding: 80px 0 40px; overflow: hidden; }
-    .testimonies h2 {
-      text-align: center;
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      margin: 0 0 48px;
-      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .scroller { overflow: hidden; }
-    .track {
-      display: flex;
-      gap: 36px;
-      width: max-content;
-      animation: slide 36s linear infinite;
-    }
-    .scroller:hover .track { animation-play-state: paused; }
-    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    .tcard { width: 280px; text-align: center; }
-    .tcard img {
-      width: 250px;
-      height: 250px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 3px solid #4fc3f7;
-      margin: 0 auto 14px;
-      box-shadow: 0 8px 24px rgba(79, 195, 247, 0.2);
-    }
-    .tcard strong { display: block; font-size: 1.35rem; }
-    .tcard em { display: block; color: #64748b; font-style: normal; margin: 4px 0 8px; }
-    .globe {
-      width: 22px;
-      height: 22px;
-      margin: 0 auto;
-      border-radius: 50%;
-      border: 2px solid #4fc3f7;
-      position: relative;
-    }
-    .globe:before, .globe:after {
-      content: "";
-      position: absolute;
-      border: 1.5px solid #4fc3f7;
-      border-radius: 50%;
-    }
-    .globe:before { inset: 3px 7px; }
-    .globe:after { inset: 8px 2px; border-radius: 0; border-left: 0; border-right: 0; }
-
-    .footer-simple {
-      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
-      color: #fff;
-      text-align: center;
-      padding: 48px 16px 18px;
-      margin-top: 20px;
-    }
-    .footer-simple nav { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin: 18px 0 28px; }
-    .footer-simple a { color: #fff; text-decoration: none; font-weight: 600; }
-    .footer-simple__bottom { border-top: 1px solid rgba(255,255,255,0.35); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; }
-    .brand-lockup { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.4rem; }
-    .navbar__logo img, .brand-lockup img { height: 36px; width: auto; }
-
-    @media (max-width: 980px) {
-      .navbar__nav, .navbar__cta { display: none; }
-      .navbar.is-open .navbar__nav, .navbar.is-open .navbar__cta { display: flex; }
-      .navbar.is-open .navbar__container { flex-wrap: wrap; }
-      .navbar.is-open .navbar__nav { order: 3; width: 100%; flex-direction: column; align-items: flex-start; padding-bottom: 0.6rem; }
-      .nav-toggle { display: block; }
-      .header__content, .values, .steps, .plans, .faq, .sur-grid { grid-template-columns: 1fr; }
-      .header { min-height: auto; }
-      .pin-slot { width: 200px; height: 420px; }
-      .header__card { display: none; }
-      .header__visual { min-height: 440px; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fidelize — Logiciels pour fidéliser la clientèle</title>
+  <meta name="description" content="Fidelize conçoit des logiciels pour fidéliser la clientèle. Restau Wheel est la solution pour les restaurants.">
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@600&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/vendor/lenis/lenis.css">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
 </head>
 <body>
-  <header class="navbar" id="nav">
-    <div class="navbar__container">
-      <a class="navbar__logo" href="#home" aria-label="Fidelize">
-        <img src="/arcade/logo.png" alt="" width="36" height="36">
-      </a>
-      <button class="nav-toggle" type="button" aria-label="Menu">☰</button>
-      <nav class="navbar__nav">
-        <a class="navbar__link" href="#home">Accueil</a>
-        <a class="navbar__link" href="#our-solution">Bénéfices pour vous</a>
-        <a class="navbar__link" href="#how-it-works">Comment ça marche</a>
-        <a class="navbar__link" href="#pricing">Tarifs</a>
-        <a class="navbar__link" href="#testimonials">Témoignages</a>
-      </nav>
-      <div class="navbar__cta">
-        <a class="navbar__cta-button" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Commencer <span aria-hidden="true">→</span></a>
-      </div>
-    </div>
+  <svg class="ios-defs" aria-hidden="true" focusable="false">
+    <clipPath id="iphone-screen" clipPathUnits="objectBoundingBox">
+      <path d="M 0.7532 0 c 0.0864 0 0.1296 0 0.1626 0.0077 a 0.1542 0.0709 0 0 1 0.0674 0.031 c 0.0168 0.0152 0.0168 0.035 0.0168 0.0748 L 1 0.8865 c 0 0.0397 0 0.0596 -0.0168 0.0748 a 0.1542 0.0709 0 0 1 -0.0674 0.031 c -0.033 0.0077 -0.0762 0.0077 -0.1626 0.0077 L 0.2468 1 c -0.0864 0 -0.1296 0 -0.1626 -0.0077 a 0.1542 0.0709 0 0 1 -0.0674 -0.031 c -0.0168 -0.0152 -0.0168 -0.035 -0.0168 -0.0748 L 0 0.1135 c 0 -0.0397 0 -0.0596 0.0168 -0.0748 a 0.1542 0.0709 0 0 1 0.0674 -0.031 c 0.033 -0.0077 0.0762 -0.0077 0.1626 -0.0077 Z"/>
+    </clipPath>
+  </svg>
+  <header class="nav" id="nav">
+    <a class="logo" href="#hero">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3.2a4.8 4.8 0 1 1-3.2 1.4" stroke-linecap="round"/><path d="M4.6 2.6v2.4h2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Fidelize
+    </a>
+    <nav class="nav-links" aria-label="Navigation">
+      <a href="#gateway">Le but</a>
+      <a href="#works">La méthode</a>
+      <a href="#events">Les solutions</a>
+    </nav>
+    <a class="btn btn-dark" href="#events">Voir les solutions</a>
   </header>
 
-  <section class="header grid-background" id="home">
-    <div class="header__orbs" aria-hidden="true">
-      <div class="header__orb orb-1"></div>
-      <div class="header__orb orb-2"></div>
-      <div class="header__orb orb-3"></div>
-    </div>
-    <div class="header__container">
-      <div class="header__content">
-        <div class="header__text">
-          <h1 class="header__title">Fidelize</h1>
-          <p class="header__subtitle">Vos clients méritent mieux qu'une carte papier.<br>Offrez-leur une carte digitale, aux couleurs de votre commerce, intégrée directement à leur smartphone<br>Zéro appli client, zéro contrainte, zéro oubli.</p>
-          <aside class="header__stats" aria-label="Statistiques de performance">
-            <h2>Les bénéfices concrets de Fidelize :</h2>
-            <div class="header__stats-row">
-              <div class="header__stat"><span class="header__stat-number">+25%</span><span class="header__stat-label">de CA en moyenne</span></div>
-              <div class="header__stat"><span class="header__stat-number">+30%</span><span class="header__stat-label">de fréquentation client</span></div>
-              <div class="header__stat"><span class="header__stat-number">+18%</span><span class="header__stat-label">de panier moyen</span></div>
+  <main id="fid">
+    <section class="hero" id="hero" data-theme="light">
+      <div class="hero-stage">
+        <p class="badge"><span class="badge-ico" aria-hidden="true"></span>Logiciels de fidélisation</p>
+        <h1 class="hero-title">
+          <span class="line" data-reveal>Fidéliser</span>
+          <span class="line" data-reveal>La Clientèle</span>
+          <span class="line" data-reveal>Pour De Bon.</span>
+        </h1>
+        <a class="btn btn-dark hero-cta" href="#events">Voir les solutions</a>
+        <div class="orbit" id="orbit" aria-hidden="true"></div>
+        <div class="phone hero-phone" aria-hidden="true"><div class="phone-frame"><canvas data-pin data-yaw="14" data-tilt="-6"></canvas></div></div>
+      </div>
+    </section>
+
+    <section class="band" id="gateway" data-theme="light">
+      <div class="gateway-grid">
+        <h2 class="reveal-title">
+          <span class="line" data-reveal>Le But :</span>
+          <span class="line" data-reveal>Les Faire</span>
+          <span class="line" data-reveal>Revenir.</span>
+        </h2>
+        <div class="gateway-phone">
+          <div class="phone" id="gate-phone"><div class="phone-frame"><canvas data-pin data-yaw="8" data-tilt="-6"></canvas><div class="screen-slots" id="screen-slots" aria-hidden="true"></div></div></div>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Clair ou sombre">
+            <span class="sun" aria-hidden="true"></span>
+            <span class="moon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="gateway-copy">Un client qui revient vaut plus qu'un client de passage. Le but&nbsp;: lui donner une raison claire de revenir, puis savoir s'il l'a fait.</p>
+        <div class="flies" id="flies" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="band" id="works" data-theme="dark">
+      <div class="works-view">
+        <h2 class="center-title"><span class="line" data-reveal>Comment</span><span class="line" data-reveal>Les Fidéliser</span></h2>
+        <div class="bento-clip">
+        <div class="bento">
+          <article class="card card-steps">
+            <h3 data-scramble>Reconnaître</h3>
+            <p>Savoir qui est venu, et qui revient.</p>
+            <ul class="steps">
+              <li><span class="check"><i></i></span>Noter la visite</li>
+              <li><span class="check"><i></i></span>Donner une raison</li>
+              <li><span class="check"><i></i></span>Mesurer le retour</li>
+            </ul>
+          </article>
+          <article class="card card-people">
+            <div class="avatar-pile">
+              <img src="/arcade/fid/img/a1.jpg" alt="">
+              <img src="/arcade/fid/img/a2.jpg" alt="">
+              <img src="/arcade/fid/img/a3.jpg" alt="">
+              <span class="plus">+</span>
             </div>
-          </aside>
-          <div class="header__cta">
-            <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Lancez-vous maintenant</a>
-            <a class="header__cta-secondary" href="#how-it-works">Nous contacter</a>
-          </div>
+            <h3 data-scramble>La Relation</h3>
+            <p>Ceux qui reviennent, et ceux qui vont revenir.</p>
+          </article>
+          <article class="card card-tools">
+            <h3 data-scramble>Les Leviers</h3>
+            <div class="tool-grid" id="tool-grid"></div>
+            <p>Les moyens de fidéliser, un par un.</p>
+          </article>
+          <article class="card card-keep">
+            <div>
+              <h3 data-scramble>Ce Que Vous Gardez</h3>
+              <p>Visites, raisons, retours. Rien ne part tout seul.</p>
+            </div>
+            <div class="vmarquee" aria-hidden="true">
+              <div class="vmarquee-track">
+                <span>Visites</span><span>Raisons</span><span>Retours</span><span>Mesure</span><span>Offres</span><span>Équipe</span>
+                <span>Visites</span><span>Raisons</span><span>Retours</span><span>Mesure</span><span>Offres</span><span>Équipe</span>
+              </div>
+            </div>
+          </article>
+          <article class="card card-app">
+            <h3 data-scramble>En Logiciel</h3>
+            <p>Le geste reste simple. Le logiciel fait le suivi.</p>
+            <div class="app-phone" aria-hidden="true">
+              <div class="phone mini"><div class="phone-frame"><canvas data-pin data-yaw="-12" data-tilt="-6"></canvas></div></div>
+            </div>
+          </article>
+          <article class="card card-topics">
+            <h3 data-scramble>Vos Leviers</h3>
+            <p>Vous choisissez ce qui fait revenir.</p>
+            <div class="hmarquee" aria-hidden="true">
+              <div class="hrow"><div class="htrack"><span>Visite</span><span>Offre</span><span>Retour</span><span>Mesure</span><span>Relation</span><span>Visite</span><span>Offre</span><span>Retour</span><span>Mesure</span><span>Relation</span></div></div>
+              <div class="hrow reverse"><div class="htrack"><span>Service</span><span>Équipe</span><span>Avis</span><span>Habitude</span><span>Accueil</span><span>Service</span><span>Équipe</span><span>Avis</span><span>Habitude</span><span>Accueil</span></div></div>
+              <div class="hrow"><div class="htrack"><span>Gain</span><span>Preuve</span><span>Suivi</span><span>Visite</span><span>Fidélité</span><span>Gain</span><span>Preuve</span><span>Suivi</span><span>Visite</span><span>Fidélité</span></div></div>
+            </div>
+          </article>
         </div>
-        <div class="header__visual">
-          <div class="pin-slot" aria-label="Quille Fidelize">
-            <canvas data-pin="hero" data-yaw="18" data-tilt="-8"></canvas>
-          </div>
-          <div class="float-cards">
-            <article class="header__card card-1">
-              <span>📲</span>
-              <h3>Compatible Google Wallet &amp; Apple Wallet</h3>
-              <p>Vos clients ajoutent leur carte de fidélité directement dans leur téléphone, sans installer d'application.</p>
-            </article>
-            <article class="header__card card-2">
-              <span>🎁</span>
-              <h3>Récompenses attractives</h3>
-              <p>Offrez des cadeaux et avantages dans votre boutique.</p>
-            </article>
-            <article class="header__card card-3">
-              <span>🖥️</span>
-              <h3>Dashboard &amp; App</h3>
-              <p>Gérez vos programmes et scannez les QR codes en toute simplicité.</p>
-            </article>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="our-solution">
-    <div class="wrap">
-      <h2 class="hero-line center">Et si la fidélité client devenait<br>accessible à tous ?</h2>
-      <h3 class="section-title">Les résultats concrets pour votre commerce</h3>
-      <div class="values">
-        <article class="value"><div class="ico">📊</div><h3>Chiffre d'affaires</h3><p>Les commerçants qui utilisent Fidelize constatent en moyenne +25 % de ventes en plus.</p></article>
-        <article class="value"><div class="ico">🔔</div><h3>Notifications ciblées</h3><p>Annoncez vos promos, nouveautés ou événements directement sur l'écran de vos clients.</p></article>
-        <article class="value"><div class="ico">🎁</div><h3>Valorisation client</h3><p>Offrez des avantages concrets à vos clients. Ils se sentent reconnus et reviennent plus souvent.</p></article>
-        <article class="value"><div class="ico">📱</div><h3>Accessibilité totale</h3><p>Apple Wallet &amp; Google Wallet : rien à installer pour vos clients, leur carte est toujours dans leur téléphone.</p></article>
-        <article class="value"><div class="ico">🗂️</div><h3>Création de fichier client</h3><p>Pas de fichier client ? Plus un problème. Fidelize crée pour vous le fichier client que vous n'aviez pas.</p></article>
-        <article class="value"><div class="ico">🤝</div><h3>Facile à lancer, accompagné à 100 %</h3><p>Mise en place en moins de 5 minutes. Notre support vous guide pas à pas, sans jargon technique.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section grid-background" id="how-it-works">
-    <div class="wrap">
-      <h2 class="section-title center">🚀 Comment ça marche ?</h2>
-      <div class="steps">
-        <article class="step"><b>1</b><h3>Créez votre compte et configurez votre programme</h3><p>En quelques minutes, personnalisez votre carte digitale (logo, couleurs, design) et définissez vos règles de fidélité et vos récompenses.</p></article>
-        <article class="step"><b>2</b><h3>Diffusez votre carte à vos clients</h3><p>Imprimez notre flyer avec votre QR code ou lien, ou partagez directement le lien par SMS, email ou réseaux sociaux.</p></article>
-        <article class="step"><b>3</b><h3>Scannez et engagez vos clients</h3><p>Avec l'application Fidelize Marchand (ou via votre logiciel de caisse connecté), vos clients cumulent automatiquement leurs points, passages, coupes, et autres types.</p></article>
-      </div>
-      <div class="help">
-        <i>i</i>
-        <div>
-          <h3>Besoin d'aide ?</h3>
-          <p>Notre équipe support est à votre disposition pour vous aider dans la configuration de votre compte et vous accompagner dans toutes vos démarches ou questions.</p>
         </div>
       </div>
-      <p class="closer">Fidelize, la solution simple et efficace pour les commerces de proximité qui veulent vendre plus.</p>
-      <div class="closer-actions">
-        <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Commencez maintenant</a>
-        <a class="header__cta-secondary" href="#pricing">Parler à un expert</a>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section grid-background" id="pricing">
-    <div class="wrap">
-      <h2 class="pricing__title">Des tarifs simples et transparents</h2>
-      <div class="toggle" role="group" aria-label="Période de facturation">
-        <button type="button" class="on" data-bill="mois">Mensuel</button>
-        <button type="button" data-bill="an">Annuel</button>
+    <section class="band" id="community" data-theme="light">
+      <div class="community-stage">
+        <div class="avatars" id="avatars">
+          <img src="/arcade/fid/img/a1.jpg" alt="" style="--x:6%;--y:22%;--s:52px">
+          <img src="/arcade/fid/img/a2.jpg" alt="" style="--x:12%;--y:74%;--s:44px">
+          <img src="/arcade/fid/img/a3.jpg" alt="" style="--x:18%;--y:42%;--s:40px">
+          <img class="front" src="/arcade/fid/img/a4.jpg" alt="" style="--x:76%;--y:10%;--s:56px">
+          <img src="/arcade/fid/img/a5.jpg" alt="" style="--x:88%;--y:38%;--s:46px">
+          <img src="/arcade/fid/img/a6.jpg" alt="" style="--x:80%;--y:72%;--s:50px">
+          <img src="/arcade/fid/img/a7.jpg" alt="" style="--x:64%;--y:84%;--s:42px">
+          <img class="front" src="/arcade/fid/img/a8.jpg" alt="" style="--x:24%;--y:10%;--s:48px">
+          <img src="/arcade/fid/img/a9.jpg" alt="" style="--x:48%;--y:86%;--s:40px">
+          <img src="/arcade/fid/img/a10.jpg" alt="" style="--x:34%;--y:70%;--s:54px">
+        </div>
+        <div class="community-copy">
+          <h2 class="center-title">
+            <span class="line" data-reveal>Ils</span>
+            <span class="line" data-reveal>Reviennent.</span>
+          </h2>
+          <p>Fidéliser, c'est transformer une visite en habitude. Le logiciel reconnaît le client, lui donne une raison, et suit le retour.</p>
+        </div>
       </div>
-      <div class="trial"><strong>🎉 2 semaines d'essai gratuit 🎉</strong><br>Commencez gratuitement dès aujourd'hui • Pas de frais cachés</div>
-      <div class="plans">
-        <article class="plan">
-          <div class="ico">🚀</div>
-          <h3>Starter</h3>
-          <p class="desc">Démarrez simplement la fidélisation digitale et envoyez votre première notification à vos clients.</p>
-          <div class="price">€ <b data-month="10.99" data-year="109.90">10.99</b><span class="per">/mois</span></div>
-          <ul>
-            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
-            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
-            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
-            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
-            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
-            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
-            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
-            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
-            <li><i>✓</i><span>Aucune notification push incluse par mois</span></li>
-          </ul>
-          <a class="choose" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
-        </article>
-        <article class="plan popular">
-          <div class="badge">Le plus populaire</div>
-          <div class="ico">📈</div>
-          <h3>Essentiel</h3>
-          <p class="desc">Passez à la vitesse supérieure avec plus de notifications et des outils avancés pour engager vos clients.</p>
-          <div class="price">€ <b data-month="35" data-year="350">35</b><span class="per">/mois</span></div>
-          <ul>
-            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
-            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
-            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
-            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
-            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
-            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
-            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
-            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
-            <li><i>✓</i><span>2 notifications push incluses par mois</span></li>
-          </ul>
-          <a class="choose-fill" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
-        </article>
-        <article class="plan">
-          <div class="ico">🔥</div>
-          <h3>Premium</h3>
-          <p class="desc">Le choix préféré des entreprises ambitieuses : plus de clients, plus de notifications, plus de résultats.</p>
-          <div class="price">€ <b data-month="50" data-year="500">50</b><span class="per">/mois</span></div>
-          <ul>
-            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
-            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
-            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
-            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
-            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
-            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
-            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
-            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
-            <li><i>✓</i><span>6 notifications push incluses par mois</span></li>
-          </ul>
-          <a class="choose" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
-        </article>
-      </div>
+    </section>
 
-      <article class="sur">
-        <div class="sur-badge">★ Sur mesure &amp; Premium</div>
-        <h3>Sur mesure</h3>
-        <p class="lead">Une solution personnalisée, un accompagnement premium et des notifications illimitées pour les besoins spécifiques des grandes enseignes.</p>
-        <p><strong>Sur mesure</strong></p>
-        <ul class="sur-grid">
-          <li>✓ Nombre de clients enregistrés sur mesure</li>
-          <li>✓ Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</li>
-          <li>✓ Ajout et retrait de points en illimité</li>
-          <li>✓ Accès web et mobile pour gérer vos clients</li>
-          <li>✓ Espace multi-utilisateur pour votre équipe</li>
-          <li>✓ Statistiques avancées et exports</li>
-          <li>✓ Support prioritaire 7j/7 (email et téléphone)</li>
-          <li>✓ Formation complète de vos équipes</li>
-          <li>✓ Engagement contractuel avec SLA</li>
-          <li>✓ Notifications push illimitées</li>
-          <li>✓ Intégrations API et accompagnement dédié</li>
-        </ul>
-        <a class="choose-fill" href="https://fidelize.fr" target="_blank" rel="noopener noreferrer">Contacter le support</a>
+    <section class="band" id="events" data-theme="dark">
+      <h2 class="center-title light" data-reveal>Les Solutions</h2>
+      <div class="events-stage">
+        <a class="pill pill-now pill-l" style="--t:12%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Restau Wheel<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:38%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Restaurants<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:64%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>QR en salle<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:16%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>La roue<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:42%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Un lot<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:68%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Le retour<span class="pill-go">↗</span></a>
+        <div class="phone events-phone" aria-hidden="true"><div class="phone-frame"><canvas data-pin data-yaw="20" data-tilt="-6"></canvas></div></div>
+        <span class="shot shot-wheel" hidden></span>
+        <span class="shot shot-next" hidden></span>
+        <span class="pill pill-next pill-l" style="--t:12%"><span class="pill-dot"></span>Solution<span class="pill-go" aria-hidden="true">↗</span></span>
+        <span class="pill pill-next pill-l" style="--t:38%"><span class="pill-dot"></span>Métier<span class="pill-go" aria-hidden="true">↗</span></span>
+        <span class="pill pill-next pill-l" style="--t:64%"><span class="pill-dot"></span>Public<span class="pill-go" aria-hidden="true">↗</span></span>
+        <span class="pill pill-next pill-r" style="--t:16%"><span class="pill-dot"></span>Geste<span class="pill-go" aria-hidden="true">↗</span></span>
+        <span class="pill pill-next pill-r" style="--t:42%"><span class="pill-dot"></span>Offre<span class="pill-go" aria-hidden="true">↗</span></span>
+        <span class="pill pill-next pill-r" style="--t:68%"><span class="pill-dot"></span>Suivi<span class="pill-go" aria-hidden="true">↗</span></span>
+      </div>
+      <p class="events-note">Restau Wheel, la solution pour les restaurants.</p>
+    </section>
+
+    <section class="band" id="stories" data-theme="light">
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Le But,</span><span class="line" data-reveal>Les Faire Revenir</span></h2>
+          <div class="stores"><a class="store" href="#gateway">Le but</a><a class="store" href="#works">La méthode</a></div>
+        </div>
+        <div class="story-photo"><img src="/arcade/fid/img/story-1.jpg" alt="Clients autour d'une table"></div>
       </article>
-
-      <h2 class="faq-title">Questions fréquentes</h2>
-      <div class="faq">
-        <article><h3>Puis-je changer de plan à tout moment ?</h3><p>Oui, vous pouvez mettre à jour ou rétrograder votre plan à tout moment. Les changements prennent effet immédiatement.</p></article>
-        <article><h3>L'essai gratuit inclut-il toutes les fonctionnalités ?</h3><p>Absolument ! Votre essai gratuit de 14 jours vous donne accès à toutes les fonctionnalités du plan que vous choisissez.</p></article>
-        <article><h3>Y a-t-il des frais cachés ?</h3><p>Non, nos tarifs sont transparents. Le prix affiché est le prix final, sans frais cachés ni surprises.</p></article>
-        <article><h3>Proposez-vous des tarifs personnalisés ?</h3><p>Pour les entreprises avec des besoins spécifiques, nous proposons des solutions sur mesure. Contactez notre équipe commerciale.</p></article>
-      </div>
-      <div class="pricing-cta">
-        <h3>Prêt à récompenser vos clients simplement ?</h3>
-        <p>Essayez Fidelize gratuitement pendant 14 jours.</p>
-        <div class="closer-actions">
-          <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Démarrer l'essai gratuit</a>
-          <a class="header__cta-secondary" href="#how-it-works">Parler à un expert</a>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Comment</span><span class="line" data-reveal>Les Fidéliser</span></h2>
+          <div class="stores"><a class="store" href="#works">La méthode</a><a class="store" href="#events">Les solutions</a></div>
         </div>
+        <div class="story-photo"><img src="/arcade/fid/img/story-2.jpg" alt="Un moment de service"></div>
+      </article>
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Des Logiciels</span><span class="line" data-reveal>Pour Ça</span></h2>
+          <div class="stores"><a class="store" href="#events">Les solutions</a><a class="store" href="#footer">Nous écrire</a></div>
+        </div>
+        <div class="story-photo"><img src="/arcade/fid/img/story-3.jpg" alt="Clients qui reviennent"></div>
+      </article>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Une Solution,</span><span class="line" data-reveal>Restau Wheel</span></h2>
+          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+        </div>
+        <div class="story-photo"><img src="/arcade/fid/img/story-4.jpg" alt="Table de restaurant"></div>
+      </article>
+    </section>
+  </main>
+
+  <div class="veil" aria-hidden="true"></div>
+
+  <footer class="band" id="footer" data-theme="dark">
+    <svg class="ribbon" viewBox="0 0 1200 640" aria-hidden="true">
+      <path id="ribbon-path" d="M-30 150 C 80 20, 180 280, 320 140 S 520 20, 640 210 S 820 360, 980 160 S 1140 40, 1260 220 M -20 430 C 140 560, 260 300, 430 470 S 680 600, 860 390 S 1080 240, 1280 420" fill="none" stroke="#E8FF95" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="footer-grid">
+      <form class="fcard" id="news-form">
+        <h3>Restez Informés</h3>
+        <input type="email" name="email" required placeholder="vous@exemple.fr" aria-label="Email">
+        <button class="btn btn-dark" type="submit">S'inscrire</button>
+        <p class="fine">Fidelize · © 2026</p>
+      </form>
+      <div class="fcard">
+        <h3>Contacts</h3>
+        <p>contact@fidelize.si</p>
+        <p>fidelize.si</p>
+        <a class="fcard slim" href="/mentions">Mentions légales</a>
       </div>
-    </div>
-  </section>
-
-  <section class="testimonies grid-background" id="testimonials">
-    <h2>Ils boostent leur fidélité avec Fidelize<br>C'est à votre tour !</h2>
-    <div class="scroller">
-      <div class="track" id="track"></div>
-    </div>
-  </section>
-
-  <footer class="footer-simple">
-    <div class="brand-lockup">
-      <img src="/arcade/logobg.png" alt="" width="36" height="36">
-      Fidelize
-    </div>
-    <nav>
-      <a href="#home">Accueil</a>
-      <a href="#our-solution">Bénéfices pour vous</a>
-      <a href="#how-it-works">Comment ça marche</a>
-      <a href="#pricing">Tarifs</a>
-      <a href="#testimonials">Témoignages</a>
-    </nav>
-    <div class="footer-simple__bottom">
-      <span>© 2026 Fidelize. Tous droits réservés. SIRET : 989 144 068 00016</span>
-      <span>Conçu et développé par <a href="https://shield4cloud.com" target="_blank" rel="noopener noreferrer">Shield4Cloud</a></span>
-      <a href="https://fidelize.fr/CGU.pdf" target="_blank" rel="noopener noreferrer">Mentions légales</a>
+      <div class="fcard socials">
+        <a href="https://restauwheel.com" aria-label="Restau Wheel" rel="noopener noreferrer">R</a>
+        <a href="https://restauwheel.com" aria-label="Site" rel="noopener noreferrer">W</a>
+        <a href="/mentions" aria-label="Mentions">M</a>
+      </div>
     </div>
   </footer>
 
   <script type="importmap">
-  { "imports": { "three": "/arcade/vendor/three.module.js" } }
-  </script>
-  <script type="module" src="/arcade/pin-stage.js"></script>
-  <script>
-    const nav = document.getElementById("nav");
-    addEventListener("scroll", () => nav.classList.toggle("is-scrolled", scrollY > 8), { passive: true });
-    document.querySelector(".nav-toggle").addEventListener("click", () => nav.classList.toggle("is-open"));
-
-    const bills = document.querySelectorAll(".toggle button");
-    bills.forEach((btn) => btn.addEventListener("click", () => {
-      bills.forEach((b) => b.classList.toggle("on", b === btn));
-      const year = btn.dataset.bill === "an";
-      document.querySelectorAll("[data-month]").forEach((el) => {
-        el.textContent = year ? el.dataset.year : el.dataset.month;
-      });
-      document.querySelectorAll(".per").forEach((el) => { el.textContent = year ? "/an" : "/mois"; });
-    }));
-
-    const shops = [
-      ["lmburger.webp", "LM Burger", "Fast Food"],
-      ["lecomptoirapizza.webp", "Le Comptoir à Pizza", "Pizzeria"],
-      ["olivia.webp", "Olivia", "Fleuriste"],
-      ["linstant_bella.webp", "L'Instant Bella", "Institut de beauté"],
-      ["lebarbershop66.webp", "Le Barber Shop", "Coiffeur"]
-    ];
-    const card = ([file, name, kind]) =>
-      `<article class="tcard"><img src="/arcade/clients/${file}" alt="${name}"><strong>${name}</strong><em>${kind}</em><div class="globe" aria-hidden="true"></div></article>`;
-    document.getElementById("track").innerHTML = shops.concat(shops).map(card).join("");
-  </script>
+{ "imports": { "three": "/arcade/vendor/three.module.js" } }
+</script>
+<script type="module" src="/arcade/pin-stage.js"></script>
+<script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
+  <script src="/arcade/fid/vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>
+  <script src="/arcade/fid/js/solutions.js"></script>
+  <script src="/arcade/fid/js/fidelize.js"></script>
 </body>
 </html>
