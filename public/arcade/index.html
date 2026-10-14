@@ -18,6 +18,25 @@
     <clipPath id="iphone-screen" clipPathUnits="objectBoundingBox">
       <path d="M 0.7532 0 c 0.0864 0 0.1296 0 0.1626 0.0077 a 0.1542 0.0709 0 0 1 0.0674 0.031 c 0.0168 0.0152 0.0168 0.035 0.0168 0.0748 L 1 0.8865 c 0 0.0397 0 0.0596 -0.0168 0.0748 a 0.1542 0.0709 0 0 1 -0.0674 0.031 c -0.033 0.0077 -0.0762 0.0077 -0.1626 0.0077 L 0.2468 1 c -0.0864 0 -0.1296 0 -0.1626 -0.0077 a 0.1542 0.0709 0 0 1 -0.0674 -0.031 c -0.0168 -0.0152 -0.0168 -0.035 -0.0168 -0.0748 L 0 0.1135 c 0 -0.0397 0 -0.0596 0.0168 -0.0748 a 0.1542 0.0709 0 0 1 0.0674 -0.031 c 0.033 -0.0077 0.0762 -0.0077 0.1626 -0.0077 Z"/>
     </clipPath>
+    <symbol id="pin-glyph" viewBox="0 0 160 340">
+      <ellipse cx="80" cy="326" rx="42" ry="8" fill="#3b3b3b" opacity="0.14"/>
+      <path fill="#fff8f1" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+      <path fill="#e24b4b" d="M54 104C70 118 90 118 106 104C94 112 66 112 54 104Z"/>
+      <path fill="#e24b4b" d="M50 124C70 142 90 142 110 124C94 136 66 136 50 124Z"/>
+      <ellipse cx="80" cy="236" rx="32" ry="38" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M64 40C74 26 92 24 102 36" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <path fill="none" stroke="#3b3b3b" stroke-width="3.5" stroke-linejoin="round" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+    </symbol>
+    <symbol id="gift-glyph" viewBox="0 0 64 64">
+      <rect x="8" y="28" width="48" height="28" rx="6" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28v28M8 40h48" fill="none" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28c-8-14-22-8-16 0M32 28c8-14 22-8 16 0" fill="none" stroke="#3b3b3b" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="bomb-glyph" viewBox="0 0 64 64">
+      <circle cx="30" cy="40" r="15" fill="#fff8f1"/>
+      <path d="M40 28c4-9 14-9 16-3" fill="none" stroke="#fff8f1" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="56" cy="20" r="5" fill="#e8ff95"/>
+    </symbol>
   </svg>
   <header class="nav" id="nav">
     <a class="logo" href="#hero">
@@ -45,7 +64,7 @@
         </h1>
         <a class="btn btn-dark hero-cta" href="#events">Voir les solutions</a>
         <div class="orbit" id="orbit" aria-hidden="true"></div>
-        <div class="phone hero-phone" aria-hidden="true"><div class="phone-frame"><canvas data-pin data-yaw="14" data-tilt="-6"></canvas></div></div>
+        <div class="phone hero-phone" aria-hidden="true"><div class="phone-frame"><div class="pin-hold" style="--yaw:8deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
       </div>
     </section>
 
@@ -57,7 +76,7 @@
           <span class="line" data-reveal>Revenir.</span>
         </h2>
         <div class="gateway-phone">
-          <div class="phone" id="gate-phone"><div class="phone-frame"><canvas data-pin data-yaw="8" data-tilt="-6"></canvas><div class="screen-slots" id="screen-slots" aria-hidden="true"></div></div></div>
+          <div class="phone" id="gate-phone"><div class="phone-frame"><div class="pin-hold" style="--yaw:4deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div><div class="screen-slots" id="screen-slots" aria-hidden="true"></div></div></div>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Clair ou sombre">
             <span class="sun" aria-hidden="true"></span>
             <span class="moon" aria-hidden="true"></span>
@@ -73,47 +92,56 @@
         <h2 class="center-title"><span class="line" data-reveal>Comment</span><span class="line" data-reveal>Les Fidéliser</span></h2>
         <div class="bento-clip">
         <div class="bento">
-          <article class="card card-steps">
-            <h3 data-scramble>Reconnaître</h3>
-            <p>Savoir qui est venu, et qui revient.</p>
-            <ul class="steps">
-              <li><span class="check"><i></i></span>Noter la visite</li>
-              <li><span class="check"><i></i></span>Donner une raison</li>
-              <li><span class="check"><i></i></span>Mesurer le retour</li>
-            </ul>
-          </article>
-          <article class="card card-people">
-            <div class="avatar-pile">
-              <img src="/arcade/fid/img/a1.jpg" alt="">
-              <img src="/arcade/fid/img/a2.jpg" alt="">
-              <img src="/arcade/fid/img/a3.jpg" alt="">
-              <span class="plus">+</span>
+          <article class="card card-steps game-card" id="game-bowl">
+            <div class="game-head">
+              <h3 data-scramble>Bowling</h3>
+              <p class="game-score" id="bowl-score">Vise, puis lance.</p>
             </div>
-            <h3 data-scramble>La Relation</h3>
-            <p>Ceux qui reviennent, et ceux qui vont revenir.</p>
-          </article>
-          <article class="card card-tools">
-            <h3 data-scramble>Les Leviers</h3>
-            <div class="tool-grid" id="tool-grid"></div>
-            <p>Les moyens de fidéliser, un par un.</p>
-          </article>
-          <article class="card card-keep">
-            <div>
-              <h3 data-scramble>Ce Que Vous Gardez</h3>
-              <p>Visites, raisons, retours. Rien ne part tout seul.</p>
+            <div class="lane" id="bowl-lane">
+              <div class="pin-rack" id="bowl-pins"></div>
+              <div class="bowl-ball" id="bowl-ball"></div>
             </div>
-            <div class="vmarquee" aria-hidden="true">
-              <div class="vmarquee-track">
-                <span>Visites</span><span>Raisons</span><span>Retours</span><span>Mesure</span><span>Offres</span><span>Équipe</span>
-                <span>Visites</span><span>Raisons</span><span>Retours</span><span>Mesure</span><span>Offres</span><span>Équipe</span>
+            <button class="btn btn-dark game-btn" type="button" id="bowl-throw">Lancer</button>
+          </article>
+          <article class="card card-people game-card" id="game-laser">
+            <div class="game-head">
+              <h3 data-scramble>Laser Game</h3>
+              <p class="game-score" id="laser-score">Touche les cibles.</p>
+            </div>
+            <div class="arena" id="laser-arena"></div>
+            <button class="btn btn-dark game-btn" type="button" id="laser-start">Jouer</button>
+          </article>
+          <article class="card card-tools game-card" id="game-claw">
+            <div class="game-head">
+              <h3 data-scramble>La Pince</h3>
+              <p class="game-score" id="claw-msg">Attrape le cadeau.</p>
+            </div>
+            <div class="cab-glass" id="claw-cab">
+              <div class="claw-track" id="claw-track">
+                <div class="claw" id="claw">
+                  <span class="cable"></span>
+                  <span class="jaws"><i></i><i></i></span>
+                </div>
+              </div>
+              <div class="prize-row">
+                <span class="gift" id="claw-gift"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg></span>
               </div>
             </div>
+            <button class="btn btn-dark game-btn" type="button" id="claw-go">Attraper</button>
+          </article>
+          <article class="card card-keep game-card" id="game-loot">
+            <div class="game-head">
+              <h3 data-scramble>Dix Butins</h3>
+              <p class="game-score" id="loot-msg">Un cadeau, neuf bombes.</p>
+            </div>
+            <div class="loot-grid" id="loot-grid"></div>
+            <button class="btn btn-dark game-btn" type="button" id="loot-reset">Mélanger</button>
           </article>
           <article class="card card-app">
             <h3 data-scramble>En Logiciel</h3>
             <p>Le geste reste simple. Le logiciel fait le suivi.</p>
             <div class="app-phone" aria-hidden="true">
-              <div class="phone mini"><div class="phone-frame"><canvas data-pin data-yaw="-12" data-tilt="-6"></canvas></div></div>
+              <div class="phone mini"><div class="phone-frame"><div class="pin-hold" style="--yaw:-6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
             </div>
           </article>
           <article class="card card-topics">
@@ -163,7 +191,7 @@
         <a class="pill pill-now pill-r" style="--t:16%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>La roue<span class="pill-go">↗</span></a>
         <a class="pill pill-now pill-r" style="--t:42%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Un lot<span class="pill-go">↗</span></a>
         <a class="pill pill-now pill-r" style="--t:68%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Le retour<span class="pill-go">↗</span></a>
-        <div class="phone events-phone" aria-hidden="true"><div class="phone-frame"><canvas data-pin data-yaw="20" data-tilt="-6"></canvas></div></div>
+        <div class="phone events-phone" aria-hidden="true"><div class="phone-frame"><div class="pin-hold" style="--yaw:6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
         <span class="shot shot-wheel" hidden></span>
         <span class="shot shot-next" hidden></span>
         <span class="pill pill-next pill-l" style="--t:12%"><span class="pill-dot"></span>Solution<span class="pill-go" aria-hidden="true">↗</span></span>
@@ -235,14 +263,11 @@
     </div>
   </footer>
 
-  <script type="importmap">
-{ "imports": { "three": "/arcade/vendor/three.module.js" } }
-</script>
-<script type="module" src="/arcade/pin-stage.js"></script>
-<script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
+  <script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
   <script src="/arcade/fid/vendor/gsap/ScrollTrigger.min.js"></script>
   <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>
   <script src="/arcade/fid/js/solutions.js"></script>
   <script src="/arcade/fid/js/fidelize.js"></script>
+  <script src="/arcade/fid/js/games.js"></script>
 </body>
 </html>

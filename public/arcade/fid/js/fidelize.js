@@ -86,7 +86,8 @@
     const places = [['18%', '8%'], ['60%', '2%'], ['6%', '44%'], ['40%', '36%'], ['66%', '46%'], ['30%', '72%']];
     const slots = document.getElementById('screen-slots');
     if (slots) slots.innerHTML = places.map(([left, top]) => `<i class="slot" style="left:${left};top:${top}"></i>`).join('');
-    document.getElementById('tool-grid').innerHTML = ORDER.concat(ORDER.slice(0, 6)).map((name, index) => `<span class="tool-cell"><span class="solid-sq" style="--tile:${TILES[index % TILES.length]};--size:34px">${icon(name)}</span></span>`).join('');
+    const toolGrid = document.getElementById('tool-grid');
+    if (toolGrid) toolGrid.innerHTML = ORDER.concat(ORDER.slice(0, 6)).map((name, index) => `<span class="tool-cell"><span class="solid-sq" style="--tile:${TILES[index % TILES.length]};--size:34px">${icon(name)}</span></span>`).join('');
   }
 
   function layoutOrbit() {
@@ -141,8 +142,10 @@
       gsap.set('#works .word, #events .word, #footer .word', { color: CREAM });
       gsap.set('#works, #events', { backgroundColor: '#3B3B3B' });
       gsap.set('#gateway, #community', { backgroundColor: '#E8FF95' });
-      gsap.set('.check', { backgroundColor: '#E8FF95', borderColor: '#E8FF95' });
-      gsap.set('.check i', { autoAlpha: 1 });
+      if (document.querySelector('.check')) {
+        gsap.set('.check', { backgroundColor: '#E8FF95', borderColor: '#E8FF95' });
+        gsap.set('.check i', { autoAlpha: 1 });
+      }
       gsap.from('.badge, .hero-title, .hero-cta', { opacity: 0, duration: reduced ? 0.35 : 0.6, stagger: 0.06 });
       if (!reduced) {
         gsap.to('.shot-wheel', {
@@ -294,9 +297,13 @@
       },
       duration: 0.8,
     }, 0.18);
-    works.to('.check', { backgroundColor: '#E8FF95', borderColor: '#E8FF95', duration: 0.12, stagger: 0.12 }, 0.18);
-    works.to('.check i', { autoAlpha: 1, duration: 0.1, stagger: 0.12 }, 0.2);
-    works.from('.tool-cell', { scale: 0, autoAlpha: 0, duration: 0.35, stagger: 0.025 }, 0.28);
+    if (document.querySelector('.check')) {
+      works.to('.check', { backgroundColor: '#E8FF95', borderColor: '#E8FF95', duration: 0.12, stagger: 0.12 }, 0.18);
+      works.to('.check i', { autoAlpha: 1, duration: 0.1, stagger: 0.12 }, 0.2);
+    }
+    if (document.querySelector('.tool-cell')) {
+      works.from('.tool-cell', { scale: 0, autoAlpha: 0, duration: 0.35, stagger: 0.025 }, 0.28);
+    }
 
     const community = gsap.timeline({
       defaults: { ease: 'none' },

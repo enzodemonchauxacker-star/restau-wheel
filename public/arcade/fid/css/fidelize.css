@@ -356,9 +356,203 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
   .phone { width: min(270px, 78vw); }
 }
 
-.phone-frame canvas[data-pin] { width: 100%; height: 100%; display: block; }
 .phone-frame .screen-slots {
   position: absolute; inset: 16% 18% 22%; height: auto; margin: 0; z-index: 2; pointer-events: none;
+}
+.pin-hold {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(var(--yaw, 0deg));
+  transform-origin: 50% 70%;
+}
+.pin-draw {
+  width: 62%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 14px rgba(59, 59, 59, 0.16));
+}
+
+.game-card { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 10px; }
+.game-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.game-head h3 { margin-bottom: 0; }
+.game-score { margin: 0; text-align: right; }
+.game-btn { align-self: flex-start; }
+.card-keep.game-card { display: flex; flex-direction: column; align-items: stretch; }
+
+.lane {
+  position: relative;
+  height: 168px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(#f6ead4, #e7d3b0);
+  box-shadow: inset 8px 0 0 #c4a574, inset -8px 0 0 #c4a574;
+}
+.pin-rack { position: absolute; left: 14px; right: 14px; top: 8px; height: 78px; }
+.bowl-pin {
+  position: absolute;
+  width: 16px;
+  height: 34px;
+  margin-left: -8px;
+  transform-origin: 50% 100%;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+.bowl-pin svg { width: 100%; height: 100%; }
+.bowl-pin.is-down { transform: translateY(10px) rotate(72deg); opacity: 0.35; }
+.bowl-ball {
+  position: absolute;
+  left: 8%;
+  bottom: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #fff 0 2px, #6d6d6d 3px, #2a2a2a 16px);
+  box-shadow: 0 4px 0 rgba(59, 59, 59, 0.18);
+  animation: bowl-sway 1.15s ease-in-out infinite alternate;
+  z-index: 2;
+}
+@keyframes bowl-sway {
+  from { left: 10%; }
+  to { left: calc(100% - 34px); }
+}
+
+.arena {
+  position: relative;
+  height: 168px;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 120%, rgba(232, 255, 149, 0.18), transparent 42%),
+    #2a2a2a;
+  cursor: crosshair;
+}
+.target {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  padding: 0;
+  border: 3px solid #e8ff95;
+  border-radius: 50%;
+  background: transparent;
+  cursor: crosshair;
+}
+.target::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: #e8ff95;
+}
+.beam {
+  position: absolute;
+  height: 2px;
+  background: #e8ff95;
+  transform-origin: 0 50%;
+  box-shadow: 0 0 8px #e8ff95;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cab-glass {
+  position: relative;
+  flex: 1;
+  min-height: 220px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(#3b3b3b, #3b3b3b) top / 100% 12px no-repeat,
+    linear-gradient(#fffdf8, #f3ecdf);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.cab-glass::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e4d3b4;
+}
+.claw-track { position: absolute; left: 12px; right: 12px; top: 0; bottom: 0; }
+.claw { position: absolute; top: 6px; left: 0; width: 36px; animation: claw-sweep 2.2s ease-in-out infinite alternate; }
+.cable {
+  display: block;
+  width: 2px;
+  height: 26px;
+  margin: 0 auto;
+  background: var(--ink);
+  transition: height 0.42s ease;
+}
+.claw.is-down .cable { height: 128px; }
+.jaws { display: flex; justify-content: center; gap: 3px; margin-top: -1px; }
+.jaws i {
+  width: 12px;
+  height: 16px;
+  border: 2px solid var(--ink);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  transition: transform 0.25s ease 0.32s;
+}
+.jaws i:first-child { transform: rotate(22deg); transform-origin: 50% 0; }
+.jaws i:last-child { transform: rotate(-22deg); transform-origin: 50% 0; }
+.claw.is-down .jaws i:first-child { transform: rotate(-6deg); }
+.claw.is-down .jaws i:last-child { transform: rotate(6deg); }
+@keyframes claw-sweep {
+  from { left: 0; }
+  to { left: calc(100% - 36px); }
+}
+.prize-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+.gift {
+  width: 46px;
+  height: 46px;
+  display: block;
+  transition: transform 0.45s ease 0.12s;
+}
+.gift svg { width: 100%; height: 100%; }
+.gift.is-caught { filter: drop-shadow(0 8px 0 rgba(59, 59, 59, 0.08)); }
+
+.loot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.loot {
+  position: relative;
+  height: 64px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--cream);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  cursor: pointer;
+}
+.loot::before {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 46%;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--accent);
+}
+.loot svg { width: 34px; height: 34px; margin: 0 auto; }
+.loot.is-open::before { display: none; }
+.loot.is-open { display: grid; place-items: center; cursor: default; }
+.loot.is-gift { background: var(--accent); box-shadow: none; }
+.loot.is-bomb { background: var(--ink); box-shadow: none; }
+.loot:disabled { cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bowl-ball, .claw { animation: none; }
+  .bowl-ball { left: 46%; }
+  .claw { left: calc(50% - 18px); }
+  .bowl-pin, .cable, .jaws i, .gift { transition: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
