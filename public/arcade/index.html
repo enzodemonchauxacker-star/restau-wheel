@@ -1,1284 +1,783 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STRIKE — Arcade Ten-Pin</title>
-<meta name="description" content="Bold strike. Arcade ten-pin. A scroll-built house for bowling pins.">
-<meta name="theme-color" content="#D24508">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script>
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    document.documentElement.classList.add("is-motion");
-  }
-</script>
-<style>
-  :root {
-    --orange: #D24508;
-    --orange-deep: #B53806;
-    --ink: #160904;
-    --yellow: #F8D018;
-    --yellow-deep: #E6BC0A;
-    --magenta: #FF3D9A;
-    --magenta-deep: #E21878;
-    --wine: #8E1458;
-    --paper: #FFF8E4;
-    --line: rgba(248, 208, 24, 0.9);
-    --sans: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
-    --display: "Anton", "Arial Black", Impact, sans-serif;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fidelize - Solution de Fidélisation Client</title>
+  <meta name="description" content="Vos clients méritent mieux qu'une carte papier. Une carte digitale, aux couleurs de votre commerce.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%234FC3F7' d='M8 14h28c10 0 16 7 16 16v1c0 7-5 12-12 14l12 16c2 3 0 7-4 7H34c-2 0-4-1-5-3L20 46H16v12c0 3-2 6-6 6H8V14z'/%3E%3C/svg%3E">
+  <style>
+    @font-face {
+      font-family: Geist;
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url("/arcade/fonts/geist.woff2") format("woff2");
+    }
+    :root {
+      --sky: #8ae0f7;
+      --blue: #4fc3f7;
+      --deep: #1976d2;
+      --ink: #1a1a1a;
+      --muted: #666;
+      --slate: #374151;
+      --line: rgba(138, 224, 247, 0.22);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+      color: var(--ink);
+      background: #fff;
+    }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    .grid-background {
+      background-color: #fff;
+      background-image:
+        linear-gradient(rgba(186, 214, 232, 0.35) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(186, 214, 232, 0.35) 1px, transparent 1px);
+      background-size: 56px 56px;
+    }
 
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    background: var(--ink);
-    color: var(--yellow);
-    font-family: var(--sans);
-    overflow-x: hidden;
-  }
-  button, input { font-family: inherit; }
-  button { cursor: pointer; }
-  a { color: inherit; }
+    .navbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 1rem 0;
+    }
+    .navbar.is-scrolled {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 0.75rem 0;
+    }
+    .navbar__container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .navbar__logo { display: flex; align-items: center; text-decoration: none; }
+    .navbar__nav { display: flex; align-items: center; gap: 2rem; }
+    .navbar__link {
+      position: relative;
+      text-decoration: none;
+      color: var(--slate);
+      font-weight: 500;
+      font-size: 1.05rem;
+      padding: 0.75rem 0.2rem;
+    }
+    .navbar__link:hover { color: var(--blue); }
+    .navbar__cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, #4fc3f7, #1976d2);
+      padding: 0.9rem 1.5rem 0.9rem 1.35rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      box-shadow: 0 8px 22px rgba(79, 195, 247, 0.35);
+    }
+    .navbar__cta-button:hover { transform: translateY(-2px); }
+    .nav-toggle {
+      display: none;
+      border: 0;
+      background: transparent;
+      font-size: 1.6rem;
+      cursor: pointer;
+    }
 
-  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .header {
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 7.5rem 0 4rem;
+    }
+    .header__orbs { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    .header__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(32px);
+      opacity: 0.85;
+    }
+    .orb-1 { width: 220px; height: 220px; left: -40px; top: 12%; background: #b9ecfb; }
+    .orb-2 { width: 160px; height: 160px; right: 4%; bottom: 8%; background: #7fd4f6; }
+    .orb-3 { width: 90px; height: 90px; left: 58%; bottom: 0; background: #d7f6ff; }
+    .header__container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; width: 100%; }
+    .header__content {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .header__title {
+      margin: 0 0 24px;
+      font-size: clamp(3rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #1a1a1a, #8ae0f7 55%, #4fc3f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .header__subtitle {
+      margin: 0 0 28px;
+      max-width: 520px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .header__stats h2 {
+      margin: 0 0 18px;
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    .header__stats-row { display: flex; gap: 36px; flex-wrap: wrap; }
+    .header__stat-number {
+      display: block;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--sky);
+      line-height: 1;
+    }
+    .header__stat-label { display: block; margin-top: 6px; color: var(--muted); font-size: 0.92rem; max-width: 12ch; }
+    .header__cta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 36px; }
+    .header__cta-primary, .header__cta-secondary {
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 16px 28px;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .header__cta-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
+      box-shadow: 0 8px 25px rgba(138, 224, 247, 0.45);
+    }
+    .header__cta-secondary {
+      color: #5bc0e6;
+      border: 2px solid #8ae0f7;
+      background: #fff;
+    }
+    .header__visual { position: relative; min-height: 560px; display: flex; align-items: center; justify-content: center; }
+    .pin-slot {
+      width: 260px;
+      height: 540px;
+      transform: rotate(-8deg);
+      filter: drop-shadow(0 18px 36px rgba(79, 195, 247, 0.35));
+    }
+    .pin-slot canvas { width: 100%; height: 100%; display: block; }
+    .float-cards { position: absolute; inset: 0; pointer-events: none; }
+    .header__card {
+      position: absolute;
+      width: 230px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(138, 224, 247, 0.25);
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      box-shadow: 0 10px 30px rgba(138, 224, 247, 0.16);
+      opacity: 0;
+      transform: scale(0.86);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .header__visual:hover .header__card,
+    .header__visual:focus-within .header__card { opacity: 1; transform: scale(1); }
+    .card-1 { left: -20px; top: 36px; }
+    .card-2 { right: -10px; top: 180px; }
+    .card-3 { left: 18%; bottom: 8px; }
+    .header__card h3 { margin: 6px 0 6px; font-size: 0.98rem; }
+    .header__card p { margin: 0; color: var(--muted); font-size: 0.86rem; line-height: 1.4; }
 
-  /* ——— nav ——— */
-  .nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 40;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 22px 0;
-    pointer-events: none;
-  }
-  .nav-side { display: flex; gap: 8px; align-items: center; pointer-events: auto; }
-  .nav-side.right { justify-content: flex-end; }
-  .nav.on-light .pill { background: var(--ink); color: var(--yellow); }
-  .nav.on-light .brand span { color: var(--ink); }
-  .nav.on-light .brand svg rect { fill: var(--ink); }
-  .nav.on-light .brand svg path,
-  .nav.on-light .brand svg rect + path { fill: var(--yellow); }
-  .news-copy .pill { background: var(--ink); color: var(--yellow); }
-  .pill {
-    appearance: none;
-    border: 0;
-    background: var(--yellow);
-    color: var(--ink);
-    border-radius: 999px;
-    padding: 7px 12px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .pill:hover { background: #fff4a8; }
-  .pill:focus-visible, .fab:focus-visible, .text-btn:focus-visible {
-    outline: 2px solid var(--ink);
-    outline-offset: 3px;
-  }
-  .brand {
-    pointer-events: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    text-decoration: none;
-    color: var(--yellow);
-  }
-  .brand svg { width: 28px; height: 28px; display: block; }
-  .brand span {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.28em;
-    text-indent: 0.28em;
-  }
+    .section { padding: 88px 24px; }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    .center { text-align: center; }
+    .hero-line {
+      margin: 0 0 64px;
+      font-size: clamp(2.2rem, 4vw, 3.3rem);
+      font-weight: 750;
+      line-height: 1.15;
+      color: var(--blue);
+    }
+    .section-title {
+      margin: 0 0 48px;
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      font-weight: 750;
+      line-height: 1.15;
+    }
+    .values {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .value {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(138, 224, 247, 0.18);
+      border-radius: 20px;
+      padding: 36px 26px 32px;
+      text-align: center;
+    }
+    .value:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(138, 224, 247, 0.16); }
+    .value .ico { font-size: 2.4rem; margin-bottom: 14px; }
+    .value h3 { margin: 0 0 10px; font-size: 1.35rem; }
+    .value p { margin: 0; color: var(--muted); line-height: 1.55; }
 
-  .fabs {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 40;
-    display: flex;
-    gap: 8px;
-  }
-  .fab {
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    border: 0;
-    background: var(--yellow);
-    color: var(--ink);
-    display: grid;
-    place-items: center;
-    position: relative;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  }
-  .fab svg { width: 18px; height: 18px; }
-  .fab[aria-pressed="true"] { background: var(--ink); color: var(--yellow); }
-  .badge {
-    position: absolute;
-    top: -2px; right: -2px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 99px;
-    background: var(--ink);
-    color: var(--yellow);
-    font-size: 10px;
-    font-weight: 800;
-    display: none;
-    place-items: center;
-  }
-  .badge.show { display: grid; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .step {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(138, 224, 247, 0.16);
+      border-radius: 20px;
+      padding: 36px 26px;
+      text-align: center;
+    }
+    .step b {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: #fff;
+      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
+      margin-bottom: 16px;
+    }
+    .step h3 { margin: 0 0 12px; font-size: 1.25rem; line-height: 1.3; }
+    .step p { margin: 0; color: var(--muted); line-height: 1.55; }
+    .help {
+      margin-top: 36px;
+      background: #e7f7fd;
+      border-radius: 22px;
+      padding: 28px 32px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .help i {
+      flex: none;
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: #7fd4f8;
+      color: #fff;
+      font-style: normal;
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+    .help h3 { margin: 0 0 6px; }
+    .help p { margin: 0; color: #3d4a55; line-height: 1.5; }
+    .closer { text-align: center; margin-top: 48px; color: #5c6b78; font-size: 1.15rem; }
+    .closer-actions { display: flex; justify-content: center; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
 
-  /* ——— orange story ——— */
-  #run {
-    height: auto;
-    background: var(--orange);
-    position: relative;
-  }
-  html.is-motion #run { height: 520vh; }
-  .stage {
-    position: relative;
-    min-height: 100vh;
-    background:
-      radial-gradient(1200px 700px at 70% 80%, rgba(255, 170, 60, 0.18), transparent 60%),
-      var(--orange);
-  }
-  html.is-motion .stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    min-height: 0;
-    overflow: hidden;
-  }
-  .pattern {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.55;
-  }
-  .pattern svg { width: 100%; height: 100%; display: block; }
+    .pricing__title { text-align: center; font-size: clamp(2.1rem, 4vw, 3rem); margin: 0 0 28px; }
+    .toggle {
+      width: max-content;
+      margin: 0 auto 28px;
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      box-shadow: 0 8px 30px rgba(79, 195, 247, 0.12);
+    }
+    .toggle button {
+      border: 0;
+      background: transparent;
+      color: #8ecae0;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .toggle button.on { background: #e7f6fd; color: #3db7e8; }
+    .trial {
+      max-width: 820px;
+      margin: 0 auto 36px;
+      background: #eef4ff;
+      border-radius: 18px;
+      text-align: center;
+      padding: 22px 18px;
+      color: #3d4f66;
+    }
+    .trial strong { color: #3b82f6; }
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+    .plan {
+      background: #fff;
+      border: 1px solid #e6f4fb;
+      border-radius: 24px;
+      padding: 28px 22px 24px;
+      box-shadow: 0 10px 30px rgba(79, 195, 247, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .plan.popular {
+      border: 2px solid #7fd4f6;
+      box-shadow: 0 16px 40px rgba(79, 195, 247, 0.2);
+      position: relative;
+    }
+    .badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #8ae0f7, #4fc3f7);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .plan h3 { margin: 8px 0 8px; font-size: 1.45rem; }
+    .plan .desc { margin: 0 0 16px; color: var(--muted); min-height: 4.6em; line-height: 1.45; }
+    .price { font-size: 2.4rem; font-weight: 800; margin-bottom: 16px; }
+    .price span { font-size: 1rem; font-weight: 600; color: var(--muted); }
+    .plan ul { list-style: none; margin: 0 0 18px; padding: 0; }
+    .plan li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; color: #3a4654; }
+    .plan li i {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #4fc3f7;
+      color: #fff;
+      font-style: normal;
+      font-size: 0.75rem;
+      display: grid;
+      place-items: center;
+      margin-top: 2px;
+    }
+    .choose, .choose-fill {
+      margin-top: auto;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 14px;
+      padding: 16px 12px;
+      font-weight: 700;
+    }
+    .choose { color: #3db7e8; border: 2px solid #8ae0f7; }
+    .choose-fill { color: #fff; background: linear-gradient(135deg, #7fd8f8, #49b7ef); }
 
-  .beat {
-    position: relative;
-    min-height: 100vh;
-    padding: 108px 4.5vw 36px;
-  }
-  html.is-motion .beat {
-    position: absolute;
-    inset: 0;
-    min-height: 0;
-    opacity: 0;
-  }
-  html.is-motion .beat-hero { opacity: 1; }
+    .sur {
+      margin-top: 54px;
+      position: relative;
+      background: linear-gradient(180deg, #f3f9ff, #fff);
+      border: 2px solid #d7ebfa;
+      border-radius: 28px;
+      padding: 42px 36px 32px;
+    }
+    .sur-badge {
+      position: absolute;
+      top: -18px;
+      left: 28px;
+      background: linear-gradient(90deg, #1976d2, #4fc3f7);
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 700;
+    }
+    .sur h3 { margin: 8px 0; font-size: 1.6rem; color: var(--deep); }
+    .sur .lead { color: var(--deep); font-weight: 600; max-width: 62ch; }
+    .sur-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 22px;
+      margin: 18px 0 8px;
+      padding: 0;
+      list-style: none;
+    }
+    .sur-grid li {
+      background: rgba(25, 118, 210, 0.05);
+      color: var(--deep);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .sur .choose-fill { display: inline-block; margin-top: 18px; min-width: 240px; background: linear-gradient(135deg, #1976d2, #4fc3f7); }
 
-  .eyebrow {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.34em;
-    text-indent: 0.34em;
-    margin: 6px 0 14px;
-    color: var(--yellow);
-  }
-  .rule {
-    border: 0;
-    border-top: 1.5px dashed var(--line);
-    margin: 8px 1vw;
-  }
-  .display {
-    font-family: var(--display);
-    font-weight: 400;
-    letter-spacing: 0.012em;
-    line-height: 0.8;
-    margin: 0;
-    color: var(--yellow);
-    text-transform: uppercase;
-  }
-  .hero-title {
-    text-align: center;
-    font-size: clamp(4.8rem, 12.4vw, 12.1rem);
-  }
-  .hero-sub {
-    text-align: right;
-    font-size: clamp(1.8rem, 4.5vw, 4.35rem);
-    margin: 0.12em 22vw 0.08em 1.2vw;
-    letter-spacing: 0.035em;
-  }
-  .hero-foot {
-    margin-top: auto;
-    max-width: 250px;
-    position: absolute;
-    left: 4.5vw;
-    bottom: 34px;
-  }
-  .hero-foot p {
-    margin: 0 0 14px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    line-height: 1.45;
-    color: var(--yellow);
-  }
-  .text-btn { padding: 11px 18px; font-size: 12px; }
+    .faq-title { text-align: center; margin: 72px 0 28px; font-size: clamp(2rem, 4vw, 2.8rem); }
+    .faq {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .faq article {
+      background: #fff;
+      border-radius: 18px;
+      padding: 26px 24px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+    .faq h3 { margin: 0 0 8px; font-size: 1.15rem; }
+    .faq p { margin: 0; color: #4b5563; line-height: 1.5; }
+    .pricing-cta { text-align: center; margin-top: 64px; }
+    .pricing-cta h3 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0 0 8px; }
+    .pricing-cta p { color: var(--muted); margin: 0 0 18px; }
 
-  .beat-copy {
-    position: absolute;
-    left: 4vw;
-    right: 4vw;
-    top: 50%;
-    transform: translateY(-54%);
-  }
-  .beat-copy h2 {
-    font-size: clamp(4.2rem, 9.4vw, 9.2rem);
-    max-width: 12ch;
-  }
-  .cap {
-    position: absolute;
-    max-width: 280px;
-    margin: 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-    line-height: 1.45;
-    color: var(--yellow);
-  }
-  .cap-bl { left: 4.5vw; bottom: 40px; }
-  .cap-br { right: 7vw; bottom: 78px; text-align: left; max-width: 320px; }
-  .low-title {
-    position: absolute;
-    left: 4vw;
-    right: 28vw;
-    bottom: 9vh;
-    font-size: clamp(3.4rem, 7.5vw, 7.4rem);
-  }
+    .testimonies { padding: 80px 0 40px; overflow: hidden; }
+    .testimonies h2 {
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      margin: 0 0 48px;
+      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .scroller { overflow: hidden; }
+    .track {
+      display: flex;
+      gap: 36px;
+      width: max-content;
+      animation: slide 36s linear infinite;
+    }
+    .scroller:hover .track { animation-play-state: paused; }
+    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .tcard { width: 280px; text-align: center; }
+    .tcard img {
+      width: 250px;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #4fc3f7;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 24px rgba(79, 195, 247, 0.2);
+    }
+    .tcard strong { display: block; font-size: 1.35rem; }
+    .tcard em { display: block; color: #64748b; font-style: normal; margin: 4px 0 8px; }
+    .globe {
+      width: 22px;
+      height: 22px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 2px solid #4fc3f7;
+      position: relative;
+    }
+    .globe:before, .globe:after {
+      content: "";
+      position: absolute;
+      border: 1.5px solid #4fc3f7;
+      border-radius: 50%;
+    }
+    .globe:before { inset: 3px 7px; }
+    .globe:after { inset: 8px 2px; border-radius: 0; border-left: 0; border-right: 0; }
 
-  #pin {
-    position: absolute;
-    width: min(210px, 22vw);
-    height: min(520px, 64vh);
-    right: 6.5%;
-    bottom: 0;
-    z-index: 6;
-    pointer-events: none;
-    transform-origin: 50% 80%;
-  }
-  #pin canvas,
-  canvas[data-pin] {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  .pin-fallback #pin canvas,
-  .pin-fallback canvas[data-pin] { display: none; }
-  .pin-fallback .pin-svg,
-  .pin-fallback .rack .p svg,
-  .pin-fallback .news-pin svg { display: block !important; }
-  .pin-shadow {
-    position: absolute;
-    left: 50%;
-    bottom: 2%;
-    width: 78%;
-    height: 28px;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse at center, rgba(60, 16, 0, 0.45), rgba(60, 16, 0, 0) 70%);
-    filter: blur(2px);
-  }
-  .pin-spin {
-    position: relative;
-    transform-style: preserve-3d;
-    transform-origin: 50% 62%;
-  }
-  .pin-svg { width: 100%; height: auto; display: none; overflow: visible; }
-  .pin-base {
-    position: absolute;
-    width: 46%;
-    aspect-ratio: 1;
-    left: 27%;
-    bottom: 0;
-    opacity: 0;
-    transform: rotateX(90deg);
-    transform-origin: center center;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 50%, #1a120c 0 34%, #F8D018 35% 42%, #1a120c 43% 58%, #3a2418 59% 100%);
-    box-shadow: inset 0 0 0 3px #1a120c;
-  }
-  .pin-base span {
-    position: absolute;
-    inset: 30%;
-    border-radius: 50%;
-    background: var(--yellow);
-    color: var(--ink);
-    font-family: var(--display);
-    display: grid;
-    place-items: center;
-    font-size: 18px;
-    letter-spacing: 0;
-  }
+    .footer-simple {
+      background: linear-gradient(135deg, #8ae0f7, #4fc3f7);
+      color: #fff;
+      text-align: center;
+      padding: 48px 16px 18px;
+      margin-top: 20px;
+    }
+    .footer-simple nav { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin: 18px 0 28px; }
+    .footer-simple a { color: #fff; text-decoration: none; font-weight: 600; }
+    .footer-simple__bottom { border-top: 1px solid rgba(255,255,255,0.35); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; }
+    .brand-lockup { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.4rem; }
+    .navbar__logo img, .brand-lockup img { height: 36px; width: auto; }
 
-  /* ——— split ——— */
-  .split { background: var(--ink); color: var(--yellow); }
-  .split-grid {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-  }
-  .dark {
-    padding: 120px 6vw 56px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 32px;
-    background: #140804;
-  }
-  .specs { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; max-width: 460px; }
-  .specs li { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; }
-  .specs b {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--yellow); color: var(--ink);
-    display: grid; place-items: center;
-    font-size: 11px; letter-spacing: 0;
-  }
-  .specs strong {
-    display: block;
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .specs em {
-    display: block;
-    margin-top: 3px;
-    font-style: normal;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: rgba(248, 208, 24, 0.78);
-    text-transform: none;
-  }
-  .no-title { font-size: clamp(3.4rem, 6.4vw, 6.6rem); max-width: 10ch; }
-
-  .mag {
-    position: relative;
-    background: var(--magenta);
-    overflow: hidden;
-    min-height: 560px;
-  }
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(2px);
-  }
-  .blob.a { width: 78%; height: 62%; background: #ff5eae; left: -12%; top: 8%; }
-  .blob.b { width: 70%; height: 54%; background: #ff8ac4; right: -18%; bottom: -8%; }
-  .blob.c { width: 40%; height: 34%; background: #e01278; left: 30%; top: 36%; opacity: 0.9; }
-  .grip {
-    position: absolute;
-    inset: 8% 6% 6% 4%;
-    z-index: 1;
-  }
-  .grip svg { width: 100%; height: 100%; overflow: visible; }
-
-  /* ——— yellow ——— */
-  .yellow {
-    background: var(--yellow);
-    color: var(--ink);
-    position: relative;
-    overflow: hidden;
-  }
-  .ink-bar {
-    background: var(--ink);
-    color: var(--yellow);
-    display: flex;
-    align-items: center;
-    min-height: 78px;
-    padding: 0 4vw;
-  }
-  .ink-bar span {
-    font-family: var(--display);
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    letter-spacing: 0.04em;
-    line-height: 1;
-  }
-  .yellow-body { padding: 4vh 4vw 10vh; position: relative; min-height: 150vh; }
-  .trad {
-    font-size: clamp(4rem, 8.6vw, 8.4rem);
-    color: var(--ink);
-    max-width: 10ch;
-  }
-  .lede {
-    max-width: 360px;
-    font-size: 14px;
-    line-height: 1.45;
-    font-weight: 550;
-    margin: 18px 0 0;
-  }
-  .shot {
-    position: absolute;
-    overflow: hidden;
-    background: #1a1a1a;
-    box-shadow: 0 18px 40px rgba(80, 40, 0, 0.18);
-  }
-  .shot.s1 { width: min(420px, 38vw); height: min(520px, 62vh); left: 4vw; top: 46vh; }
-  .shot.s2 { width: min(340px, 32vw); height: 210px; right: 8vw; top: 78vh; }
-  .shot.s3 { width: min(240px, 24vw); height: 160px; right: 18vw; top: 28vh; }
-  .chip {
-    position: absolute;
-    z-index: 2;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    max-width: 180px;
-    line-height: 1.35;
-  }
-  .chip i {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--ink); color: var(--yellow);
-    display: grid; place-items: center;
-    font-style: normal; flex: none;
-  }
-  .chip.c1 { right: 10vw; top: 70vh; color: var(--ink); }
-  .scene { width: 100%; height: 100%; position: relative; overflow: hidden; }
-
-  /* lane scene */
-  .lane {
-    background: linear-gradient(#1b120c, #3a2416 40%, #6a4630);
-  }
-  .lane .wood {
-    position: absolute;
-    left: 8%; right: 8%; top: 0; bottom: 0;
-    background:
-      repeating-linear-gradient(90deg, #e6c48a 0 18px, #f0d7a4 18px 20px, #d7ad6e 20px 38px);
-    transform: perspective(400px) rotateX(58deg) scale(1.4);
-    transform-origin: center 80%;
-    box-shadow: inset 0 0 0 8px #c8944e;
-  }
-  .lane .gutters {
-    position: absolute; inset: 0;
-    background:
-      linear-gradient(90deg, #111 0 10%, transparent 10% 90%, #111 90%);
-  }
-  .lane .pins {
-    position: absolute;
-    left: 50%;
-    top: 16%;
-    transform: translateX(-50%);
-    display: grid;
-    gap: 2px;
-    justify-items: center;
-  }
-  .mini {
-    width: 10px; height: 26px;
-    background: linear-gradient(#fff, #eee);
-    border-radius: 8px 8px 4px 4px;
-    box-shadow: inset 0 7px 0 #e11d1d, inset 0 11px 0 #fff, inset 0 14px 0 #e11d1d;
-  }
-  .lights {
-    position: absolute; top: 8px; left: 0; right: 0;
-    display: flex; justify-content: space-evenly;
-  }
-  .lights i {
-    width: 18px; height: 10px; background: #fff6c2;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 10px 16px rgba(255, 230, 120, 0.7);
-  }
-
-  .return {
-    background:
-      radial-gradient(circle at 30% 40%, #444 0 18%, transparent 19%),
-      linear-gradient(#2a2a2a, #111);
-  }
-  .return .ball {
-    position: absolute;
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    left: 18%; top: 28%;
-    background:
-      radial-gradient(circle at 35% 30%, #fff 0 4%, #ffe56a 5%, #f2b705 40%, #a87400 78%, #5a3c00 100%);
-    box-shadow: inset -14px -10px 20px rgba(0,0,0,0.35), 8px 16px 20px rgba(0,0,0,0.45);
-  }
-  .return .ball::after {
-    content: "";
-    position: absolute;
-    width: 28px; height: 28px; border-radius: 50%;
-    left: 42px; top: 36px;
-    background: radial-gradient(circle at 40% 40%, #7a2030, #2a0a10 70%);
-    box-shadow: 18px 6px 0 #7a2030, 8px 20px 0 #7a2030;
-  }
-  .return .rail {
-    position: absolute; left: 8%; right: 8%; bottom: 18px; height: 14px;
-    background: linear-gradient(#888, #333);
-    border-radius: 8px;
-  }
-
-  .neon {
-    background: #12081a;
-  }
-  .neon .screen {
-    position: absolute; inset: 16px;
-    background: linear-gradient(160deg, #241033, #ff3d9a 60%, #f8d018);
-    border: 6px solid #2a1240;
-    box-shadow: 0 0 0 3px #f8d018, 0 0 24px rgba(255, 61, 154, 0.6);
-  }
-  .neon .screen span {
-    position: absolute; left: 10px; bottom: 8px;
-    font-family: var(--display);
-    color: #160904;
-    font-size: 28px;
-    letter-spacing: 0.06em;
-  }
-
-  /* filmstrip + cluster */
-  .strip {
-    background: var(--yellow);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    padding: 18px 4vw 28px;
-  }
-  .card-photo { height: 230px; overflow: hidden; background: #111; }
-  .cluster {
-    background:
-      radial-gradient(800px 400px at 30% 80%, rgba(255, 80, 170, 0.35), transparent 60%),
-      linear-gradient(#9d1864, #6d0f46 70%);
-    min-height: 88vh;
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    place-items: center;
-  }
-  .rack {
-    width: min(920px, 92vw);
-    height: min(640px, 78vh);
-    position: relative;
-  }
-  .rack .p {
-    position: absolute;
-    width: 168px;
-    filter: drop-shadow(0 24px 16px rgba(0,0,0,0.35));
-  }
-  .rack .p svg { width: 100%; height: auto; display: none; }
-  .rack .p canvas { aspect-ratio: 1 / 2.15; height: auto; }
-  .rack .p1 { left: 4%; top: 6%; transform: rotate(-16deg); width: 34%; }
-  .rack .p2 { left: 33%; top: 14%; transform: rotate(8deg); width: 38%; }
-  .rack .p3 { right: 2%; top: 10%; transform: rotate(18deg); width: 32%; }
-
-  /* cta */
-  .cta {
-    background:
-      radial-gradient(900px 500px at 50% 40%, rgba(255,180,60,0.2), transparent 60%),
-      var(--orange);
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    padding: 12vh 6vw;
-  }
-  .cta h2 {
-    font-size: clamp(4.6rem, 11vw, 11rem);
-    position: relative;
-  }
-  .cta .text-btn { margin-top: 22px; position: relative; z-index: 1; }
-
-  /* modes */
-  .modes {
-    background: var(--orange);
-    padding: 2vh 4vw 6vh;
-    display: grid;
-    grid-template-columns: 0.9fr 1.15fr 1.15fr;
-    gap: 16px;
-  }
-  .mode {
-    background: var(--yellow);
-    color: var(--ink);
-    min-height: 360px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    position: relative;
-    overflow: hidden;
-  }
-  .mode .top {
-    position: absolute;
-    left: 0; right: 0; top: 0;
-    height: 52%;
-  }
-  .mode .meta {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .mode h3 {
-    font-family: var(--display);
-    font-size: clamp(1.8rem, 2.4vw, 2.6rem);
-    line-height: 0.9;
-    margin: 0 0 8px;
-    letter-spacing: 0.02em;
-  }
-  .mode p { margin: 0; font-size: 13px; font-weight: 550; max-width: 36ch; line-height: 1.35; }
-
-  /* newsletter */
-  .news {
-    display: grid;
-    grid-template-columns: 1.25fr 0.75fr;
-    min-height: 70vh;
-  }
-  .news-copy {
-    background: var(--yellow);
-    color: var(--ink);
-    padding: 8vh 6vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .news-copy h2 {
-    color: var(--ink);
-    font-size: clamp(2.6rem, 4.8vw, 4.6rem);
-    max-width: 16ch;
-  }
-  form { display: flex; gap: 10px; margin-top: 22px; max-width: 460px; }
-  form input {
-    flex: 1;
-    border: 0;
-    border-bottom: 2px solid var(--ink);
-    background: transparent;
-    padding: 10px 2px;
-    font-size: 15px;
-    color: var(--ink);
-    border-radius: 0;
-  }
-  form input:focus { outline: none; border-bottom-color: var(--magenta-deep); }
-  .news-art {
-    background: var(--magenta);
-    position: relative;
-    overflow: hidden;
-    min-height: 420px;
-  }
-  .news-art .blob { opacity: 0.95; }
-  .news-pin {
-    position: absolute;
-    width: min(168px, 42%);
-    left: 50%;
-    top: 46%;
-    transform: translate(-50%, -50%) rotate(-8deg);
-    filter: drop-shadow(0 24px 18px rgba(80, 0, 40, 0.35));
-  }
-  .news-pin canvas { width: 100%; aspect-ratio: 1 / 2.15; height: auto; }
-  .news-pin svg { width: 100%; height: auto; display: none; }
-  .form-note { min-height: 1.2em; margin: 10px 0 0; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; }
-
-  footer.foot {
-    background: var(--ink);
-    color: var(--yellow);
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 18px 4vw 22px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  /* panels */
-  .panel {
-    position: fixed;
-    top: 0; right: 0; bottom: 0;
-    width: min(420px, 100%);
-    background: var(--paper);
-    color: var(--ink);
-    z-index: 70;
-    transform: translateX(104%);
-    transition: transform 0.45s cubic-bezier(.2,.8,.2,1);
-    padding: 28px 24px 32px;
-    box-shadow: -20px 0 60px rgba(0,0,0,0.3);
-    overflow: auto;
-  }
-  .panel.open { transform: none; }
-  .scrim {
-    position: fixed; inset: 0;
-    background: rgba(20, 8, 4, 0.45);
-    z-index: 65;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .scrim.open { opacity: 1; pointer-events: auto; }
-  .panel h3 {
-    font-family: var(--display);
-    font-size: 3rem;
-    margin: 12px 0 8px;
-    line-height: 0.9;
-  }
-  .panel p { margin: 0 0 16px; font-weight: 550; }
-  .close-x {
-    border: 0; background: var(--ink); color: var(--yellow);
-    border-radius: 99px; padding: 8px 12px;
-    font-weight: 800; letter-spacing: 0.12em; font-size: 11px;
-  }
-  .field { display: grid; gap: 6px; margin-bottom: 12px; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
-  .field input, .field select {
-    border: 0; border-bottom: 2px solid var(--ink);
-    background: transparent; padding: 8px 0; font-size: 16px; font-weight: 550;
-    letter-spacing: 0; text-transform: none; color: var(--ink);
-  }
-  .line {
-    display: grid;
-    grid-template-columns: 64px 1fr auto;
-    gap: 10px;
-    align-items: center;
-    padding: 10px 0;
-    border-top: 1px solid rgba(22,9,4,0.15);
-  }
-  .line img, .line .thumb { width: 64px; }
-  .sum { display: flex; justify-content: space-between; font-weight: 800; margin: 12px 0; letter-spacing: 0.08em; }
-  .ok { font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-
-  @media (max-width: 900px) {
-    .nav { grid-template-columns: 1fr auto; }
-    .nav-side.left { display: none; }
-    .hero-title { font-size: clamp(3.4rem, 18vw, 6rem); }
-    .hero-sub { text-align: center; font-size: 1.8rem; }
-    #pin { right: 50%; width: 150px; bottom: 18%; transform: translateX(50%); }
-    .split-grid, .news, .modes, .strip { grid-template-columns: 1fr; }
-    .shot.s1, .shot.s2, .shot.s3 { position: relative; left: auto; right: auto; top: auto; width: 100%; height: 220px; margin-top: 16px; }
-    .chip.c1 { position: relative; right: auto; top: auto; margin-top: 10px; }
-    .yellow-body { min-height: 0; }
-    .beat-copy h2 { font-size: clamp(3rem, 14vw, 4.6rem); }
-    footer.foot { flex-direction: column; }
-  }
-</style>
+    @media (max-width: 980px) {
+      .navbar__nav, .navbar__cta { display: none; }
+      .navbar.is-open .navbar__nav, .navbar.is-open .navbar__cta { display: flex; }
+      .navbar.is-open .navbar__container { flex-wrap: wrap; }
+      .navbar.is-open .navbar__nav { order: 3; width: 100%; flex-direction: column; align-items: flex-start; padding-bottom: 0.6rem; }
+      .nav-toggle { display: block; }
+      .header__content, .values, .steps, .plans, .faq, .sur-grid { grid-template-columns: 1fr; }
+      .header { min-height: auto; }
+      .pin-slot { width: 200px; height: 420px; }
+      .header__card { display: none; }
+      .header__visual { min-height: 440px; }
+    }
+  </style>
 </head>
 <body>
-<svg class="sprite" aria-hidden="true">
-  <defs>
-    <linearGradient id="bodyG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fffdf8"/>
-      <stop offset="0.42" stop-color="#f3ece3"/>
-      <stop offset="0.78" stop-color="#e4dbd1"/>
-      <stop offset="1" stop-color="#b7aea4"/>
-    </linearGradient>
-    <linearGradient id="redG" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ff4d3a"/>
-      <stop offset="0.45" stop-color="#d01212"/>
-      <stop offset="1" stop-color="#8e0c0c"/>
-    </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.7"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-    </linearGradient>
-    <pattern id="motifs" width="160" height="160" patternUnits="userSpaceOnUse">
-      <g fill="#a33409">
-        <path d="M18 16 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" opacity="0.55"/>
-        <circle cx="108" cy="28" r="7" fill="none" stroke="#a33409" stroke-width="1.4" opacity="0.7"/>
-        <path d="M132 96 c0 -10 6 -16 10 -24 4 8 10 14 10 24 0 8-4 12-10 14 -6-2-10-6-10-14z" opacity="0.4"/>
-        <path d="M36 108 h10 l-5 9 z" opacity="0.45"/>
-        <path d="M70 70 l2.2 5 5 2.2 -5 2.2 -2.2 5 -2.2 -5 -5 -2.2 5 -2.2 z" opacity="0.4"/>
-        <circle cx="24" cy="78" r="3.5" opacity="0.35"/>
-        <path d="M92 132 h16 M100 124 v16" stroke="#a33409" stroke-width="1.3" opacity="0.45"/>
-        <path d="M140 48 l6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 3 -6 z" opacity="0.35"/>
-      </g>
-    </pattern>
-  </defs>
-  <symbol id="pin" viewBox="0 0 200 500">
-    <path fill="url(#bodyG)" d="M 103.0 12.0 L 110.9 15.9 L 117.1 19.9 L 122.5 23.9 L 126.9 27.8 L 130.1 31.8 L 132.1 35.7 L 134.1 39.7 L 136.3 43.6 L 138.6 47.5 L 140.7 51.5 L 142.7 55.4 L 144.3 59.4 L 145.4 63.4 L 146.0 67.3 L 145.9 71.2 L 145.2 75.2 L 144.0 79.1 L 142.3 83.1 L 140.3 87.0 L 138.1 91.0 L 135.9 94.9 L 133.7 98.9 L 131.7 102.9 L 130.0 106.8 L 128.5 110.8 L 127.3 114.7 L 126.4 118.7 L 125.7 122.6 L 125.2 126.5 L 124.8 130.5 L 124.6 134.5 L 124.5 138.4 L 124.4 142.4 L 124.5 146.3 L 124.5 150.2 L 124.6 154.2 L 124.7 158.2 L 124.9 162.1 L 125.1 166.1 L 125.3 170.0 L 125.6 174.0 L 125.9 177.9 L 126.3 181.8 L 126.8 185.8 L 127.3 189.8 L 128.0 193.7 L 128.7 197.7 L 129.5 201.6 L 130.4 205.5 L 131.4 209.5 L 132.5 213.4 L 133.8 217.4 L 135.2 221.3 L 136.7 225.3 L 138.3 229.2 L 140.1 233.2 L 142.0 237.1 L 143.9 241.1 L 146.0 245.0 L 148.2 249.0 L 150.4 252.9 L 152.7 256.9 L 155.0 260.9 L 157.3 264.8 L 159.6 268.8 L 161.9 272.7 L 164.1 276.7 L 166.1 280.6 L 168.1 284.5 L 169.9 288.5 L 171.5 292.4 L 172.8 296.4 L 174.0 300.3 L 174.9 304.3 L 175.5 308.2 L 175.9 312.2 L 176.0 316.2 L 175.8 320.1 L 175.3 324.1 L 174.6 328.0 L 173.6 332.0 L 172.3 335.9 L 170.9 339.8 L 169.2 343.8 L 167.3 347.8 L 165.3 351.7 L 163.2 355.6 L 161.0 359.6 L 158.7 363.6 L 156.4 367.5 L 154.1 371.4 L 151.8 375.4 L 149.5 379.4 L 147.2 383.3 L 144.8 387.2 L 142.7 391.2 L 140.8 395.2 L 139.1 399.1 L 137.7 403.0 L 136.5 407.0 L 135.6 410.9 L 134.8 414.9 L 134.2 418.8 L 133.8 422.8 L 133.5 426.8 L 133.3 430.7 L 133.3 434.7 L 133.3 438.6 L 133.5 442.6 L 133.7 446.5 L 134.0 450.5 L 134.3 454.4 L 134.7 458.3 L 135.1 462.3 L 135.5 466.2 L 136.0 470.2 L 136.5 474.1 L 137.0 478.1 L 137.5 482.1 L 138.0 486.0 L 62.5 482.1 L 63.0 478.1 L 63.5 474.1 L 64.0 470.2 L 64.5 466.2 L 64.9 462.3 L 65.3 458.3 L 65.7 454.4 L 66.0 450.5 L 66.3 446.5 L 66.5 442.6 L 66.7 438.6 L 66.7 434.7 L 66.7 430.7 L 66.5 426.8 L 66.2 422.8 L 65.8 418.8 L 65.2 414.9 L 64.4 410.9 L 63.5 407.0 L 62.3 403.0 L 60.9 399.1 L 59.2 395.2 L 57.3 391.2 L 55.2 387.2 L 52.8 383.3 L 50.5 379.4 L 48.2 375.4 L 45.9 371.4 L 43.6 367.5 L 41.3 363.6 L 39.0 359.6 L 36.8 355.6 L 34.7 351.7 L 32.7 347.8 L 30.8 343.8 L 29.1 339.8 L 27.7 335.9 L 26.4 332.0 L 25.4 328.0 L 24.7 324.1 L 24.2 320.1 L 24.0 316.2 L 24.1 312.2 L 24.5 308.2 L 25.1 304.3 L 26.0 300.3 L 27.2 296.4 L 28.5 292.4 L 30.1 288.5 L 31.9 284.5 L 33.9 280.6 L 35.9 276.7 L 38.1 272.7 L 40.4 268.8 L 42.7 264.8 L 45.0 260.9 L 47.3 256.9 L 49.6 252.9 L 51.8 249.0 L 54.0 245.0 L 56.1 241.1 L 58.0 237.1 L 59.9 233.2 L 61.7 229.2 L 63.3 225.3 L 64.8 221.3 L 66.2 217.4 L 67.5 213.4 L 68.6 209.5 L 69.6 205.5 L 70.5 201.6 L 71.3 197.7 L 72.0 193.7 L 72.7 189.8 L 73.2 185.8 L 73.7 181.8 L 74.1 177.9 L 74.4 174.0 L 74.7 170.0 L 74.9 166.1 L 75.1 162.1 L 75.3 158.2 L 75.4 154.2 L 75.5 150.2 L 75.5 146.3 L 75.6 142.4 L 75.5 138.4 L 75.4 134.5 L 75.2 130.5 L 74.8 126.5 L 74.3 122.6 L 73.6 118.7 L 72.7 114.7 L 71.5 110.8 L 70.0 106.8 L 68.3 102.9 L 66.3 98.9 L 64.1 94.9 L 61.9 91.0 L 59.7 87.0 L 57.7 83.1 L 56.0 79.1 L 54.8 75.2 L 54.1 71.2 L 54.0 67.3 L 54.6 63.4 L 55.7 59.4 L 57.3 55.4 L 59.3 51.5 L 61.4 47.5 L 63.7 43.6 L 65.9 39.7 L 67.9 35.7 L 69.9 31.8 L 73.1 27.8 L 77.5 23.9 L 82.9 19.9 L 89.1 15.9 L 97.0 12.0 Z"/>
-    <path fill="url(#redG)" d="M 124.5 150.2 L 124.6 154.2 L 124.7 158.2 L 124.9 162.1 L 125.1 166.1 L 74.9 166.1 L 75.1 162.1 L 75.3 158.2 L 75.4 154.2 L 75.5 150.2 Z"/>
-    <path fill="#fff" opacity="0.28" d="M 124.5 150.2 L 124.6 154.2 L 124.7 158.2 L 124.9 162.1 L 125.1 166.1 L 74.9 166.1 L 75.1 162.1 L 75.3 158.2 L 75.4 154.2 L 75.5 150.2 Z"/>
-    <path fill="url(#redG)" d="M 125.9 177.9 L 126.3 181.8 L 126.8 185.8 L 127.3 189.8 L 128.0 193.7 L 72.0 193.7 L 72.7 189.8 L 73.2 185.8 L 73.7 181.8 L 74.1 177.9 Z"/>
-    <path fill="#14110f" d="M 142.2 249.0 L 144.4 252.9 L 146.7 256.9 L 149.0 260.9 L 151.3 264.8 L 153.6 268.8 L 155.9 272.7 L 158.1 276.7 L 160.1 280.6 L 162.1 284.5 L 163.9 288.5 L 165.5 292.4 L 166.8 296.4 L 168.0 300.3 L 168.9 304.3 L 169.5 308.2 L 169.9 312.2 L 170.0 316.2 L 169.8 320.1 L 169.3 324.1 L 168.6 328.0 L 167.6 332.0 L 166.3 335.9 L 164.9 339.8 L 163.2 343.8 L 161.3 347.8 L 159.3 351.7 L 40.7 351.7 L 38.7 347.8 L 36.8 343.8 L 35.1 339.8 L 33.7 335.9 L 32.4 332.0 L 31.4 328.0 L 30.7 324.1 L 30.2 320.1 L 30.0 316.2 L 30.1 312.2 L 30.5 308.2 L 31.1 304.3 L 32.0 300.3 L 33.2 296.4 L 34.5 292.4 L 36.1 288.5 L 37.9 284.5 L 39.9 280.6 L 41.9 276.7 L 44.1 272.7 L 46.4 268.8 L 48.7 264.8 L 51.0 260.9 L 53.3 256.9 L 55.6 252.9 L 57.8 249.0 Z"/>
-    <ellipse cx="78" cy="300" rx="14" ry="78" fill="url(#gloss)" opacity="0.55"/>
-    <g transform="translate(100 312)">
-      <rect x="-34" y="-28" width="68" height="58" rx="6" fill="#F8D018"/>
-      <text x="0" y="-4" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="15" fill="#160904">STRIKE</text>
-      <text x="0" y="16" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="9" fill="#160904" letter-spacing="1.5">ARCADE</text>
-    </g>
-    <ellipse cx="100" cy="486" rx="38" ry="7" fill="#1a120c"/>
-  </symbol>
-</svg>
-
-<header class="nav">
-  <div class="nav-side left">
-    <a class="pill" href="#run">Play</a>
-    <a class="pill" href="#split">Lanes</a>
-    <a class="pill" href="#modes">Modes</a>
-    <a class="pill" href="#news">Club</a>
-  </div>
-  <a class="brand" href="#run" aria-label="Strike, home">
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" rx="8" fill="#F8D018"/>
-      <path d="M32 6c6 0 10 5 10 11 0 5-3 8-5 12-2 5-1 8 0 14 1 8 6 12 7 22 1 8-3 14-12 15-9-1-13-7-12-15 1-10 6-14 7-22 1-6 0-9 0-14-2-4-5-7-5-12 0-6 4-11 10-11z" fill="#160904"/>
-      <rect x="24" y="22" width="16" height="3" fill="#E11D1D"/>
-      <rect x="24" y="27" width="16" height="3" fill="#E11D1D"/>
-    </svg>
-    <span>STRIKE</span>
-  </a>
-  <div class="nav-side right">
-    <button class="pill" type="button" id="openBook">Book</button>
-    <button class="pill" type="button" id="openCartTop">Cart <span id="navCount"></span></button>
-  </div>
-</header>
-
-<div class="fabs">
-  <button class="fab" type="button" id="soundBtn" aria-pressed="false" aria-label="Toggle arcade sound">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M4 10h3l4-4v12l-4-4H4z"/>
-      <path d="M16 9a4 4 0 0 1 0 6" class="wave"/>
-    </svg>
-  </button>
-  <button class="fab" type="button" id="openCart" aria-label="Open cart">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M6 7h15l-2 9H8L6 7z"/>
-      <path d="M6 7 5 4H2"/>
-      <circle cx="9" cy="20" r="1.4" fill="currentColor"/>
-      <circle cx="17" cy="20" r="1.4" fill="currentColor"/>
-    </svg>
-    <span class="badge" id="cartBadge">0</span>
-  </button>
-</div>
-
-<main>
-  <div id="run">
-    <div class="stage">
-      <div class="pattern" aria-hidden="true">
-        <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-          <rect width="1440" height="900" fill="url(#motifs)"/>
-        </svg>
-      </div>
-
-      <section class="beat beat-hero" id="b0">
-        <p class="eyebrow">Arcade ten-pin house</p>
-        <hr class="rule">
-        <h1 class="display hero-title">Bold Strike</h1>
-        <p class="display hero-sub">Ten-pin arcade</p>
-        <hr class="rule">
-        <div class="hero-foot">
-          <p>Bold strikes from the lanes of the arcade, crafted for those who play loud.</p>
-          <button class="pill text-btn" type="button" id="buyNow">Buy now</button>
-        </div>
-      </section>
-
-      <section class="beat" id="b1" aria-label="A new angle of impact">
-        <div class="beat-copy">
-          <h2 class="display">A new angle<br>of impact</h2>
-        </div>
-        <p class="cap cap-bl">Discover how a true maple pin and a clean release change every frame.</p>
-      </section>
-
-      <section class="beat" id="b2" aria-label="Unleash the strike">
-        <h2 class="display low-title">Unleash<br>the strike</h2>
-        <p class="cap cap-br">Step onto the approach and you’re hit with the roar of the lane, the snap of maple, and a pin built to fly.</p>
-      </section>
-
-      <section class="beat" id="b3" aria-label="A new perspective on impact">
-        <div class="beat-copy">
-          <h2 class="display">A new<br>perspective<br>on impact</h2>
-        </div>
-      </section>
-
-      <div id="pin" aria-hidden="true">
-        <canvas data-pin="hero"></canvas>
-        <svg class="pin-svg" viewBox="0 0 200 500"><use href="#pin"/></svg>
+  <header class="navbar" id="nav">
+    <div class="navbar__container">
+      <a class="navbar__logo" href="#home" aria-label="Fidelize">
+        <img src="/arcade/logo.png" alt="" width="36" height="36">
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu">☰</button>
+      <nav class="navbar__nav">
+        <a class="navbar__link" href="#home">Accueil</a>
+        <a class="navbar__link" href="#our-solution">Bénéfices pour vous</a>
+        <a class="navbar__link" href="#how-it-works">Comment ça marche</a>
+        <a class="navbar__link" href="#pricing">Tarifs</a>
+        <a class="navbar__link" href="#testimonials">Témoignages</a>
+      </nav>
+      <div class="navbar__cta">
+        <a class="navbar__cta-button" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Commencer <span aria-hidden="true">→</span></a>
       </div>
     </div>
-  </div>
+  </header>
 
-  <section class="split" id="split">
-    <div class="split-grid">
-      <div class="dark">
-        <ul class="specs">
-          <li><b>01</b><div><strong>Tournament weight</strong><em>1.53 kg. A profile the pocket recognizes.</em></div></li>
-          <li><b>02</b><div><strong>Maple, not plastic</strong><em>Turned core, two scarlet bands, gloss that holds.</em></div></li>
-          <li><b>03</b><div><strong>Built for the pocket</strong><em>Balanced to fly, scatter, and reset clean.</em></div></li>
-          <li><b>04</b><div><strong>House loud</strong><em>The crack reads across a full arcade floor.</em></div></li>
-        </ul>
-        <h2 class="display no-title">No gutters.<br>No excuses.</h2>
-      </div>
-      <div class="mag" aria-hidden="true">
-        <div class="blob a"></div>
-        <div class="blob b"></div>
-        <div class="blob c"></div>
-        <div class="grip">
-          <svg viewBox="0 0 760 860">
-            <g transform="translate(250 70) rotate(8)">
-              <svg width="250" height="625" viewBox="0 0 200 500"><use href="#pin"/></svg>
-            </g>
-            <g fill="#f6c7a6">
-              <rect x="455" y="150" width="58" height="168" rx="29" transform="rotate(16 484 234)"/>
-              <rect x="500" y="188" width="54" height="176" rx="27" transform="rotate(8 527 276)"/>
-              <rect x="530" y="248" width="52" height="168" rx="26" transform="rotate(2 556 332)"/>
-              <rect x="300" y="300" width="64" height="150" rx="32" transform="rotate(-38 332 375)"/>
-              <ellipse cx="560" cy="470" rx="130" ry="150"/>
-            </g>
-            <g fill="#e7aa86">
-              <ellipse cx="500" cy="168" rx="16" ry="12" transform="rotate(16 500 168)"/>
-              <ellipse cx="548" cy="198" rx="15" ry="11" transform="rotate(8 548 198)"/>
-              <ellipse cx="572" cy="258" rx="14" ry="11"/>
-              <ellipse cx="318" cy="318" rx="16" ry="12" transform="rotate(-38 318 318)"/>
-            </g>
-          </svg>
-        </div>
-      </div>
+  <section class="header grid-background" id="home">
+    <div class="header__orbs" aria-hidden="true">
+      <div class="header__orb orb-1"></div>
+      <div class="header__orb orb-2"></div>
+      <div class="header__orb orb-3"></div>
     </div>
-  </section>
-
-  <section class="yellow" id="craft">
-    <div class="ink-bar"><span>In every pin</span></div>
-    <div class="yellow-body">
-      <h2 class="display trad">Tradition<br>&amp; impact</h2>
-      <p class="lede">Every pin is turned, banded, and stamped for the house. The shape the lanes already trust, tuned so an arcade night ends louder than it started.</p>
-      <div class="chip c1"><i>03</i> Bringing the roar of the alley to your night.</div>
-      <figure class="shot s1">
-        <div class="scene lane" aria-hidden="true">
-          <div class="lights"><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="gutters"></div>
-          <div class="wood"></div>
-          <div class="pins">
-            <div class="mini"></div>
-            <div style="display:flex;gap:3px"><div class="mini"></div><div class="mini"></div></div>
-            <div style="display:flex;gap:3px"><div class="mini"></div><div class="mini"></div><div class="mini"></div></div>
-            <div style="display:flex;gap:3px"><div class="mini"></div><div class="mini"></div><div class="mini"></div><div class="mini"></div></div>
+    <div class="header__container">
+      <div class="header__content">
+        <div class="header__text">
+          <h1 class="header__title">Fidelize</h1>
+          <p class="header__subtitle">Vos clients méritent mieux qu'une carte papier.<br>Offrez-leur une carte digitale, aux couleurs de votre commerce, intégrée directement à leur smartphone<br>Zéro appli client, zéro contrainte, zéro oubli.</p>
+          <aside class="header__stats" aria-label="Statistiques de performance">
+            <h2>Les bénéfices concrets de Fidelize :</h2>
+            <div class="header__stats-row">
+              <div class="header__stat"><span class="header__stat-number">+25%</span><span class="header__stat-label">de CA en moyenne</span></div>
+              <div class="header__stat"><span class="header__stat-number">+30%</span><span class="header__stat-label">de fréquentation client</span></div>
+              <div class="header__stat"><span class="header__stat-number">+18%</span><span class="header__stat-label">de panier moyen</span></div>
+            </div>
+          </aside>
+          <div class="header__cta">
+            <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Lancez-vous maintenant</a>
+            <a class="header__cta-secondary" href="#how-it-works">Nous contacter</a>
           </div>
         </div>
-      </figure>
-      <figure class="shot s3">
-        <div class="scene neon" aria-hidden="true"><div class="screen"><span>STRIKE</span></div></div>
-      </figure>
-      <figure class="shot s2">
-        <div class="scene return" aria-hidden="true">
-          <div class="ball"></div>
-          <div class="rail"></div>
+        <div class="header__visual">
+          <div class="pin-slot" aria-label="Quille Fidelize">
+            <canvas data-pin="hero" data-yaw="18" data-tilt="-8"></canvas>
+          </div>
+          <div class="float-cards">
+            <article class="header__card card-1">
+              <span>📲</span>
+              <h3>Compatible Google Wallet &amp; Apple Wallet</h3>
+              <p>Vos clients ajoutent leur carte de fidélité directement dans leur téléphone, sans installer d'application.</p>
+            </article>
+            <article class="header__card card-2">
+              <span>🎁</span>
+              <h3>Récompenses attractives</h3>
+              <p>Offrez des cadeaux et avantages dans votre boutique.</p>
+            </article>
+            <article class="header__card card-3">
+              <span>🖥️</span>
+              <h3>Dashboard &amp; App</h3>
+              <p>Gérez vos programmes et scannez les QR codes en toute simplicité.</p>
+            </article>
+          </div>
         </div>
-      </figure>
+      </div>
     </div>
   </section>
 
-  <section class="strip" aria-label="House stills">
-    <div class="card-photo"><div class="scene lane"><div class="wood"></div><div class="lights"><i></i><i></i><i></i></div></div></div>
-    <div class="card-photo"><div class="scene return"><div class="ball"></div><div class="rail"></div></div></div>
-    <div class="card-photo"><div class="scene neon"><div class="screen"><span>10 PIN</span></div></div></div>
-  </section>
-
-  <section class="cluster" id="rack" aria-label="The rack">
-    <div class="rack">
-      <div class="p p1"><canvas data-pin data-yaw="-24" data-tilt="-8"></canvas><svg viewBox="0 0 200 500"><use href="#pin"/></svg></div>
-      <div class="p p2"><canvas data-pin data-yaw="12" data-tilt="6"></canvas><svg viewBox="0 0 200 500"><use href="#pin"/></svg></div>
-      <div class="p p3"><canvas data-pin data-yaw="36" data-tilt="10"></canvas><svg viewBox="0 0 200 500"><use href="#pin"/></svg></div>
+  <section class="section" id="our-solution">
+    <div class="wrap">
+      <h2 class="hero-line center">Et si la fidélité client devenait<br>accessible à tous ?</h2>
+      <h3 class="section-title">Les résultats concrets pour votre commerce</h3>
+      <div class="values">
+        <article class="value"><div class="ico">📊</div><h3>Chiffre d'affaires</h3><p>Les commerçants qui utilisent Fidelize constatent en moyenne +25 % de ventes en plus.</p></article>
+        <article class="value"><div class="ico">🔔</div><h3>Notifications ciblées</h3><p>Annoncez vos promos, nouveautés ou événements directement sur l'écran de vos clients.</p></article>
+        <article class="value"><div class="ico">🎁</div><h3>Valorisation client</h3><p>Offrez des avantages concrets à vos clients. Ils se sentent reconnus et reviennent plus souvent.</p></article>
+        <article class="value"><div class="ico">📱</div><h3>Accessibilité totale</h3><p>Apple Wallet &amp; Google Wallet : rien à installer pour vos clients, leur carte est toujours dans leur téléphone.</p></article>
+        <article class="value"><div class="ico">🗂️</div><h3>Création de fichier client</h3><p>Pas de fichier client ? Plus un problème. Fidelize crée pour vous le fichier client que vous n'aviez pas.</p></article>
+        <article class="value"><div class="ico">🤝</div><h3>Facile à lancer, accompagné à 100 %</h3><p>Mise en place en moins de 5 minutes. Notre support vous guide pas à pas, sans jargon technique.</p></article>
+      </div>
     </div>
   </section>
 
-  <section class="cta" id="roll">
-    <div>
-      <h2 class="display">Let's get<br>rolling</h2>
-      <button class="pill text-btn" type="button" id="bookCta">Book a lane</button>
+  <section class="section grid-background" id="how-it-works">
+    <div class="wrap">
+      <h2 class="section-title center">🚀 Comment ça marche ?</h2>
+      <div class="steps">
+        <article class="step"><b>1</b><h3>Créez votre compte et configurez votre programme</h3><p>En quelques minutes, personnalisez votre carte digitale (logo, couleurs, design) et définissez vos règles de fidélité et vos récompenses.</p></article>
+        <article class="step"><b>2</b><h3>Diffusez votre carte à vos clients</h3><p>Imprimez notre flyer avec votre QR code ou lien, ou partagez directement le lien par SMS, email ou réseaux sociaux.</p></article>
+        <article class="step"><b>3</b><h3>Scannez et engagez vos clients</h3><p>Avec l'application Fidelize Marchand (ou via votre logiciel de caisse connecté), vos clients cumulent automatiquement leurs points, passages, coupes, et autres types.</p></article>
+      </div>
+      <div class="help">
+        <i>i</i>
+        <div>
+          <h3>Besoin d'aide ?</h3>
+          <p>Notre équipe support est à votre disposition pour vous aider dans la configuration de votre compte et vous accompagner dans toutes vos démarches ou questions.</p>
+        </div>
+      </div>
+      <p class="closer">Fidelize, la solution simple et efficace pour les commerces de proximité qui veulent vendre plus.</p>
+      <div class="closer-actions">
+        <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Commencez maintenant</a>
+        <a class="header__cta-secondary" href="#pricing">Parler à un expert</a>
+      </div>
     </div>
   </section>
 
-  <section class="modes" id="modes">
-    <article class="mode">
-      <div class="meta">Mode · 10 min</div>
-      <h3>Easy open</h3>
-      <p>Ten pins, one ball, a clean pocket. The house game, no modifiers.</p>
-    </article>
-    <article class="mode">
-      <div class="top scene neon"><div class="screen"><span>DUEL</span></div></div>
-      <div class="meta">Mode · 8 min</div>
-      <h3>Neon duel</h3>
-      <p>Two lanes, blacklight, first to three strikes takes the cabinet.</p>
-    </article>
-    <article class="mode">
-      <div class="top scene lane"><div class="wood"></div></div>
-      <div class="meta">Mode · 12 min</div>
-      <h3>Split boss</h3>
-      <p>The 7–10, called shots, arcade multipliers on a made split.</p>
-    </article>
+  <section class="section grid-background" id="pricing">
+    <div class="wrap">
+      <h2 class="pricing__title">Des tarifs simples et transparents</h2>
+      <div class="toggle" role="group" aria-label="Période de facturation">
+        <button type="button" class="on" data-bill="mois">Mensuel</button>
+        <button type="button" data-bill="an">Annuel</button>
+      </div>
+      <div class="trial"><strong>🎉 2 semaines d'essai gratuit 🎉</strong><br>Commencez gratuitement dès aujourd'hui • Pas de frais cachés</div>
+      <div class="plans">
+        <article class="plan">
+          <div class="ico">🚀</div>
+          <h3>Starter</h3>
+          <p class="desc">Démarrez simplement la fidélisation digitale et envoyez votre première notification à vos clients.</p>
+          <div class="price">€ <b data-month="10.99" data-year="109.90">10.99</b><span class="per">/mois</span></div>
+          <ul>
+            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
+            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
+            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
+            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
+            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
+            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
+            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
+            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
+            <li><i>✓</i><span>Aucune notification push incluse par mois</span></li>
+          </ul>
+          <a class="choose" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
+        </article>
+        <article class="plan popular">
+          <div class="badge">Le plus populaire</div>
+          <div class="ico">📈</div>
+          <h3>Essentiel</h3>
+          <p class="desc">Passez à la vitesse supérieure avec plus de notifications et des outils avancés pour engager vos clients.</p>
+          <div class="price">€ <b data-month="35" data-year="350">35</b><span class="per">/mois</span></div>
+          <ul>
+            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
+            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
+            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
+            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
+            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
+            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
+            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
+            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
+            <li><i>✓</i><span>2 notifications push incluses par mois</span></li>
+          </ul>
+          <a class="choose-fill" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
+        </article>
+        <article class="plan">
+          <div class="ico">🔥</div>
+          <h3>Premium</h3>
+          <p class="desc">Le choix préféré des entreprises ambitieuses : plus de clients, plus de notifications, plus de résultats.</p>
+          <div class="price">€ <b data-month="50" data-year="500">50</b><span class="per">/mois</span></div>
+          <ul>
+            <li><i>✓</i><span>Jusqu'à 2 000 clients enregistrés</span></li>
+            <li><i>✓</i><span>Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</span></li>
+            <li><i>✓</i><span>Ajout et retrait de points en illimité</span></li>
+            <li><i>✓</i><span>Accès web et mobile pour gérer vos clients</span></li>
+            <li><i>✓</i><span>Espace multi-utilisateur pour votre équipe</span></li>
+            <li><i>✓</i><span>Statistiques simples pour suivre vos performances</span></li>
+            <li><i>✓</i><span>Support dédié par email et téléphone</span></li>
+            <li><i>✓</i><span>Sans engagement, aucun frais caché</span></li>
+            <li><i>✓</i><span>6 notifications push incluses par mois</span></li>
+          </ul>
+          <a class="choose" href="https://app.fidelize.fr/signup" target="_blank" rel="noopener noreferrer">Choisir ce plan</a>
+        </article>
+      </div>
+
+      <article class="sur">
+        <div class="sur-badge">★ Sur mesure &amp; Premium</div>
+        <h3>Sur mesure</h3>
+        <p class="lead">Une solution personnalisée, un accompagnement premium et des notifications illimitées pour les besoins spécifiques des grandes enseignes.</p>
+        <p><strong>Sur mesure</strong></p>
+        <ul class="sur-grid">
+          <li>✓ Nombre de clients enregistrés sur mesure</li>
+          <li>✓ Cartes de fidélité 100 % personnalisables (Google &amp; Apple Wallet)</li>
+          <li>✓ Ajout et retrait de points en illimité</li>
+          <li>✓ Accès web et mobile pour gérer vos clients</li>
+          <li>✓ Espace multi-utilisateur pour votre équipe</li>
+          <li>✓ Statistiques avancées et exports</li>
+          <li>✓ Support prioritaire 7j/7 (email et téléphone)</li>
+          <li>✓ Formation complète de vos équipes</li>
+          <li>✓ Engagement contractuel avec SLA</li>
+          <li>✓ Notifications push illimitées</li>
+          <li>✓ Intégrations API et accompagnement dédié</li>
+        </ul>
+        <a class="choose-fill" href="https://fidelize.fr" target="_blank" rel="noopener noreferrer">Contacter le support</a>
+      </article>
+
+      <h2 class="faq-title">Questions fréquentes</h2>
+      <div class="faq">
+        <article><h3>Puis-je changer de plan à tout moment ?</h3><p>Oui, vous pouvez mettre à jour ou rétrograder votre plan à tout moment. Les changements prennent effet immédiatement.</p></article>
+        <article><h3>L'essai gratuit inclut-il toutes les fonctionnalités ?</h3><p>Absolument ! Votre essai gratuit de 14 jours vous donne accès à toutes les fonctionnalités du plan que vous choisissez.</p></article>
+        <article><h3>Y a-t-il des frais cachés ?</h3><p>Non, nos tarifs sont transparents. Le prix affiché est le prix final, sans frais cachés ni surprises.</p></article>
+        <article><h3>Proposez-vous des tarifs personnalisés ?</h3><p>Pour les entreprises avec des besoins spécifiques, nous proposons des solutions sur mesure. Contactez notre équipe commerciale.</p></article>
+      </div>
+      <div class="pricing-cta">
+        <h3>Prêt à récompenser vos clients simplement ?</h3>
+        <p>Essayez Fidelize gratuitement pendant 14 jours.</p>
+        <div class="closer-actions">
+          <a class="header__cta-primary" href="https://app.fidelize.fr" target="_blank" rel="noopener noreferrer">Démarrer l'essai gratuit</a>
+          <a class="header__cta-secondary" href="#how-it-works">Parler à un expert</a>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="news" id="news">
-    <div class="news-copy">
-      <h2 class="display">Strike-packed updates straight into your inbox + 10% off your first lane.</h2>
-      <form id="clubForm">
-        <label class="sr" for="email" style="position:absolute;left:-999px">Email</label>
-        <input id="email" name="email" type="email" required placeholder="you@lane.arcade" autocomplete="email">
-        <button class="pill text-btn" type="submit">Join</button>
-      </form>
-      <p class="form-note" id="formNote" role="status"></p>
-    </div>
-    <div class="news-art" aria-hidden="true">
-      <div class="blob a"></div>
-      <div class="blob b"></div>
-      <div class="news-pin"><canvas data-pin data-yaw="18" data-tilt="-8"></canvas><svg viewBox="0 0 200 500"><use href="#pin"/></svg></div>
+  <section class="testimonies grid-background" id="testimonials">
+    <h2>Ils boostent leur fidélité avec Fidelize<br>C'est à votre tour !</h2>
+    <div class="scroller">
+      <div class="track" id="track"></div>
     </div>
   </section>
-</main>
 
-<footer class="foot">
-  <span>Strike arcade</span>
-  <span>Lanes open late</span>
-  <span>Ten pins · one pocket</span>
-</footer>
+  <footer class="footer-simple">
+    <div class="brand-lockup">
+      <img src="/arcade/logobg.png" alt="" width="36" height="36">
+      Fidelize
+    </div>
+    <nav>
+      <a href="#home">Accueil</a>
+      <a href="#our-solution">Bénéfices pour vous</a>
+      <a href="#how-it-works">Comment ça marche</a>
+      <a href="#pricing">Tarifs</a>
+      <a href="#testimonials">Témoignages</a>
+    </nav>
+    <div class="footer-simple__bottom">
+      <span>© 2026 Fidelize. Tous droits réservés. SIRET : 989 144 068 00016</span>
+      <span>Conçu et développé par <a href="https://shield4cloud.com" target="_blank" rel="noopener noreferrer">Shield4Cloud</a></span>
+      <a href="https://fidelize.fr/CGU.pdf" target="_blank" rel="noopener noreferrer">Mentions légales</a>
+    </div>
+  </footer>
 
-<div class="scrim" id="scrim" hidden></div>
+  <script type="importmap">
+  { "imports": { "three": "/arcade/vendor/three.module.js" } }
+  </script>
+  <script type="module" src="/arcade/pin-stage.js"></script>
+  <script>
+    const nav = document.getElementById("nav");
+    addEventListener("scroll", () => nav.classList.toggle("is-scrolled", scrollY > 8), { passive: true });
+    document.querySelector(".nav-toggle").addEventListener("click", () => nav.classList.toggle("is-open"));
 
-<aside class="panel" id="cartPanel" role="dialog" aria-modal="true" aria-labelledby="cartTitle" hidden>
-  <button class="close-x" type="button" data-close>Close</button>
-  <h3 id="cartTitle">Cart</h3>
-  <p>The house pin. Maple, banded, ready for a loud lane.</p>
-  <div id="cartLines"></div>
-  <div class="sum"><span>Total</span><span id="cartTotal">0 €</span></div>
-  <button class="pill text-btn" type="button" id="checkout">Checkout</button>
-  <p class="ok" id="cartOk"></p>
-</aside>
+    const bills = document.querySelectorAll(".toggle button");
+    bills.forEach((btn) => btn.addEventListener("click", () => {
+      bills.forEach((b) => b.classList.toggle("on", b === btn));
+      const year = btn.dataset.bill === "an";
+      document.querySelectorAll("[data-month]").forEach((el) => {
+        el.textContent = year ? el.dataset.year : el.dataset.month;
+      });
+      document.querySelectorAll(".per").forEach((el) => { el.textContent = year ? "/an" : "/mois"; });
+    }));
 
-<aside class="panel" id="bookPanel" role="dialog" aria-modal="true" aria-labelledby="bookTitle" hidden>
-  <button class="close-x" type="button" data-close>Close</button>
-  <h3 id="bookTitle">Book a lane</h3>
-  <p>Pick a night. We’ll hold the approach.</p>
-  <form id="bookForm">
-    <label class="field">Name<input name="name" required placeholder="Alex"></label>
-    <label class="field">Players
-      <select name="players">
-        <option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
-      </select>
-    </label>
-    <label class="field">Lane
-      <select name="lane">
-        <option>Lane 01 — classic</option>
-        <option>Lane 07 — neon</option>
-        <option>Lane 12 — boss</option>
-      </select>
-    </label>
-    <label class="field">When<input name="when" type="datetime-local" required></label>
-    <button class="pill text-btn" type="submit">Hold the lane</button>
-  </form>
-  <p class="ok" id="bookOk"></p>
-</aside>
-
-<script type="importmap">
-{ "imports": { "three": "/arcade/vendor/three.module.js" } }
-</script>
-<script src="/arcade/gsap.min.js"></script>
-<script src="/arcade/ScrollTrigger.min.js"></script>
-<script type="module" src="/arcade/pin-stage.js"></script>
-<script>
-(function () {
-  const $ = (s, r = document) => r.querySelector(s);
-  const pinPrice = 24;
-  let qty = 0;
-
-  function money(n) { return n.toLocaleString("fr-FR") + " €"; }
-
-  function renderCart() {
-    const lines = $("#cartLines");
-    const badge = $("#cartBadge");
-    const navCount = $("#navCount");
-    if (!qty) {
-      lines.innerHTML = "<p>The rack is empty.</p>";
-      badge.classList.remove("show");
-      navCount.textContent = "";
-    } else {
-      lines.innerHTML =
-        '<div class="line"><div class="thumb"><svg viewBox="0 0 200 500" width="48"><use href="#pin"/></svg></div>' +
-        "<div><strong>Strike pin</strong><br>Arcade maple<div>" + qty + " × " + money(pinPrice) + "</div></div>" +
-        "<div>" + money(qty * pinPrice) + "</div></div>";
-      badge.textContent = String(qty);
-      badge.classList.add("show");
-      navCount.textContent = "(" + qty + ")";
-    }
-    $("#cartTotal").textContent = money(qty * pinPrice);
-  }
-
-  function openPanel(id) {
-    $("#scrim").hidden = false;
-    requestAnimationFrame(() => $("#scrim").classList.add("open"));
-    const panel = $(id);
-    panel.hidden = false;
-    requestAnimationFrame(() => panel.classList.add("open"));
-    panel.querySelector("button, input, select").focus();
-  }
-  function closePanels() {
-    document.querySelectorAll(".panel").forEach((p) => {
-      p.classList.remove("open");
-      setTimeout(() => { if (!p.classList.contains("open")) p.hidden = true; }, 400);
-    });
-    $("#scrim").classList.remove("open");
-    setTimeout(() => { if (!$("#scrim").classList.contains("open")) $("#scrim").hidden = true; }, 300);
-  }
-
-  $("#openCart").addEventListener("click", () => openPanel("#cartPanel"));
-  $("#openCartTop").addEventListener("click", () => openPanel("#cartPanel"));
-  $("#openBook").addEventListener("click", () => openPanel("#bookPanel"));
-  $("#bookCta").addEventListener("click", () => openPanel("#bookPanel"));
-  $("#buyNow").addEventListener("click", () => { qty += 1; renderCart(); openPanel("#cartPanel"); });
-  $("#scrim").addEventListener("click", closePanels);
-  document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closePanels));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanels(); });
-
-  $("#checkout").addEventListener("click", () => {
-    if (!qty) { $("#cartOk").textContent = "Add a pin first."; return; }
-    $("#cartOk").textContent = "Lane ticket held — " + money(qty * pinPrice) + ".";
-    qty = 0;
-    renderCart();
-  });
-
-  $("#bookForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const data = new FormData(e.target);
-    $("#bookOk").textContent = data.get("lane") + " held for " + data.get("name") + ".";
-  });
-
-  $("#clubForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    $("#formNote").textContent = "You’re on the list. 10% is in your inbox.";
-    e.target.reset();
-  });
-
-  renderCart();
-
-  const nav = document.querySelector(".nav");
-  function syncNav() {
-    const el = document.elementFromPoint(window.innerWidth * 0.5, 110);
-    const light = !!(el && el.closest(".yellow, .news-copy, .modes"));
-    nav.classList.toggle("on-light", light);
-  }
-  window.addEventListener("scroll", syncNav, { passive: true });
-  syncNav();
-
-  const shotAt = new URLSearchParams(location.search).get("at");
-  if (shotAt != null) {
-    const go = () => window.scrollTo(0, Number(shotAt));
-    window.addEventListener("load", () => { go(); setTimeout(go, 600); });
-    setTimeout(go, 80);
-  }
-
-  let audioCtx = null;
-  let loopTimer = null;
-  function blip(freq, t, dur, type) {
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type || "square";
-    o.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.04, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(t); o.stop(t + dur + 0.02);
-  }
-  function startLoop() {
-    const step = () => {
-      if (!audioCtx) return;
-      const t = audioCtx.currentTime;
-      blip(220, t, 0.08, "square");
-      blip(330, t + 0.16, 0.08, "square");
-      blip(440, t + 0.32, 0.12, "triangle");
-      loopTimer = setTimeout(step, 700);
-    };
-    step();
-  }
-  $("#soundBtn").addEventListener("click", async () => {
-    const btn = $("#soundBtn");
-    const on = btn.getAttribute("aria-pressed") === "true";
-    if (on) {
-      btn.setAttribute("aria-pressed", "false");
-      clearTimeout(loopTimer);
-      if (audioCtx) audioCtx.suspend();
-      return;
-    }
-    if (!audioCtx) audioCtx = new AudioContext();
-    if (audioCtx.state === "suspended") await audioCtx.resume();
-    btn.setAttribute("aria-pressed", "true");
-    startLoop();
-  });
-
-  if (!window.gsap || !document.documentElement.classList.contains("is-motion")) return;
-  gsap.registerPlugin(ScrollTrigger);
-
-  const pin = "#pin";
-  const deg = (n) => n * Math.PI / 180;
-  window.__pinPose = { rx: deg(8), ry: deg(32), rz: deg(-6) };
-  gsap.set("#b0", { autoAlpha: 1 });
-  gsap.set(["#b1", "#b2", "#b3"], { autoAlpha: 0 });
-
-  const tl = gsap.timeline({
-    defaults: { ease: "none" },
-    scrollTrigger: {
-      trigger: "#run",
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 0.7
-    }
-  });
-
-  tl.to("#b0 .eyebrow, #b0 .rule, #b0 .hero-title, #b0 .hero-sub", { y: -90, autoAlpha: 0, duration: 0.7 }, 0.55);
-  tl.to("#b0 .hero-foot", { y: 40, autoAlpha: 0, duration: 0.5 }, 0.55);
-  tl.to(pin, { x: "-14vw", y: "-16vh", scale: 1.15, duration: 1.1 }, 0.6);
-  tl.to(window.__pinPose, { rx: deg(18), ry: deg(78), rz: deg(-70), duration: 1.15 }, 0.6);
-
-  tl.fromTo("#b1", { autoAlpha: 0, y: 36 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 1.15);
-  tl.to("#b1", { autoAlpha: 0, y: -28, duration: 0.35 }, 2.15);
-
-  tl.to(pin, { x: "-2vw", y: "-12vh", scale: 1.2, duration: 0.9 }, 2.05);
-  tl.to(window.__pinPose, { rx: deg(28), ry: deg(130), rz: deg(-108), duration: 1 }, 2.05);
-  tl.fromTo("#b2", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.35 }, 2.25);
-  tl.to("#b2", { autoAlpha: 0, y: -20, duration: 0.3 }, 3.15);
-
-  tl.to(pin, { x: "6vw", y: "-8vh", scale: 1.18, duration: 0.9 }, 3.1);
-  tl.to(window.__pinPose, { rx: deg(42), ry: deg(210), rz: deg(-150), duration: 1 }, 3.1);
-  tl.fromTo("#b3", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.4 }, 3.25);
-
-  gsap.utils.toArray(".shot").forEach((el, i) => {
-    gsap.fromTo(el, { y: 40 + i * 20 }, {
-      y: -60 - i * 30,
-      ease: "none",
-      scrollTrigger: {
-        trigger: "#craft",
-        start: "top bottom",
-        end: "bottom top",
-        scrub: true
-      }
-    });
-  });
-
-  gsap.from(".specs li", {
-    y: 24,
-    autoAlpha: 0,
-    stagger: 0.08,
-    duration: 0.6,
-    ease: "power2.out",
-    scrollTrigger: { trigger: ".specs", start: "top 75%" }
-  });
-
-  gsap.from(".rack .p", {
-    y: 80,
-    rotation: 0,
-    autoAlpha: 0,
-    stagger: 0.12,
-    duration: 0.8,
-    ease: "power2.out",
-    scrollTrigger: { trigger: ".cluster", start: "top 70%" }
-  });
-})();
-</script>
+    const shops = [
+      ["lmburger.webp", "LM Burger", "Fast Food"],
+      ["lecomptoirapizza.webp", "Le Comptoir à Pizza", "Pizzeria"],
+      ["olivia.webp", "Olivia", "Fleuriste"],
+      ["linstant_bella.webp", "L'Instant Bella", "Institut de beauté"],
+      ["lebarbershop66.webp", "Le Barber Shop", "Coiffeur"]
+    ];
+    const card = ([file, name, kind]) =>
+      `<article class="tcard"><img src="/arcade/clients/${file}" alt="${name}"><strong>${name}</strong><em>${kind}</em><div class="globe" aria-hidden="true"></div></article>`;
+    document.getElementById("track").innerHTML = shops.concat(shops).map(card).join("");
+  </script>
 </body>
 </html>
