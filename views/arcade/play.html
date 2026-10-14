@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piste — Lance la boule</title>
+  <meta name="description" content="Un lancer de bowling. Le cadeau est à toi, quel que soit le nombre de quilles.">
+  <link rel="icon" href="/img/piste/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Teko:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/arcade.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/arcade"><img src="/img/piste/mark.svg" alt="">Piste</a>
+    <a class="nav-link" href="/arcade/reglage">Le cadeau</a>
+  </header>
+  <main class="stage">
+    <p class="kicker">Salle d'arcade</p>
+    <h1>Lance la boule.</h1>
+    <p class="lede">Chaque lancer remporte le cadeau. Les quilles ne changent rien.</p>
+    <p class="gift-live">En jeu : <strong id="live-gift">Partie offerte</strong></p>
+    <div class="cabinet">
+      <canvas id="lane" aria-hidden="true"></canvas>
+      <div class="reveal" id="reveal" hidden>
+        <p class="reveal-kicker">Ton cadeau</p>
+        <p class="pins-note" id="pins-note"></p>
+        <h2 id="gift-label">Partie offerte</h2>
+        <p class="detail" id="gift-detail">À récupérer au comptoir.</p>
+        <button class="btn" id="again" type="button">Relancer</button>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="throw" type="button">Lancer</button>
+    </div>
+    <p class="hint" id="hint">Glisse sur la piste pour viser, puis lâche ou appuie sur Lancer.</p>
+  </main>
+  <script src="/js/arcade-game.js"></script>
+</body>
+</html>

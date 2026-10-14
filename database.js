@@ -235,6 +235,21 @@ async function initSchema() {
       await sql`INSERT INTO settings (key, value) VALUES (${k}, ${v}) ON CONFLICT (key) DO NOTHING`;
     }
 
+    const arcade = require('./lib/arcade');
+    await sql`
+      CREATE TABLE IF NOT EXISTS arcade_gift (
+        id        INTEGER PRIMARY KEY,
+        label     TEXT NOT NULL,
+        detail    TEXT NOT NULL DEFAULT '',
+        code_hash TEXT NOT NULL
+      )
+    `;
+    await sql`
+      INSERT INTO arcade_gift (id, label, detail, code_hash)
+      VALUES (1, ${arcade.DEFAULT_GIFT.label}, ${arcade.DEFAULT_GIFT.detail}, ${arcade.hashArcadeCode(arcade.DEFAULT_CODE)})
+      ON CONFLICT (id) DO NOTHING
+    `;
+
     if (process.env.SUPERADMIN_PASSWORD) {
       await sql`
         INSERT INTO settings (key, value) VALUES ('superadmin_password', ${process.env.SUPERADMIN_PASSWORD})
@@ -353,4 +368,29 @@ async function createDefaultPrizes(restaurantId) {
   await ins.run(restaurantId, 'Boisson offerte', 'Une boisson au choix offerte', 2, 30, '#2563EB');
 }
 
-module.exports = { db, createDefaultPrizes, ensureReady, newPublicCode, ensureDemoRestaurant };
+async function readArcadeGift() {
+  await ensureReady();
+  const rows = allRows(await sql`SELECT label, detail, code_hash FROM arcade_gift WHERE id = 1`);
+  return rows[0] || null;
+}
+
+async function saveArcadeGift(label, detail) {
+  await ensureReady();
+  await sql`UPDATE arcade_gift SET label = ${label}, detail = ${detail} WHERE id = 1`;
+}
+
+async function saveArcadeCode(codeHash) {
+  await ensureReady();
+  await sql`UPDATE arcade_gift SET code_hash = ${codeHash} WHERE id = 1`;
+}
+
+module.exports = {
+  db,
+  createDefaultPrizes,
+  ensureReady,
+  newPublicCode,
+  ensureDemoRestaurant,
+  readArcadeGift,
+  saveArcadeGift,
+  saveArcadeCode,
+};

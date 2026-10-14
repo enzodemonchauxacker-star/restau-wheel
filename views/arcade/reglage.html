@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piste — Le cadeau</title>
+  <link rel="icon" href="/img/piste/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Teko:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/arcade.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/arcade"><img src="/img/piste/mark.svg" alt="">Piste</a>
+    <a class="nav-link" href="/arcade">La piste</a>
+  </header>
+  <main class="stage">
+    <p class="kicker">Client</p>
+    <h1>Le cadeau.</h1>
+    <p class="lede">Il part à chaque lancer, que la boule fasse tomber une quille ou les dix.</p>
+    <form class="desk" id="gate">
+      <label class="field"><span>Code client</span><input id="code" type="password" autocomplete="current-password" required></label>
+      <div class="row"><button class="btn" type="submit">Entrer</button></div>
+      <p class="note" id="gate-note" role="status"></p>
+    </form>
+    <form class="desk" id="editor" hidden>
+      <label class="field"><span>Nom du cadeau</span><input id="label" maxlength="80" required></label>
+      <label class="field"><span>Précision</span><input id="detail" maxlength="180"></label>
+      <label class="field"><span>Nouveau code, si tu veux le changer</span><input id="next-code" type="password" autocomplete="new-password" minlength="4" maxlength="40"></label>
+      <div class="row"><button class="btn" type="submit">Enregistrer</button></div>
+      <p class="note" id="save-note" role="status"></p>
+    </form>
+  </main>
+  <script src="/js/arcade-desk.js"></script>
+</body>
+</html>
