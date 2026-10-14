@@ -95,19 +95,40 @@ h2, h3, .hero-title { font-weight: 500; letter-spacing: -0.02em; line-height: 1.
 .solid-sq svg { width: 46%; height: 46%; }
 svg { display: block; }
 
-.phone { width: 270px; position: relative; }
+.phone { width: 270px; position: relative; container-type: inline-size; }
 .hero-phone { position: absolute; left: 50%; top: calc(100% - 210px); z-index: 6; will-change: transform; }
-.phone-frame { position: relative; aspect-ratio: 270 / 565; }
+/* iPhone 16 Pro : 402×874 pt, rayon d'écran 62 pt, cadre 71,5 mm. */
+.phone-frame { position: relative; aspect-ratio: 431.6273 / 903.6273; }
 .screen {
-  position: absolute; top: 0.55%; right: 1.2%; bottom: 0.55%; left: 1.2%;
-  border-radius: 16.2% / 7.7%; overflow: hidden;
-  background: #fff; padding: 18% 8% 6%; text-align: left; color: var(--text);
+  position: absolute; top: 1.639354%; right: 3.432046%; bottom: 1.639354%; left: 3.432046%;
+  overflow: hidden; background: #fff; padding: 15.4229% 8% 8.46%;
+  text-align: left; color: var(--text);
+  clip-path: url(#iphone-screen);
 }
-.screen.is-night { background: var(--ink); color: var(--cream); }
-.screen.is-night::before, .screen.bare::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8.2%; background: #fff;
-}
+.screen.is-night, .screen.bare { background: var(--ink); color: var(--cream); }
 .phone-skin { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
+.ios-defs { position: absolute; width: 0; height: 0; }
+.ios-status {
+  position: absolute; z-index: 5; left: 0; right: 0; top: 1.373%; height: 4.119%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 6.9652%; color: #000; pointer-events: none;
+}
+.ios-time {
+  font-family: "SF Pro Text", "SF Pro", -apple-system, BlinkMacSystemFont, "Inter", "Inter Tight", sans-serif;
+  font-weight: 600; font-size: calc(100cqi * 17 / 431.6273); letter-spacing: -0.03em;
+  line-height: 1; font-synthesis: none;
+}
+.ios-right { display: flex; align-items: flex-end; gap: calc(100cqi * 6 / 431.6273); height: calc(100cqi * 13 / 431.6273); }
+.ios-signal, .ios-battery { display: block; fill: currentColor; }
+.ios-signal { width: calc(100cqi * 17.1 / 431.6273); height: calc(100cqi * 12 / 431.6273); }
+.ios-battery { width: calc(100cqi * 27.3 / 431.6273); height: calc(100cqi * 13 / 431.6273); }
+.ios-battery .cap { opacity: 0.4; }
+.home-bar {
+  position: absolute; z-index: 5; left: 50%; bottom: 0.9153%; width: 34.8259%; height: 0.5721%;
+  transform: translateX(-50%); border-radius: 999px; background: #000; pointer-events: none;
+}
+.screen.is-night .ios-status, .screen.bare .ios-status { color: #fff; }
+.screen.is-night .home-bar, .screen.bare .home-bar { background: #fff; }
 .screen-name { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
 .screen-sub, .gateway-copy, .card p, .events-note, .community-copy p, .fine { color: var(--muted); font-size: 13px; max-width: 34ch; }
 .screen-brand { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; margin-bottom: 8px; }

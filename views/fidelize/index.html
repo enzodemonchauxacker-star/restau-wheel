@@ -8,12 +8,17 @@
   <meta name="theme-color" content="#FFF8F1">
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@600&display=swap">
   <link rel="stylesheet" href="/vendor/lenis/lenis.css">
   <link rel="stylesheet" href="/css/fidelize.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
 </head>
 <body>
+  <svg class="ios-defs" aria-hidden="true" focusable="false">
+    <clipPath id="iphone-screen" clipPathUnits="objectBoundingBox">
+      <path d="M 0.7532 0 c 0.0864 0 0.1296 0 0.1626 0.0077 a 0.1542 0.0709 0 0 1 0.0674 0.031 c 0.0168 0.0152 0.0168 0.035 0.0168 0.0748 L 1 0.8865 c 0 0.0397 0 0.0596 -0.0168 0.0748 a 0.1542 0.0709 0 0 1 -0.0674 0.031 c -0.033 0.0077 -0.0762 0.0077 -0.1626 0.0077 L 0.2468 1 c -0.0864 0 -0.1296 0 -0.1626 -0.0077 a 0.1542 0.0709 0 0 1 -0.0674 -0.031 c -0.0168 -0.0152 -0.0168 -0.035 -0.0168 -0.0748 L 0 0.1135 c 0 -0.0397 0 -0.0596 0.0168 -0.0748 a 0.1542 0.0709 0 0 1 0.0674 -0.031 c 0.033 -0.0077 0.0762 -0.0077 0.1626 -0.0077 Z"/>
+    </clipPath>
+  </svg>
   <header class="nav" id="nav">
     <a class="logo" href="/fidelize">
       <span class="mark" aria-hidden="true">
@@ -43,10 +48,12 @@
         <div class="phone hero-phone" aria-hidden="true">
           <div class="phone-frame">
             <div class="screen">
+              <div class="ios-status" aria-hidden="true"><span class="ios-time">9:41</span><span class="ios-right"><svg class="ios-signal" viewBox="0 0 17.1 12"><rect x="0" y="8.1" width="3" height="3.9" rx=".75"/><rect x="4.7" y="5.4" width="3" height="6.6" rx=".75"/><rect x="9.4" y="2.7" width="3" height="9.3" rx=".75"/><rect x="14.1" y="0" width="3" height="12" rx=".75"/></svg><svg class="ios-battery" viewBox="0 0 27.3 13"><path fill-rule="evenodd" d="M4.35.55H20.65A3.7 3.7 0 0 1 24.35 4.25V8.75A3.7 3.7 0 0 1 20.65 12.45H4.35A3.7 3.7 0 0 1 .65 8.75V4.25A3.7 3.7 0 0 1 4.35.55ZM4.35 1.75H20.65A2.5 2.5 0 0 1 23.15 4.25V8.75A2.5 2.5 0 0 1 20.65 11.25H4.35A2.5 2.5 0 0 1 1.85 8.75V4.25A2.5 2.5 0 0 1 4.35 1.75Z"/><path d="M4.35 2.6H20.26A1.65 1.65 0 0 1 21.91 4.25V8.75A1.65 1.65 0 0 1 20.26 10.4H4.35A1.65 1.65 0 0 1 2.7 8.75V4.25A1.65 1.65 0 0 1 4.35 2.6Z"/><path class="cap" d="M26.2 4.33h.2A.65.65 0 0 1 27.05 4.98v3.05A.65.65 0 0 1 26.4 8.68h-.2A.65.65 0 0 1 25.55 8.03V4.98A.65.65 0 0 1 26.2 4.33Z"/></svg></span></div>
               <p class="screen-name">Restau Wheel</p>
               <div class="mini-wheel"></div>
+              <div class="home-bar" aria-hidden="true"></div>
             </div>
-            <img class="phone-skin" src="/img/fidelize/iphone.png" alt="">
+            <img class="phone-skin" src="/img/fidelize/iphone.svg" alt="">
           </div>
         </div>
       </div>
@@ -63,13 +70,15 @@
           <div class="phone" id="gate-phone">
             <div class="phone-frame">
               <div class="screen" id="gate-screen">
+                <div class="ios-status" aria-hidden="true"><span class="ios-time">9:41</span><span class="ios-right"><svg class="ios-signal" viewBox="0 0 17.1 12"><rect x="0" y="8.1" width="3" height="3.9" rx=".75"/><rect x="4.7" y="5.4" width="3" height="6.6" rx=".75"/><rect x="9.4" y="2.7" width="3" height="9.3" rx=".75"/><rect x="14.1" y="0" width="3" height="12" rx=".75"/></svg><svg class="ios-battery" viewBox="0 0 27.3 13"><path fill-rule="evenodd" d="M4.35.55H20.65A3.7 3.7 0 0 1 24.35 4.25V8.75A3.7 3.7 0 0 1 20.65 12.45H4.35A3.7 3.7 0 0 1 .65 8.75V4.25A3.7 3.7 0 0 1 4.35.55ZM4.35 1.75H20.65A2.5 2.5 0 0 1 23.15 4.25V8.75A2.5 2.5 0 0 1 20.65 11.25H4.35A2.5 2.5 0 0 1 1.85 8.75V4.25A2.5 2.5 0 0 1 4.35 1.75Z"/><path d="M4.35 2.6H20.26A1.65 1.65 0 0 1 21.91 4.25V8.75A1.65 1.65 0 0 1 20.26 10.4H4.35A1.65 1.65 0 0 1 2.7 8.75V4.25A1.65 1.65 0 0 1 4.35 2.6Z"/><path class="cap" d="M26.2 4.33h.2A.65.65 0 0 1 27.05 4.98v3.05A.65.65 0 0 1 26.4 8.68h-.2A.65.65 0 0 1 25.55 8.03V4.98A.65.65 0 0 1 26.2 4.33Z"/></svg></span></div>
                 <p class="screen-brand"><span class="mark sm" aria-hidden="true"></span> Fidelize</p>
                 <div class="screen-slots" id="screen-slots" aria-hidden="true"></div>
                 <p class="screen-name">Tourner La Roue</p>
                 <p class="screen-sub">Un lot pour la prochaine visite.</p>
                 <a class="btn btn-dark screen-btn" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir</a>
+                <div class="home-bar" aria-hidden="true"></div>
               </div>
-              <img class="phone-skin" src="/img/fidelize/iphone.png" alt="">
+              <img class="phone-skin" src="/img/fidelize/iphone.svg" alt="">
             </div>
           </div>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Clair ou sombre">
@@ -129,8 +138,8 @@
             <div class="app-phone" aria-hidden="true">
               <div class="phone mini">
                 <div class="phone-frame">
-                  <div class="screen bare"></div>
-                  <img class="phone-skin" src="/img/fidelize/iphone.png" alt="">
+                  <div class="screen bare"><div class="ios-status" aria-hidden="true"><span class="ios-time">9:41</span><span class="ios-right"><svg class="ios-signal" viewBox="0 0 17.1 12"><rect x="0" y="8.1" width="3" height="3.9" rx=".75"/><rect x="4.7" y="5.4" width="3" height="6.6" rx=".75"/><rect x="9.4" y="2.7" width="3" height="9.3" rx=".75"/><rect x="14.1" y="0" width="3" height="12" rx=".75"/></svg><svg class="ios-battery" viewBox="0 0 27.3 13"><path fill-rule="evenodd" d="M4.35.55H20.65A3.7 3.7 0 0 1 24.35 4.25V8.75A3.7 3.7 0 0 1 20.65 12.45H4.35A3.7 3.7 0 0 1 .65 8.75V4.25A3.7 3.7 0 0 1 4.35.55ZM4.35 1.75H20.65A2.5 2.5 0 0 1 23.15 4.25V8.75A2.5 2.5 0 0 1 20.65 11.25H4.35A2.5 2.5 0 0 1 1.85 8.75V4.25A2.5 2.5 0 0 1 4.35 1.75Z"/><path d="M4.35 2.6H20.26A1.65 1.65 0 0 1 21.91 4.25V8.75A1.65 1.65 0 0 1 20.26 10.4H4.35A1.65 1.65 0 0 1 2.7 8.75V4.25A1.65 1.65 0 0 1 4.35 2.6Z"/><path class="cap" d="M26.2 4.33h.2A.65.65 0 0 1 27.05 4.98v3.05A.65.65 0 0 1 26.4 8.68h-.2A.65.65 0 0 1 25.55 8.03V4.98A.65.65 0 0 1 26.2 4.33Z"/></svg></span></div><div class="home-bar" aria-hidden="true"></div></div>
+                  <img class="phone-skin" src="/img/fidelize/iphone.svg" alt="">
                 </div>
               </div>
             </div>
@@ -185,12 +194,14 @@
         <div class="phone events-phone" aria-hidden="true">
           <div class="phone-frame">
             <div class="screen">
+              <div class="ios-status" aria-hidden="true"><span class="ios-time">9:41</span><span class="ios-right"><svg class="ios-signal" viewBox="0 0 17.1 12"><rect x="0" y="8.1" width="3" height="3.9" rx=".75"/><rect x="4.7" y="5.4" width="3" height="6.6" rx=".75"/><rect x="9.4" y="2.7" width="3" height="9.3" rx=".75"/><rect x="14.1" y="0" width="3" height="12" rx=".75"/></svg><svg class="ios-battery" viewBox="0 0 27.3 13"><path fill-rule="evenodd" d="M4.35.55H20.65A3.7 3.7 0 0 1 24.35 4.25V8.75A3.7 3.7 0 0 1 20.65 12.45H4.35A3.7 3.7 0 0 1 .65 8.75V4.25A3.7 3.7 0 0 1 4.35.55ZM4.35 1.75H20.65A2.5 2.5 0 0 1 23.15 4.25V8.75A2.5 2.5 0 0 1 20.65 11.25H4.35A2.5 2.5 0 0 1 1.85 8.75V4.25A2.5 2.5 0 0 1 4.35 1.75Z"/><path d="M4.35 2.6H20.26A1.65 1.65 0 0 1 21.91 4.25V8.75A1.65 1.65 0 0 1 20.26 10.4H4.35A1.65 1.65 0 0 1 2.7 8.75V4.25A1.65 1.65 0 0 1 4.35 2.6Z"/><path class="cap" d="M26.2 4.33h.2A.65.65 0 0 1 27.05 4.98v3.05A.65.65 0 0 1 26.4 8.68h-.2A.65.65 0 0 1 25.55 8.03V4.98A.65.65 0 0 1 26.2 4.33Z"/></svg></span></div>
               <p class="eyebrow">Prochaine visite</p>
               <p class="screen-name">Dès le lendemain</p>
               <p class="screen-sub">En salle, avec le lot de la roue.</p>
               <div class="qr-block" aria-hidden="true"></div>
+              <div class="home-bar" aria-hidden="true"></div>
             </div>
-            <img class="phone-skin" src="/img/fidelize/iphone.png" alt="">
+            <img class="phone-skin" src="/img/fidelize/iphone.svg" alt="">
           </div>
         </div>
       </div>
