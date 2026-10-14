@@ -44,14 +44,42 @@ button, input { font: inherit; color: inherit; }
 }
 .nav a:hover, .nav-link:hover { color: var(--ink); }
 
+.home .top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  background: var(--bg);
+}
+.home-track { height: 300vh; }
 .home-stage {
-  min-height: calc(100vh - 72px);
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
   align-items: flex-end;
   width: min(880px, calc(100% - 56px));
   margin: 0 auto;
-  padding: 0 0 88px;
+  padding: 72px 0 88px;
 }
+.toy {
+  position: fixed;
+  z-index: 1;
+  top: 12vh;
+  right: 4vw;
+  width: min(540px, 46vw);
+  height: min(560px, 52vh);
+  pointer-events: none;
+}
+.toy model-viewer {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  --poster-color: transparent;
+  --progress-bar-color: transparent;
+}
+.home-copy { position: relative; z-index: 2; }
 .home-copy > * { animation: arrive 1.8s cubic-bezier(.16, .84, .32, 1) both; }
 .home-copy > :nth-child(2) { animation-delay: .28s; }
 .home-copy > :nth-child(3) { animation-delay: .55s; }
@@ -184,6 +212,7 @@ h1, .reveal h2 {
 @media (max-width: 700px) {
   .top { padding: 0 18px; }
   .home-stage { width: calc(100% - 36px); padding-bottom: 48px; }
+  .toy { top: 9vh; right: -6vw; width: 74vw; height: 40vh; }
   .home h1, .stage h1 { font-size: 40px; }
   #lane { height: 52vh; min-height: 320px; }
   .nav { gap: 14px; }
@@ -191,4 +220,6 @@ h1, .reveal h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .home-copy > *, .home-line { animation: none; }
+  .home-track { height: auto; }
+  .home-stage { position: relative; height: auto; min-height: 100vh; }
 }

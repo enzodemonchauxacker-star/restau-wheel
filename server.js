@@ -78,7 +78,11 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.glb')) res.setHeader('Content-Type', 'model/gltf-binary');
+  },
+}));
 
 // Session en cookie (compatible Vercel serverless — pas de MemoryStore)
 app.use(cookieSession({

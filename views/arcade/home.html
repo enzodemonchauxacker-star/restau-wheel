@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap">
   <link rel="stylesheet" href="/css/arcade.css">
+  <script type="module" src="/vendor/model-viewer/model-viewer.min.js"></script>
 </head>
 <body class="home">
   <header class="top">
@@ -19,7 +20,11 @@
       <a href="/arcade/reglage">Le cadeau</a>
     </nav>
   </header>
+  <div class="home-track" id="home-track">
   <main class="home-stage">
+    <div class="toy" id="toy" aria-hidden="true">
+      <model-viewer id="toy-view" src="/img/piste/toy.glb" alt="" interaction-prompt="none" loading="eager" reveal="auto" environment-image="neutral" exposure="1" shadow-intensity="0" camera-orbit="24deg 82deg auto" field-of-view="24deg" interpolation-decay="0" tabindex="-1"></model-viewer>
+    </div>
     <div class="home-copy">
       <p class="kicker">Arcade</p>
       <h1>Une piste.<br>Un lancer.</h1>
@@ -29,6 +34,8 @@
       <a class="btn" href="/arcade/lancer">Entrer</a>
     </div>
   </main>
+  </div>
+  <script src="/js/arcade-home.js" defer></script>
   <script>
     fetch('/api/arcade/gift').then((response) => response.json()).then((data) => {
       if (data && data.label) document.getElementById('live-gift').textContent = data.label;
