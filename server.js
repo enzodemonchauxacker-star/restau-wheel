@@ -5,7 +5,7 @@ const path    = require('path');
 const fs      = require('fs');
 const cron    = require('node-cron');
 const crypto  = require('crypto');
-const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./database');
+const { db, createDefaultPrizes, ensureReady, newPublicCode, readArcadeGift, saveArcadeGift, saveArcadeCode } = require('./database');
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
@@ -37,6 +37,9 @@ app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
+    req.path === '/arcade' ||
+    req.path === '/arcade/lancer' ||
+    req.path === '/arcade/reglage' ||
     HTML_PAGE.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
@@ -75,7 +78,11 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.glb')) res.setHeader('Content-Type', 'model/gltf-binary');
+  },
+}));
 
 // Session en cookie (compatible Vercel serverless — pas de MemoryStore)
 app.use(cookieSession({
@@ -1344,6 +1351,98 @@ app.post('/api/checkout', async (req, res) => {
 app.get('/api/solutions', requireSuperAdmin, (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json(fidelize.list());
+});
+
+// ─── Piste, site d'arcade indépendant ─────────────────────────────────────────
+const arcadeLib = require('./lib/arcade');
+
+function arcadeSecret() {
+  return process.env.SESSION_SECRET || 'restau-wheel-secret-2024';
+}
+
+function arcadeToken(codeHash) {
+  return crypto.createHmac('sha256', arcadeSecret()).update(`piste:${codeHash}`).digest('hex');
+}
+
+function readArcadeCookie(req) {
+  const raw = req.headers.cookie || '';
+  const match = raw.match(/(?:^|;\s*)piste=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+function setArcadeCookie(res, token) {
+  const secure = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+  res.setHeader('Set-Cookie', `piste=${token}; HttpOnly; Path=/; Max-Age=2592000; SameSite=Lax${secure ? '; Secure' : ''}`);
+}
+
+function sendArcadePage(res, file) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, 'views', 'arcade', file));
+}
+
+app.get('/arcade', (req, res) => sendArcadePage(res, 'home.html'));
+app.get('/arcade/lancer', (req, res) => sendArcadePage(res, 'play.html'));
+app.get('/arcade/reglage', (req, res) => sendArcadePage(res, 'reglage.html'));
+
+app.get('/api/arcade/gift', async (req, res) => {
+  try {
+    const row = await readArcadeGift();
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(arcadeLib.rewardForThrow(row));
+  } catch (error) {
+    res.status(500).json({ error: 'Cadeau indisponible' });
+  }
+});
+
+app.post('/api/arcade/unlock', async (req, res) => {
+  try {
+    const row = await readArcadeGift();
+    const hash = arcadeLib.hashArcadeCode(String(req.body?.code || ''));
+    if (!row || !arcadeLib.safeEqual(hash, row.code_hash)) {
+      return res.status(401).json({ error: 'Code refusé' });
+    }
+    setArcadeCookie(res, arcadeToken(row.code_hash));
+    res.json({ ok: true, label: row.label, detail: row.detail });
+  } catch (error) {
+    res.status(500).json({ error: 'Cadeau indisponible' });
+  }
+});
+
+app.get('/api/arcade/desk', async (req, res) => {
+  try {
+    const row = await readArcadeGift();
+    if (!row || readArcadeCookie(req) !== arcadeToken(row.code_hash)) {
+      return res.status(401).json({ error: 'Code requis' });
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ label: row.label, detail: row.detail });
+  } catch (error) {
+    res.status(500).json({ error: 'Cadeau indisponible' });
+  }
+});
+
+app.put('/api/arcade/gift', async (req, res) => {
+  try {
+    const row = await readArcadeGift();
+    if (!row || readArcadeCookie(req) !== arcadeToken(row.code_hash)) {
+      return res.status(401).json({ error: 'Code requis' });
+    }
+    const gift = arcadeLib.cleanGift(req.body);
+    if (!gift) return res.status(400).json({ error: 'Le cadeau doit avoir un nom.' });
+    const nextCode = String(req.body?.nextCode || '').trim();
+    if (nextCode && (nextCode.length < 4 || nextCode.length > 40)) {
+      return res.status(400).json({ error: 'Le nouveau code doit faire entre 4 et 40 caractères.' });
+    }
+    await saveArcadeGift(gift.label, gift.detail);
+    if (nextCode) {
+      const codeHash = arcadeLib.hashArcadeCode(nextCode);
+      await saveArcadeCode(codeHash);
+      setArcadeCookie(res, arcadeToken(codeHash));
+    }
+    res.json({ ok: true, ...gift });
+  } catch (error) {
+    res.status(500).json({ error: 'Enregistrement impossible' });
+  }
 });
 
 // ─── Pages HTML ───────────────────────────────────────────────────────────────
