@@ -150,7 +150,7 @@
     blurIn(['.badge', '.hero-title', '.hero-cta']);
     gsap.to('#hero .line:first-child .word', { color: TEXT, duration: 0.8, stagger: 0.08, ease: 'power3.out', delay: 0.1 });
     gsap.set('.state', { xPercent: -50, yPercent: -50 });
-    gsap.set('.hero-phone, .events-phone', { xPercent: -50 });
+    gsap.set('.events-phone', { xPercent: -50 });
     layoutOrbit();
     ScrollTrigger.addEventListener('refreshInit', layoutOrbit);
     gsap.set('.state-b, .state-c', { autoAlpha: 0, scale: 0.84 });
@@ -166,14 +166,84 @@
     hero.to('.state-b', { autoAlpha: 0, scale: 0.86, rotation: 6, duration: 0.28, stagger: 0.012 }, 0.72);
     hero.to('.state-c', { autoAlpha: 1, scale: 1, rotation: (i) => TILTS[i], duration: 0.28, stagger: 0.012 }, 0.8);
     hero.to('.orbit-item', { y: (i, el) => Number(el.dataset.baseY) + (SPEEDS[i] - 1) * 140, duration: 1.1 }, 0);
-    hero.to('.hero-phone', { y: -70, duration: 1.1 }, 0);
+
+    const phoneGroup = document.querySelector('.gateway-phone');
+    const phoneGrid = phoneGroup.parentNode;
+    const phoneAfter = phoneGroup.nextSibling;
+    const phoneHold = document.createElement('div');
+    phoneHold.className = 'gateway-phone-spacer';
+    phoneHold.setAttribute('aria-hidden', 'true');
+    let phoneDocked = false;
+    let gatewayOpen = false;
+    const phoneTravel = { p: 0 };
+    const phonePeek = 220;
+
+    function placeGatewayPhone(p) {
+      const vh = window.innerHeight;
+      const height = phoneGroup.offsetHeight;
+      const startTop = vh - phonePeek;
+      const endTop = (vh - height) / 2;
+      gsap.set(phoneGroup, {
+        xPercent: -50,
+        x: 0,
+        y: 0,
+        left: '50%',
+        top: startTop + (endTop - startTop) * p,
+      });
+    }
+
+    function floatGatewayPhone() {
+      if (!phoneHold.isConnected) phoneGrid.insertBefore(phoneHold, phoneGroup);
+      if (phoneGroup.parentNode !== document.body) document.body.appendChild(phoneGroup);
+      phoneGroup.classList.add('is-float');
+      phoneDocked = false;
+    }
+
+    function dockGatewayPhone() {
+      if (phoneGroup.parentNode === phoneGrid) return;
+      phoneDocked = true;
+      phoneGroup.classList.remove('is-float');
+      gsap.set(phoneGroup, { clearProps: 'all' });
+      phoneGrid.insertBefore(phoneGroup, phoneHold.isConnected ? phoneHold : phoneAfter);
+      if (phoneHold.isConnected) phoneHold.remove();
+    }
+
+    floatGatewayPhone();
+    placeGatewayPhone(0);
+    gsap.to(phoneTravel, {
+      p: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#gateway',
+        start: 'top bottom',
+        end: 'top top',
+        scrub: 0.5,
+        invalidateOnRefresh: true,
+      },
+      onUpdate: () => {
+        if (phoneDocked) return;
+        placeGatewayPhone(phoneTravel.p);
+        if (gatewayOpen && phoneTravel.p > 0.985) dockGatewayPhone();
+      },
+    });
 
     const gate = gsap.timeline({
       defaults: { ease: 'none' },
-      scrollTrigger: { trigger: '#gateway', start: 'top top', end: '+=180%', pin: true, scrub: 0.5, invalidateOnRefresh: true, zIndex: 1 },
+      scrollTrigger: {
+        trigger: '#gateway',
+        start: 'top top',
+        end: '+=180%',
+        pin: true,
+        scrub: 0.5,
+        invalidateOnRefresh: true,
+        zIndex: 1,
+        onEnter: () => { gatewayOpen = true; if (phoneTravel.p > 0.985) dockGatewayPhone(); },
+        onLeave: () => dockGatewayPhone(),
+        onEnterBack: () => { gatewayOpen = true; floatGatewayPhone(); placeGatewayPhone(phoneTravel.p); },
+        onLeaveBack: () => { gatewayOpen = false; floatGatewayPhone(); placeGatewayPhone(phoneTravel.p); },
+      },
     });
     scrollRevealText(gsap.utils.toArray('#gateway .line'), gate, 0, TEXT);
-    gate.from('.gateway-phone', { y: 160, duration: 0.4 }, 0);
     gate.from('.gateway-copy', { autoAlpha: 0, y: 16, duration: 0.3 }, 0.22);
     gsap.utils.toArray('.fly').forEach((fly, index) => {
       const angle = (index / ORDER.length) * Math.PI * 2 - Math.PI / 2;
@@ -335,6 +405,8 @@
     });
 
     return () => {
+      dockGatewayPhone();
+      if (phoneHold.isConnected) phoneHold.remove();
       ScrollTrigger.removeEventListener('refreshInit', layoutOrbit);
       document.querySelectorAll('[data-scramble]').forEach((title) => {
         if (title.dataset.final) title.textContent = title.dataset.final;

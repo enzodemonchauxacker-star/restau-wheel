@@ -63,6 +63,10 @@ h2, h3, .hero-title { font-weight: 500; letter-spacing: -0.02em; line-height: 1.
 .center-title.light, #works, #events, #footer { color: var(--cream); }
 
 #hero { overflow: hidden; }
+html.fid-motion .hero-phone { display: none; }
+html.fid-motion .gateway-phone.is-float {
+  position: fixed; z-index: 8; margin: 0; width: 270px;
+}
 .hero-stage {
   position: relative; min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center; padding: var(--nav) 24px 24vh; text-align: center;
