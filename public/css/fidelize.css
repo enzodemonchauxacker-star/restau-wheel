@@ -228,7 +228,7 @@ svg { display: block; }
 .community-copy p { margin: 14px auto 0; }
 
 #events { min-height: 100vh; padding: 96px 24px 48px; }
-.events-stage { position: relative; height: 620px; width: min(var(--max), 100%); margin: 28px auto 0; }
+.events-stage { position: relative; height: 620px; width: min(var(--max), 100%); margin: 28px auto 0; overflow: hidden; }
 .events-phone { position: absolute; left: 50%; top: 20px; z-index: 3; }
 .pill {
   position: absolute; z-index: 1; top: var(--t); display: inline-flex; align-items: center; gap: 8px;
@@ -246,7 +246,17 @@ svg { display: block; }
 .screen.is-shot.is-wheel { background: #0a0a0a; }
 .screen.is-shot.is-wheel .home-bar { background: #fff; }
 .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-.shot-wheel { opacity: 0; }
+.shot-wheel, .shot-next { opacity: 0; }
+.shot-next {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: #141414; color: #fff;
+}
+.next-mark { width: 72px; height: 72px; border-radius: 22px; background: var(--accent); }
+.next-label { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+.screen.is-shot.is-next { background: #141414; }
+.screen.is-shot.is-next .ios-status { color: #fff; }
+.screen.is-shot.is-next .home-bar { background: #fff; }
+.pill-next { opacity: 0; visibility: hidden; cursor: default; }
 .events-note { text-align: center; margin: 8px auto 0; }
 
 #stories { min-height: 100vh; }
@@ -290,8 +300,9 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
   .gateway-grid { width: min(100% - 32px, 560px); padding-top: 96px; }
   .bento { width: min(100% - 0px, 520px); }
   .bento-clip { overflow: visible; flex: none; }
-  .events-stage { height: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .events-stage { height: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; overflow: visible; }
   .pill, .events-phone, .hero-phone { position: relative; left: auto; right: auto; top: auto; }
+  .pill-next { opacity: 1; visibility: visible; }
   .hero-phone { margin-top: 28px; }
   .orbit { position: relative; inset: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 28px; width: min(100%, 360px); }
   .orbit-item { position: static; }

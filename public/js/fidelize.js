@@ -320,15 +320,16 @@
 
     const events = gsap.timeline({
       defaults: { ease: 'none' },
-      scrollTrigger: { trigger: '#events', start: 'top top', end: '+=150%', pin: true, scrub: 0.5, zIndex: 1 },
+      scrollTrigger: { trigger: '#events', start: 'top top', end: '+=280%', pin: true, scrub: 0.5, invalidateOnRefresh: true, zIndex: 1 },
     });
+    const stageWidth = () => document.querySelector('.events-stage').clientWidth;
     scrollRevealText(gsap.utils.toArray('#events [data-reveal]'), events, 0, CREAM);
-    events.from('.pill-l', {
-      x: () => document.querySelector('.events-stage').clientWidth * 0.34,
+    events.from('.pill-now.pill-l', {
+      x: () => stageWidth() * 0.34,
       stagger: 0.05, duration: 0.42,
     }, 0.1);
-    events.from('.pill-r', {
-      x: () => -document.querySelector('.events-stage').clientWidth * 0.34,
+    events.from('.pill-now.pill-r', {
+      x: () => -stageWidth() * 0.34,
       stagger: 0.05, duration: 0.42,
     }, 0.1);
     const shot = { p: 0 };
@@ -340,6 +341,48 @@
       },
     }, 0.1);
     events.from('.events-note', { autoAlpha: 0, duration: 0.2 }, 0.55);
+    events.to({ hold: 0 }, { hold: 1, duration: 0.28 }, 0.58);
+    events.to('.pill-now.pill-l', {
+      x: () => -stageWidth() * 0.62,
+      autoAlpha: 0,
+      stagger: 0.04,
+      duration: 0.34,
+    }, 0.9);
+    events.to('.pill-now.pill-r', {
+      x: () => stageWidth() * 0.62,
+      autoAlpha: 0,
+      stagger: 0.04,
+      duration: 0.34,
+    }, 0.9);
+    events.to('.events-note', { autoAlpha: 0, duration: 0.2 }, 0.9);
+    events.fromTo('.pill-next.pill-l', {
+      x: () => stageWidth() * 0.34,
+      autoAlpha: 0,
+    }, {
+      x: 0,
+      autoAlpha: 1,
+      stagger: 0.05,
+      duration: 0.42,
+      immediateRender: true,
+    }, 1.28);
+    events.fromTo('.pill-next.pill-r', {
+      x: () => -stageWidth() * 0.34,
+      autoAlpha: 0,
+    }, {
+      x: 0,
+      autoAlpha: 1,
+      stagger: 0.05,
+      duration: 0.42,
+      immediateRender: true,
+    }, 1.28);
+    const nextShot = { p: 0 };
+    events.to(nextShot, {
+      p: 1, duration: 0.42,
+      onUpdate: () => {
+        gsap.set('.shot-next', { autoAlpha: nextShot.p });
+        document.querySelector('.events-phone .screen').classList.toggle('is-next', nextShot.p > 0.45);
+      },
+    }, 1.28);
 
     const stories = gsap.utils.toArray('.story');
     gsap.set(stories.slice(1), { autoAlpha: 0 });
