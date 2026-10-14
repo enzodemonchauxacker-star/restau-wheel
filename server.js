@@ -9,6 +9,15 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const fidelize = require('./public/js/solutions');
+
+function htmlPagePattern() {
+  const fixed = ['admin', 'client', 'superadmin', 'register', 'checkout', 'cancel', 'carte', 'demo', 'fidelize'];
+  const extra = fidelize.detailPaths().map((p) => p.replace(/^\//, '')).filter(Boolean);
+  const all = [...fixed, ...extra].map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^/(${all.join('|')})/?$`);
+}
+const HTML_PAGE = htmlPagePattern();
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +37,7 @@ app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video)\/?$/.test(req.path)
+    HTML_PAGE.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -42,6 +51,29 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Content-Disposition', 'inline; filename="Enzo-Demonchaux-Acker.vcf"');
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
+});
+const fidelizePage = path.join(__dirname, 'views', 'fidelize', 'index.html');
+
+function sendFidelizePage(res) {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(fidelizePage);
+}
+
+function isFidelizeHost(req) {
+  const raw = `${req.headers['x-forwarded-host'] || ''},${req.headers.host || ''}`;
+  return raw.split(',').some((part) => {
+    const host = part.trim().replace(/:\d+$/, '').toLowerCase();
+    return host === 'fidelize.dev' || host === 'www.fidelize.dev';
+  });
+}
+
+app.use((req, res, next) => {
+  const p = req.path.replace(/\/+$/, '') || '/';
+  if (p === '/video' || p.startsWith('/video/')) return res.status(404).type('text/plain').send('Not found');
+  if (p === '/fidelize' || (process.env.VERCEL_ENV === 'preview' && p === '/') || (isFidelizeHost(req) && p === '/')) {
+    return sendFidelizePage(res);
+  }
+  next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -1308,6 +1340,12 @@ app.post('/api/checkout', async (req, res) => {
   });
 });
 
+// ─── Famille Fidelize ─────────────────────────────────────────────────────────
+app.get('/api/solutions', requireSuperAdmin, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(fidelize.list());
+});
+
 // ─── Pages HTML ───────────────────────────────────────────────────────────────
 app.get('/client',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'client',     'index.html')));
 app.get('/admin',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin',      'index.html')));
@@ -1336,11 +1374,6 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
-app.get('/video',       async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public', 'video', 'index.html'));
-});
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────
