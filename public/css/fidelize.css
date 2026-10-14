@@ -240,14 +240,13 @@ svg { display: block; }
 .pill-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--accent); }
 .pill-go { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); color: var(--text); display: grid; place-items: center; }
 .eyebrow { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-.qr-block {
-  margin-top: 16px; height: 180px; border-radius: 18px; background:
-    linear-gradient(var(--text), var(--text)) 16px 16px / 18px 18px,
-    linear-gradient(var(--text), var(--text)) 46px 16px / 10px 10px,
-    linear-gradient(var(--text), var(--text)) 16px 46px / 10px 28px,
-    var(--accent);
-  background-repeat: no-repeat;
-}
+.screen.is-shot { padding: 0; background: #f5f0e6; }
+.screen.is-shot .ios-status { color: #fff; }
+.screen.is-shot .home-bar { background: #000; }
+.screen.is-shot.is-wheel { background: #0a0a0a; }
+.screen.is-shot.is-wheel .home-bar { background: #fff; }
+.shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.shot-wheel { opacity: 0; }
 .events-note { text-align: center; margin: 8px auto 0; }
 
 #stories { min-height: 100vh; }

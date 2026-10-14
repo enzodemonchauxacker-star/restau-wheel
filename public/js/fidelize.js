@@ -143,6 +143,15 @@
       gsap.set('.check', { backgroundColor: '#E8FF95', borderColor: '#E8FF95' });
       gsap.set('.check i', { autoAlpha: 1 });
       gsap.from('.badge, .hero-title, .hero-cta', { opacity: 0, duration: reduced ? 0.35 : 0.6, stagger: 0.06 });
+      if (!reduced) {
+        gsap.to('.shot-wheel', {
+          autoAlpha: 1, ease: 'none',
+          scrollTrigger: { trigger: '#events', start: 'top 80%', end: 'center 55%', scrub: 0.5 },
+          onUpdate() {
+            document.querySelector('.events-phone .screen').classList.toggle('is-wheel', this.progress() > 0.45);
+          },
+        });
+      }
       return () => document.documentElement.classList.remove('fid-motion');
     }
 
@@ -321,6 +330,14 @@
     events.from('.pill-r', {
       x: () => -document.querySelector('.events-stage').clientWidth * 0.34,
       stagger: 0.05, duration: 0.42,
+    }, 0.1);
+    const shot = { p: 0 };
+    events.to(shot, {
+      p: 1, duration: 0.42,
+      onUpdate: () => {
+        gsap.set('.shot-wheel', { autoAlpha: shot.p });
+        document.querySelector('.events-phone .screen').classList.toggle('is-wheel', shot.p > 0.45);
+      },
     }, 0.1);
     events.from('.events-note', { autoAlpha: 0, duration: 0.2 }, 0.55);
 
