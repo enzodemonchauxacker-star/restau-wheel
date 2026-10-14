@@ -299,8 +299,17 @@
 
     const community = gsap.timeline({
       defaults: { ease: 'none' },
-      scrollTrigger: { trigger: '#community', start: 'top top', end: '+=180%', pin: true, scrub: 0.5, zIndex: 1 },
+      scrollTrigger: {
+        trigger: '#community',
+        start: 'top top',
+        end: '+=300%',
+        pin: true,
+        scrub: 0.5,
+        invalidateOnRefresh: true,
+        zIndex: 1,
+      },
     });
+    const titleScale = 1.62;
     community.from('.avatars img', {
       x: (i, el) => {
         const stage = el.offsetParent;
@@ -311,12 +320,26 @@
         return (stage.clientHeight / 2) - (el.offsetTop + el.offsetHeight / 2);
       },
       scale: 0.3,
-      duration: 0.5,
-      stagger: 0.035,
+      duration: 0.55,
+      stagger: 0.04,
     }, 0);
-    scrollRevealText(gsap.utils.toArray('#community .line'), community, 0.08, TEXT);
-    community.from('.community-copy p', { autoAlpha: 0, y: 12, duration: 0.2 }, 0.28);
-    community.to('.avatars img', { y: (i) => -30 - (i % 5) * 28, duration: 0.4 }, 0.7);
+    scrollRevealText(gsap.utils.toArray('#community .line'), community, 0.06, TEXT);
+    community.to('.community-copy', {
+      scale: titleScale,
+      duration: 0.34,
+      transformOrigin: '50% 50%',
+    }, 1.25);
+    community.to('.community-copy', {
+      y: () => {
+        const stage = document.querySelector('.community-stage');
+        const copy = document.querySelector('.community-copy');
+        const visualTop = (stage.clientHeight - copy.offsetHeight * titleScale) / 2;
+        return 84 - visualTop;
+      },
+      duration: 0.42,
+    }, 1.6);
+    community.from('.community-copy p', { autoAlpha: 0, duration: 0.32, immediateRender: true }, 1.82);
+    community.to('.avatars img', { y: (i) => -16 - (i % 5) * 14, duration: 0.4 }, 2.15);
 
     const events = gsap.timeline({
       defaults: { ease: 'none' },

@@ -35,8 +35,11 @@ button, input { font: inherit; }
   color: var(--text); transition: color 300ms ease;
 }
 .logo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; letter-spacing: -0.02em; }
+.nav .logo { gap: 12px; font-size: 28px; letter-spacing: -0.03em; }
 .mark { width: 16px; height: 16px; border-radius: 5px; background: var(--accent); color: var(--text); display: grid; place-items: center; }
+.nav .logo .mark { width: 42px; height: 42px; border-radius: 13px; }
 .mark svg { width: 12px; height: 12px; }
+.nav .logo .mark svg { width: 26px; height: 26px; }
 .mark.sm { width: 14px; height: 14px; }
 .nav-links { display: flex; gap: 22px; margin-left: auto; margin-right: 8px; font-size: 12px; color: var(--muted); }
 .nav-links a:hover { color: var(--text); }
@@ -154,7 +157,17 @@ svg { display: block; }
 }
 .gateway-grid h2 { font-size: 44px; }
 .gateway-phone { display: flex; flex-direction: column; align-items: center; gap: 16px; position: relative; z-index: 3; }
-.gateway-copy { justify-self: start; }
+.gateway-copy {
+  justify-self: start;
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  max-width: 100%;
+  min-width: 0;
+  text-wrap: pretty;
+}
 .gateway-grid h2, .gateway-copy { position: relative; z-index: 5; }
 .flies { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .fly { position: absolute; left: 50%; top: 46%; will-change: transform; }
@@ -223,9 +236,27 @@ svg { display: block; }
   border-radius: 50%; object-fit: cover; will-change: transform; pointer-events: none;
 }
 .avatars img.front { z-index: 45; }
-.community-copy { position: relative; z-index: 2; text-align: center; max-width: 36ch; }
+.community-copy { position: relative; z-index: 50; text-align: center; width: max-content; max-width: none; transform-origin: center center; }
 .community-copy h2 { font-size: 44px; }
-.community-copy p { margin: 14px auto 0; }
+.community-copy p {
+  margin: 16px auto 0;
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  max-width: 28ch;
+}
+html.fid-motion .community-copy p {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 12px);
+  width: min(26rem, 62vw);
+  margin: 0;
+  translate: -50% 0;
+  font-size: 20px;
+  max-width: none;
+}
 
 #events { min-height: 100vh; padding: 96px 24px 48px; }
 .events-stage { position: relative; height: 620px; width: min(var(--max), 100%); margin: 28px auto 0; overflow: hidden; }
@@ -295,7 +326,14 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
 @media (max-width: 900px) {
   .hero-title { font-size: 40px; }
   .center-title, .gateway-grid h2, .story h2, .community-copy h2 { font-size: 32px; }
+  .nav { padding: 0 16px; gap: 10px; }
+  .nav .logo { font-size: 22px; gap: 8px; }
+  .nav .logo .mark { width: 34px; height: 34px; border-radius: 10px; }
+  .nav .logo .mark svg { width: 20px; height: 20px; }
   .nav-links { display: none; }
+  .gateway-copy { font-size: 20px; max-width: 22em; }
+  .community-copy { width: auto; max-width: min(36ch, 100%); }
+  .community-copy p { position: static; width: auto; translate: none; font-size: 20px; max-width: 34ch; }
   .gateway-grid, .story, .bento, .footer-grid, .card-keep { display: flex; flex-direction: column; }
   .gateway-grid { width: min(100% - 32px, 560px); padding-top: 96px; }
   .bento { width: min(100% - 0px, 520px); }
