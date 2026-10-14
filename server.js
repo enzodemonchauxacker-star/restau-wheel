@@ -38,6 +38,7 @@ app.use((req, res, next) => {
     req.path.endsWith('.html') ||
     req.path === '/' ||
     req.path === '/arcade' ||
+    req.path === '/arcade/lancer' ||
     req.path === '/arcade/reglage' ||
     HTML_PAGE.test(req.path)
   ) {
@@ -1375,7 +1376,8 @@ function sendArcadePage(res, file) {
   res.sendFile(path.join(__dirname, 'views', 'arcade', file));
 }
 
-app.get('/arcade', (req, res) => sendArcadePage(res, 'play.html'));
+app.get('/arcade', (req, res) => sendArcadePage(res, 'home.html'));
+app.get('/arcade/lancer', (req, res) => sendArcadePage(res, 'play.html'));
 app.get('/arcade/reglage', (req, res) => sendArcadePage(res, 'reglage.html'));
 
 app.get('/api/arcade/gift', async (req, res) => {

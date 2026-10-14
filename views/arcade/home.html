@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piste</title>
+  <meta name="description" content="Une piste, un lancer. Le cadeau est à toi.">
+  <link rel="icon" href="/img/piste/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/arcade.css">
+</head>
+<body class="home">
+  <header class="top">
+    <a class="brand" href="/arcade">Piste</a>
+    <nav class="nav" aria-label="Piste">
+      <a href="/arcade/lancer">La piste</a>
+      <a href="/arcade/reglage">Le cadeau</a>
+    </nav>
+  </header>
+  <main class="home-stage">
+    <div class="home-copy">
+      <p class="kicker">Arcade</p>
+      <h1>Une piste.<br>Un lancer.</h1>
+      <p class="lede">La boule part lentement. Les quilles tombent. Le cadeau est déjà le tien.</p>
+      <span class="home-line" aria-hidden="true"></span>
+      <p class="gift-live">Aujourd'hui, <strong id="live-gift">Partie offerte</strong>.</p>
+      <a class="btn" href="/arcade/lancer">Entrer</a>
+    </div>
+  </main>
+  <script>
+    fetch('/api/arcade/gift').then((response) => response.json()).then((data) => {
+      if (data && data.label) document.getElementById('live-gift').textContent = data.label;
+    }).catch(() => {});
+  </script>
+</body>
+</html>

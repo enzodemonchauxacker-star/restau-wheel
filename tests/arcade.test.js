@@ -18,15 +18,20 @@ describe('Piste', () => {
     const root = path.join(__dirname, '..');
     const play = fs.readFileSync(path.join(root, 'views/arcade/play.html'), 'utf8');
     const desk = fs.readFileSync(path.join(root, 'views/arcade/reglage.html'), 'utf8');
+    const landing = fs.readFileSync(path.join(root, 'views/arcade/home.html'), 'utf8');
     const game = fs.readFileSync(path.join(root, 'public/js/arcade-game.js'), 'utf8');
     const skin = fs.readFileSync(path.join(root, 'public/css/arcade.css'), 'utf8');
     const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
     const home = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
     const hub = fs.readFileSync(path.join(root, 'views/fidelize/index.html'), 'utf8');
-    const bundle = play + desk + game + skin;
+    const bundle = play + desk + landing + game + skin;
 
     assert.match(server, /app\.get\('\/arcade'/);
+    assert.match(server, /app\.get\('\/arcade\/lancer'/);
     assert.match(server, /app\.get\('\/arcade\/reglage'/);
+    assert.match(landing, /general-sans@400,500/);
+    assert.match(landing, /href="\/arcade\/lancer"/);
+    assert.doesNotMatch(skin, /#3dfff2|#ff2bd6/i);
     assert.match(game, /gift\.label/);
     assert.match(game, /showReward\(count\)/);
     assert.doesNotMatch(game, /if\s*\([^)]*pins/);

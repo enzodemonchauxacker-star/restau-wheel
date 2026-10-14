@@ -80,8 +80,8 @@
     [-1, 1].forEach((side) => {
       const near = project(side, 0);
       const far = project(side, 1);
-      ctx.strokeStyle = '#3dfff2';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#e4b4b4';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(near.x, near.y);
       ctx.lineTo(far.x, far.y);
@@ -121,10 +121,8 @@
     ctx.quadraticCurveTo(width / 2, -height * 0.46, width / 2, 0);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = '#ff2bd6';
-    ctx.fillRect(-width * 0.36, -height * 0.62, width * 0.72, Math.max(2, height * 0.07));
-    ctx.fillStyle = '#3dfff2';
-    ctx.fillRect(-width * 0.42, -height * 0.46, width * 0.84, Math.max(2, height * 0.06));
+    ctx.fillStyle = '#e4b4b4';
+    ctx.fillRect(-width * 0.34, -height * 0.55, width * 0.68, Math.max(2, height * 0.08));
     ctx.restore();
   }
 
@@ -132,9 +130,9 @@
     const p = project(ballX(), ballZ);
     const radius = 24 * p.s;
     const shade = ctx.createRadialGradient(p.x - radius * 0.35, p.y - radius * 0.4, radius * 0.15, p.x, p.y, radius);
-    shade.addColorStop(0, '#ffd1f4');
-    shade.addColorStop(0.35, '#ff2bd6');
-    shade.addColorStop(1, '#4a0d38');
+    shade.addColorStop(0, '#f4e4e4');
+    shade.addColorStop(0.42, '#d7a3a3');
+    shade.addColorStop(1, '#6d4545');
     ctx.fillStyle = 'rgba(0,0,0,.28)';
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + radius * 0.85, radius * 0.8, radius * 0.28, 0, 0, Math.PI * 2);
@@ -216,7 +214,7 @@
     ballZ = 0.08;
     phase = 'roll';
     roll.start = performance.now();
-    roll.ms = reduced ? 0 : 980;
+    roll.ms = reduced ? 0 : 1500;
     throwBtn.disabled = true;
     hint.textContent = 'La boule file.';
     if (reduced) {
