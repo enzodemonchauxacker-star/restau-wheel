@@ -11,6 +11,7 @@ const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { mount: mountArcadePlayers } = require('./lib/arcade-players');
 const rekoneBilling = require('./lib/rekone-billing');
+const rekoneAccounts = require('./lib/rekone-accounts');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -27,13 +28,22 @@ app.post('/api/webhooks/stripe-rekone', express.raw({ type: 'application/json' }
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieSession({
+  name: 'rw_sess',
+  keys: [process.env.SESSION_SECRET || 'restau-wheel-secret-2024', 'rw-fallback-key'],
+  maxAge: 8 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+}));
 // HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
 app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
     /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video|arcade)\/?$/.test(req.path) ||
-    /^\/arcade\/(dashboard|jouer|abonnement|resiliation)\/?$/.test(req.path)
+    /^\/arcade\/(dashboard|jouer|abonnement|resiliation|compte|connexion)\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -60,20 +70,110 @@ app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
   return res.sendFile(path.join(__dirname, 'public', 'arcade', 'index.html'));
 });
+app.use((req, res, next) => {
+  if (!/^\/arcade\/dashboard(?:\/index\.html)?\/?$/.test(req.path)) return next();
+  if (req.session?.rekoneId) return next();
+  const nextUrl = encodeURIComponent(req.originalUrl.split('#')[0] || '/arcade/dashboard/');
+  return res.redirect(302, '/arcade/connexion/?next=' + nextUrl);
+});
 app.use(express.static(path.join(__dirname, 'public')));
 mountArcadePlayers(app);
 rekoneBilling.mount(app, { getStripe: () => stripe });
 
-// Session en cookie (compatible Vercel serverless — pas de MemoryStore)
-app.use(cookieSession({
-  name: 'rw_sess',
-  keys: [process.env.SESSION_SECRET || 'restau-wheel-secret-2024', 'rw-fallback-key'],
-  maxAge: 8 * 60 * 60 * 1000,
-  httpOnly: true,
-  secure: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
-  path: '/',
-}));
+function rekoneAccountStore() {
+  return rekoneAccounts.sqlStore(db);
+}
+
+function rememberRekone(req, account) {
+  req.session.rekoneId = account.id;
+  req.session.rekoneEmail = account.email;
+  req.session.rekoneName = account.name;
+  req.session.rekoneVenue = account.venue;
+}
+
+app.get('/arcade/api/compte', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const id = String(req.query.session_id || '');
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return res.status(400).json({ error: 'Session invalide' });
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  try {
+    await ensureReady();
+    const session = await stripe.checkout.sessions.retrieve(id);
+    if (session.metadata?.product !== 'rekone') return res.status(404).json({ error: 'Session inconnue' });
+    if (session.payment_status !== 'paid') return res.status(402).json({ error: 'Paiement non confirmé' });
+    const email = rekoneAccounts.cleanEmail(session.customer_details?.email || session.customer_email || '');
+    const existing = email ? await rekoneAccountStore().getByEmail(email) : null;
+    res.json({
+      paid: true,
+      email,
+      name: session.metadata?.customer_name || '',
+      venue: session.metadata?.venue || '',
+      exists: Boolean(existing),
+    });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(404).json({ error: 'Session inconnue' });
+  }
+});
+
+app.post('/arcade/api/compte', async (req, res) => {
+  const id = String(req.body?.session_id || '');
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return res.status(400).json({ error: 'Session invalide' });
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  try {
+    await ensureReady();
+    const session = await stripe.checkout.sessions.retrieve(id);
+    if (session.metadata?.product !== 'rekone') return res.status(404).json({ error: 'Session inconnue' });
+    if (session.payment_status !== 'paid') return res.status(402).json({ error: 'Paiement non confirmé' });
+    const result = await rekoneAccounts.register(rekoneAccountStore(), {
+      email: session.customer_details?.email || session.customer_email || '',
+      password: req.body?.password,
+      name: req.body?.name || session.metadata?.customer_name || '',
+      venue: req.body?.venue || session.metadata?.venue || '',
+      stripeSessionId: id,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error, code: result.code });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Création impossible' });
+  }
+});
+
+app.post('/arcade/api/connexion', async (req, res) => {
+  try {
+    await ensureReady();
+    const result = await rekoneAccounts.authenticate(rekoneAccountStore(), req.body || {});
+    if (result.error) return res.status(result.status || 401).json({ error: result.error });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account, next: rekoneAccounts.safeNext(req.body?.next) });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Connexion impossible' });
+  }
+});
+
+app.post('/arcade/api/deconnexion', (req, res) => {
+  if (req.session) {
+    delete req.session.rekoneId;
+    delete req.session.rekoneEmail;
+    delete req.session.rekoneName;
+    delete req.session.rekoneVenue;
+  }
+  res.json({ ok: true });
+});
+
+app.get('/arcade/api/compte/moi', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!req.session?.rekoneId) return res.json({ loggedIn: false });
+  res.json({
+    loggedIn: true,
+    email: req.session.rekoneEmail || '',
+    name: req.session.rekoneName || '',
+    venue: req.session.rekoneVenue || '',
+  });
+});
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 function requireRestaurant(req, res, next) {

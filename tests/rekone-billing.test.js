@@ -22,7 +22,7 @@ test('checkout sends the Stripe price without collecting a card', async () => {
   assert.equal(params.metadata.product, 'rekone');
   assert.equal(params.subscription_data.metadata.venue, 'Salle Nord');
   assert.equal(params.integration_identifier, billing.INTEGRATION_ID);
-  assert.equal(params.success_url, 'https://rekone.si/arcade/dashboard/?session_id={CHECKOUT_SESSION_ID}');
+  assert.equal(params.success_url, 'https://rekone.si/arcade/compte/?session_id={CHECKOUT_SESSION_ID}');
   assert.equal(params.payment_method_types, undefined);
   assert.equal(Object.hasOwn(params, 'payment_method_types'), false);
 });

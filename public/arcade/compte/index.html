@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekone — Créer un compte</title>
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=login">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+  <style>
+    body { min-height: 100vh; }
+    .sheet { width: min(480px, calc(100% - 32px)); margin: 112px auto 64px; background: var(--card); border-radius: 24px; padding: 28px; }
+    h1 { font-size: 32px; font-weight: 500; letter-spacing: -0.03em; }
+    .lead { color: var(--muted); margin: 8px 0 18px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field span { font-size: 12px; color: var(--muted); }
+    .field input { height: 44px; border-radius: 999px; border: 1px solid var(--line); padding: 0 16px; background: var(--cream); }
+    .sheet .btn { width: 100%; height: 44px; }
+    .err { color: #9a3b3b; margin-top: 12px; }
+    .links { margin-top: 16px; font-size: 13px; }
+    .links a { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <header class="nav" id="nav">
+    <a class="logo" href="/arcade/">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg></span>
+      Rekone
+    </a>
+    <a class="btn nav-login" href="/arcade/connexion/">Se connecter</a>
+  </header>
+  <main class="sheet">
+    <h1>Créer le compte</h1>
+    <p class="lead" id="lead">Le paiement est confirmé. Choisissez le mot de passe de la salle.</p>
+    <form id="account-form">
+      <label class="field"><span>Email</span><input id="email" name="email" type="email" readonly></label>
+      <label class="field"><span>Salle</span><input id="venue" name="venue" required maxlength="80"></label>
+      <label class="field"><span>Nom</span><input id="name" name="name" required maxlength="80" autocomplete="name"></label>
+      <label class="field"><span>Mot de passe</span><input id="password" name="password" type="password" required minlength="8" maxlength="72" autocomplete="new-password"></label>
+      <label class="field"><span>Confirmer le mot de passe</span><input id="confirm" type="password" required minlength="8" maxlength="72" autocomplete="new-password"></label>
+      <button class="btn btn-dark" id="submit" type="submit">Créer le compte</button>
+      <p class="err" id="err" hidden></p>
+    </form>
+    <p class="links"><a href="/arcade/connexion/">J'ai déjà un compte</a></p>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get('session_id') || '';
+    const form = document.getElementById('account-form');
+    const err = document.getElementById('err');
+    const lead = document.getElementById('lead');
+
+    function showErr(message) {
+      err.hidden = false;
+      err.textContent = message;
+    }
+
+    if (!sessionId) {
+      form.hidden = true;
+      lead.textContent = 'Ouvrez cette page après le paiement Rekone.';
+    } else {
+      fetch('/arcade/api/compte?session_id=' + encodeURIComponent(sessionId))
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            form.hidden = true;
+            lead.textContent = data.error || 'Paiement non confirmé.';
+            return;
+          }
+          document.getElementById('email').value = data.email || '';
+          document.getElementById('venue').value = data.venue || '';
+          document.getElementById('name').value = data.name || '';
+          if (data.exists) {
+            form.hidden = true;
+            lead.textContent = 'Un compte existe déjà pour ' + (data.email || 'cet email') + '.';
+          }
+        })
+        .catch(() => showErr('Connexion au serveur impossible.'));
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      err.hidden = true;
+      const password = document.getElementById('password').value;
+      if (password !== document.getElementById('confirm').value) {
+        showErr('Les deux mots de passe sont différents.');
+        return;
+      }
+      const submit = document.getElementById('submit');
+      submit.disabled = true;
+      try {
+        const res = await fetch('/arcade/api/compte', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            password,
+            name: document.getElementById('name').value,
+            venue: document.getElementById('venue').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.code === 'exists') lead.textContent = 'Un compte existe déjà pour cet email.';
+          throw new Error(data.error || 'Création impossible');
+        }
+        location.href = '/arcade/dashboard/';
+      } catch (error) {
+        showErr(error.message);
+        submit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

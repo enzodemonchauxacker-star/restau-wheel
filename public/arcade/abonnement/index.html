@@ -142,7 +142,7 @@
     const params = new URLSearchParams(location.search);
     if (params.get('canceled') === '1') showErr('Paiement annulé. Vous pouvez recommencer.');
     if (params.get('session_id')) {
-      location.replace('/arcade/dashboard/?session_id=' + encodeURIComponent(params.get('session_id')));
+      location.replace('/arcade/compte/?session_id=' + encodeURIComponent(params.get('session_id')));
     }
 
     form.addEventListener('submit', async (event) => {
