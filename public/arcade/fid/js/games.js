@@ -1,4 +1,7 @@
 (function () {
+  function arcadeRound(phase) {
+    window.dispatchEvent(new CustomEvent('arcade-round', { detail: { phase } }));
+  }
   const sackMarkup = '<svg class="sack" viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>';
   const giftMarkup = '<svg class="mark mark-gift" viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg>';
   const boneMarkup = '<svg class="mark mark-bone" viewBox="0 0 72 36" aria-hidden="true"><use href="#bone-glyph"/></svg>';
@@ -56,6 +59,7 @@
     throwBtn.textContent = 'Rejouer';
     throwBtn.dataset.mode = 'reset';
     phase = 'rest';
+    arcadeRound('end');
   }
 
   function tick(now) {
@@ -82,6 +86,7 @@
       bowlScore.textContent = 'Vise, puis lance.';
       throwBtn.textContent = 'Lancer';
       delete throwBtn.dataset.mode;
+      arcadeRound('start');
       return;
     }
     if (phase !== 'aim') return;
@@ -144,6 +149,7 @@
   }
 
   laserBtn.addEventListener('click', () => {
+    arcadeRound('start');
     clearLaser();
     laserPoints = 0;
     laserLeft = 12;
@@ -158,6 +164,7 @@
         laserScore.textContent = laserPoints + (laserPoints > 1 ? ' cibles' : ' cible');
         laserBtn.disabled = false;
         laserBtn.textContent = 'Rejouer';
+        arcadeRound('end');
         return;
       }
       laserScore.textContent = laserLeft + ' s · ' + laserPoints;
@@ -192,6 +199,7 @@
   clawBtn.addEventListener('click', () => {
     if (clawBtn.dataset.mode === 'reset') {
       releaseClaw();
+      arcadeRound('start');
       return;
     }
     if (clawBusy) return;
@@ -227,9 +235,11 @@
           clawBtn.disabled = false;
           clawBtn.textContent = 'Rejouer';
           clawBtn.dataset.mode = 'reset';
+          arcadeRound('end');
           return;
         }
         clawMsg.textContent = 'À côté.';
+        arcadeRound('end');
         window.setTimeout(() => {
           claw.classList.remove('is-shut');
           window.setTimeout(() => {
@@ -255,6 +265,7 @@
   if (lootGrid && lootMsg && lootReset) {
   function paintLoots() {
     lootLock = false;
+    arcadeRound('start');
     lootMsg.textContent = 'Un cadeau, neuf os.';
     lootReset.textContent = 'Mélanger';
     const giftAt = Math.floor(Math.random() * 10);
@@ -289,6 +300,7 @@
     reveal(button);
     lootMsg.textContent = button.dataset.kind === 'gift' ? 'Le cadeau.' : 'Un os.';
     lootReset.textContent = 'Rejouer';
+    arcadeRound('end');
     const others = [...lootGrid.querySelectorAll('.loot')].filter((other) => other !== button);
     others.forEach((other, index) => {
       window.setTimeout(() => reveal(other), 220 + index * 80);

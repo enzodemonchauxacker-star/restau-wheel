@@ -561,8 +561,17 @@
       }).join('');
     }
 
+    function packLots(lots) {
+      const slim = lots.map((lot) => [lot.name, lot.percent, lot.win ? 1 : 0, lot.days]);
+      const bytes = new TextEncoder().encode(JSON.stringify(slim));
+      let binary = '';
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
     function playPath(id) {
-      return '/arcade/jouer/?jeu=' + encodeURIComponent(id);
+      const packed = packLots(lotsOf(id));
+      return '/arcade/jouer/?jeu=' + encodeURIComponent(id) + (packed ? '&lots=' + packed : '');
     }
 
     function renderQr() {
@@ -572,7 +581,7 @@
       document.getElementById('qr-open').href = playPath(currentGame);
       if (window.QRCode && QRCode.toCanvas) {
         QRCode.toCanvas(canvas, url, {
-          width: 168,
+          width: 220,
           margin: 1,
           color: { dark: '#1e1e1e', light: '#ffffff' },
         });

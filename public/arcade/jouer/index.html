@@ -20,8 +20,32 @@
     }
     .play-bar .mark svg { width: 18px; height: 18px; }
     .play-bar strong { font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
-    .play-wrap { width: min(1100px, calc(100% - 32px)); margin: 18px auto 48px; }
+    .play-wrap { width: min(1100px, calc(100% - 32px)); margin: 18px auto 16px; }
     .play-miss { color: #8d8d8d; padding: 24px 0; }
+    .result {
+      display: none;
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto 40px;
+      padding: 22px 24px;
+      border-radius: 22px;
+      background: #fff;
+      border: 1px solid #e8e2d9;
+      font-family: "General Sans", sans-serif;
+    }
+    .result.show { display: block; }
+    .result.win { background: #e8ff95; border-color: transparent; }
+    .result p { color: #5c5c5c; font-size: 15px; }
+    .result h2 {
+      font-size: 32px; font-weight: 500; letter-spacing: -0.03em;
+      margin: 4px 0 6px; color: #1e1e1e;
+    }
+    .lots-line {
+      width: min(1100px, calc(100% - 32px));
+      margin: 12px auto 0;
+      color: #8d8d8d;
+      font-size: 14px;
+      font-family: "General Sans", sans-serif;
+    }
   </style>
 </head>
 <body>
@@ -32,6 +56,11 @@
     <strong id="play-title">Arcade</strong>
   </header>
   <main class="play-wrap" id="stage"><p class="play-miss" id="play-status">Chargement du jeu…</p></main>
+  <section class="result" id="result" aria-live="polite">
+    <p id="result-kicker"></p>
+    <h2 id="result-title"></h2>
+    <p id="result-detail"></p>
+  </section>
   <script>
     const GAMES = {
       bowling: ['game-bowl', 'Bowling'],
@@ -39,10 +68,71 @@
       pince: ['game-claw', 'La pince'],
       butin: ['game-loot', 'Dix butins'],
     };
-    const key = new URLSearchParams(location.search).get('jeu');
+    const params = new URLSearchParams(location.search);
+    const key = params.get('jeu');
     const picked = GAMES[key] || GAMES.bowling;
     document.getElementById('play-title').textContent = picked[1];
     document.title = 'Arcade — ' + picked[1];
+
+    function readLots() {
+      const raw = params.get('lots');
+      if (!raw) return [];
+      try {
+        const pad = (4 - (raw.length % 4)) % 4;
+        const padded = raw.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+        const slim = JSON.parse(new TextDecoder().decode(bytes));
+        return slim.map((lot) => ({ name: lot[0], percent: Number(lot[1]) || 0, win: !!lot[2], days: lot[3] }));
+      } catch (error) {
+        return [];
+      }
+    }
+
+    const lots = readLots();
+    if (lots.length) {
+      const line = document.createElement('p');
+      line.className = 'lots-line';
+      line.textContent = 'Lots : ' + lots.map((lot) => lot.name + ' ' + lot.percent + '%').join(' · ');
+      document.querySelector('.play-bar').after(line);
+    }
+
+    function drawLot() {
+      const roll = Math.random() * 100;
+      let cursor = 0;
+      for (const lot of lots) {
+        cursor += lot.percent;
+        if (roll < cursor) return lot;
+      }
+      return null;
+    }
+
+    function showResult() {
+      const box = document.getElementById('result');
+      const lot = lots.length ? drawLot() : null;
+      const won = !!(lot && lot.win);
+      box.classList.toggle('win', won);
+      box.classList.add('show');
+      if (!lots.length) {
+        document.getElementById('result-kicker').textContent = 'Résultat';
+        document.getElementById('result-title').textContent = 'Aucun lot configuré';
+        document.getElementById('result-detail').textContent = 'Ce jeu n’a pas encore de lots à gagner.';
+        return;
+      }
+      document.getElementById('result-kicker').textContent = won ? 'Gagné' : 'Perdu';
+      document.getElementById('result-title').textContent = won ? lot.name : 'Pas de lot cette fois';
+      document.getElementById('result-detail').textContent = won
+        ? 'À utiliser sous ' + lot.days + ' jours.'
+        : 'Retentez une partie.';
+    }
+
+    window.addEventListener('arcade-round', (event) => {
+      if (!event.detail || event.detail.phase === 'start') {
+        document.getElementById('result').classList.remove('show', 'win');
+        return;
+      }
+      showResult();
+    });
 
     fetch('/arcade/index.html')
       .then((response) => response.text())
@@ -60,7 +150,7 @@
         if (defs) stage.append(defs);
         stage.append(article);
         const script = document.createElement('script');
-        script.src = '/arcade/fid/js/games.js?v=qr';
+        script.src = '/arcade/fid/js/games.js?v=result';
         document.body.append(script);
       })
       .catch(() => {
