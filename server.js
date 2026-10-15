@@ -9,6 +9,7 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const { mount: mountArcadePlayers } = require('./lib/arcade-players');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.get('/carte.vcf', (req, res) => {
   res.send(body);
 });
 app.use(express.static(path.join(__dirname, 'public')));
+mountArcadePlayers(app);
 
 // Session en cookie (compatible Vercel serverless — pas de MemoryStore)
 app.use(cookieSession({

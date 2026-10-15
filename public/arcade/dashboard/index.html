@@ -390,7 +390,7 @@
 
     <section class="page" id="page-joueurs">
       <h1>Joueurs</h1>
-      <p class="desc">Liste des joueurs. L'export sert au suivi, dans le cadre du RGPD.</p>
+      <p class="desc">Chaque scan demande le nom, le prénom, l’e-mail, le téléphone et l’accord RGPD. L’export reprend ces données.</p>
       <div class="toolbar">
         <input class="grow" id="player-q" type="search" placeholder="Nom, e-mail, téléphone, jeu" aria-label="Filtrer les joueurs">
         <button class="btn lime" type="button" id="export-btn">Exporter la liste</button>
@@ -492,6 +492,8 @@
     }
 
     let state = load();
+    let remotePlayers = [];
+    let remoteStamp = '';
     let currentGame = 'bowling';
     function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
 
@@ -527,8 +529,13 @@
       if ((location.hash || '#tableau').slice(1) !== hash) history.replaceState(null, '', '#' + hash);
     }
 
+    function allPlayers() {
+      const remoteIds = new Set(remotePlayers.map((player) => player.id));
+      return [...remotePlayers, ...state.players.filter((player) => !remoteIds.has(player.id))];
+    }
+
     function renderStats() {
-      const players = state.players;
+      const players = allPlayers();
       const wins = players.filter((player) => player.win);
       const cards = [
         ['Joueurs', new Set(players.map((player) => player.email)).size, true],
@@ -613,11 +620,11 @@
 
     function renderPlayers() {
       const query = document.getElementById('player-q').value.trim().toLowerCase();
-      const rows = state.players.filter((player) => {
+      const statusLabel = { used: 'Utilisé', pending: 'En attente', expired: 'Expiré', played: 'Joué' };
+      const rows = allPlayers().filter((player) => {
         const blob = `${player.first} ${player.last} ${player.email} ${player.phone} ${gameName(player.game)}`.toLowerCase();
         return blob.includes(query);
       });
-      const statusLabel = { used: 'Utilisé', pending: 'En attente', expired: 'Expiré' };
       document.getElementById('players').innerHTML = rows.length ? rows.map((player) => `
         <article class="row-card">
           <div class="who">
@@ -629,6 +636,7 @@
           </div>
           <div class="badges">
             <span class="badge">${esc(gameName(player.game))}</span>
+            ${player.consent ? '<span class="badge win">RGPD</span>' : ''}
             <span class="badge ${player.win ? 'win' : ''}">${esc(player.prize)}</span>
             <span class="badge ${esc(player.status)}">${statusLabel[player.status] || ''}</span>
             <span class="badge">${player.visits} partie${player.visits > 1 ? 's' : ''}</span>
@@ -652,7 +660,7 @@
 
     function playersCsv() {
       const header = ['Prénom', 'Nom', 'E-mail', 'Téléphone', 'Jeu', 'Lot', 'Gain', 'Statut', 'Parties', 'Date', 'Consentement'];
-      const lines = state.players.map((player) => [
+      const lines = allPlayers().map((player) => [
         player.first, player.last, player.email, player.phone, gameName(player.game),
         player.prize, player.win ? 'oui' : 'non', player.status, player.visits, player.at,
         player.consent ? 'oui' : 'non',
@@ -786,9 +794,25 @@
       document.getElementById('save-note').textContent = 'Enregistré';
     });
 
+    async function pullPlayers() {
+      try {
+        const response = await fetch('/arcade/api/joueurs', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const stamp = JSON.stringify(data.players || []);
+        if (stamp === remoteStamp) return;
+        remoteStamp = stamp;
+        remotePlayers = data.players || [];
+        renderStats();
+        renderPlayers();
+      } catch (error) { /* la liste locale reste affichée */ }
+    }
+
     window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
     render();
     showPage(location.hash.slice(1) || 'tableau');
+    pullPlayers();
+    window.setInterval(pullPlayers, 4000);
     window.arcadePlayersCsv = playersCsv;
   </script>
 </body>
