@@ -406,16 +406,6 @@
       });
     });
 
-    document.querySelectorAll('[data-theme]').forEach((section) => {
-      ScrollTrigger.create({
-        trigger: section, start: 'top 64px', end: 'bottom 64px',
-        onToggle: (self) => {
-          if (!self.isActive) return;
-          document.getElementById('nav').classList.toggle('is-dark', section.dataset.theme === 'dark');
-        },
-      });
-    });
-
     gsap.utils.toArray('[data-scramble]').forEach((title) => {
       ScrollTrigger.create({
         trigger: title, start: 'top 75%', once: true,
@@ -461,6 +451,35 @@
     };
   }, document.body);
 
-  window.FidelizePage = { lenis, scrambleText, scrollRevealText, blurIn };
+  function channel(value) {
+    const s = value / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }
+
+  function syncNavTheme() {
+    const nav = document.getElementById('nav');
+    if (!nav) return;
+    const y = nav.offsetHeight + 8;
+    const stack = document.elementsFromPoint(Math.min(32, window.innerWidth / 2), y);
+    let node = stack.find((el) => el !== nav && !nav.contains(el)) || null;
+    let rgb = null;
+    while (node && node !== document.documentElement) {
+      const parts = getComputedStyle(node).backgroundColor.match(/[\d.]+/g);
+      if (parts && parts.length >= 3 && Number(parts[3] ?? 1) !== 0) {
+        rgb = parts.slice(0, 3).map(Number);
+        break;
+      }
+      node = node.parentElement;
+    }
+    if (!rgb) return;
+    const bg = 0.2126 * channel(rgb[0]) + 0.7152 * channel(rgb[1]) + 0.0722 * channel(rgb[2]);
+    const contrast = (text) => (Math.max(bg, text) + 0.05) / (Math.min(bg, text) + 0.05);
+    const darkText = channel(30);
+    const lightText = 0.2126 * channel(255) + 0.7152 * channel(248) + 0.0722 * channel(241);
+    nav.classList.toggle('is-dark', contrast(lightText) > contrast(darkText));
+  }
+
+  gsap.ticker.add(syncNavTheme);
+  window.FidelizePage = { lenis, scrambleText, scrollRevealText, blurIn, syncNavTheme };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
 })();
