@@ -1,33 +1,33 @@
 /**
- * Famille Fidelize — outils pour fidéliser le client.
- * Ajouter une solution = un objet dans `solutions`.
- * On n'y met que ce qui est prêt à être montré.
+ * Arcade — la solution des salles de jeux.
+ * Le client choisit ses jeux, puis règle lots, pourcentages et suivi.
  */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.Arcade = api;
   root.Fidelize = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const solutions = [
     {
-      id: 'restauwheel',
-      name: 'Restau Wheel',
+      id: 'arcade',
+      name: 'Arcade',
       status: 'live',
-      href: 'https://restauwheel.com',
-      accent: '#FF2D6A',
+      href: '/arcade/',
+      accent: '#E8FF95',
       fr: {
-        sector: 'Restaurants',
-        tagline: 'La roue qui fait revenir à table.',
-        summary: 'Le client scanne le QR, tourne la roue et repart avec un lot pour la prochaine visite. Vous gardez les lots et les probabilités.',
-        points: ['QR code en salle', 'Lots et probabilités', 'Validation du gain au retour'],
-        cta: 'Ouvrir Restau Wheel',
+        sector: 'Salles de jeux',
+        tagline: 'Vos jeux. Vos règles.',
+        summary: 'La salle active le bowling, le laser game, la pince ou le butin. Elle fixe les lots, les pourcentages et les espérances, puis suit les joueurs.',
+        points: ['Jeux au choix', 'Lots, pourcentages, espérances', 'Dashboard et export RGPD'],
+        cta: 'Voir Arcade',
       },
       en: {
-        sector: 'Restaurants',
-        tagline: 'The wheel that brings them back to the table.',
-        summary: 'The guest scans the QR, spins the wheel, and leaves with a prize for the next visit. You keep the prizes and the odds.',
-        points: ['QR code in the dining room', 'Prizes and odds', 'Prize check on the return visit'],
-        cta: 'Open Restau Wheel',
+        sector: 'Game venues',
+        tagline: 'Your games. Your rules.',
+        summary: 'The venue turns on bowling, laser game, the claw, or the loot. It sets prizes, odds, and expectations, then follows the players.',
+        points: ['Games to choose from', 'Prizes, odds, expectations', 'Dashboard and GDPR export'],
+        cta: 'See Arcade',
       },
     },
   ];
@@ -39,7 +39,7 @@
 
   function byHref(href) {
     const path = String(href || '').replace(/\/$/, '') || '/';
-    return solutions.find((s) => s.href === path) || null;
+    return solutions.find((s) => s.href.replace(/\/$/, '') === path) || null;
   }
 
   function detailPaths() {

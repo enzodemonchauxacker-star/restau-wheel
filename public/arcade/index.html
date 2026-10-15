@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fidelize — Logiciels pour fidéliser la clientèle</title>
-  <meta name="description" content="Fidelize conçoit des logiciels pour fidéliser la clientèle. Restau Wheel est la solution pour les restaurants.">
+  <title>Arcade — La solution des salles de jeux</title>
+  <meta name="description" content="Arcade est la solution des salles de jeux. La salle choisit le bowling, le laser game, la pince ou le butin, puis règle les lots, les pourcentages, les espérances et le suivi des joueurs.">
   <meta name="theme-color" content="#FFF8F1">
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@600&display=swap">
   <link rel="stylesheet" href="/arcade/fid/vendor/lenis/lenis.css">
-  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=arcade">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -68,13 +68,13 @@
   <header class="nav" id="nav">
     <a class="logo" href="#hero">
       <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3.2a4.8 4.8 0 1 1-3.2 1.4" stroke-linecap="round"/><path d="M4.6 2.6v2.4h2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
       </span>
-      Fidelize
+      Arcade
     </a>
     <nav class="nav-links" aria-label="Navigation">
       <a href="#gateway">Le but</a>
-      <a href="#works">La méthode</a>
+      <a href="#works">Les jeux</a>
       <a href="#events">La solution</a>
     </nav>
     <a class="btn btn-dark" href="#events">Voir la solution</a>
@@ -83,11 +83,11 @@
   <main id="fid">
     <section class="hero" id="hero" data-theme="light">
       <div class="hero-stage">
-        <p class="badge"><span class="badge-ico" aria-hidden="true"></span>Logiciels de fidélisation</p>
+        <p class="badge"><span class="badge-ico" aria-hidden="true"></span>Solution pour salles de jeux</p>
         <h1 class="hero-title">
-          <span class="line" data-reveal>Fidéliser</span>
-          <span class="line" data-reveal>La Clientèle</span>
-          <span class="line" data-reveal>Avec Arcade.</span>
+          <span class="line" data-reveal>Arcade.</span>
+          <span class="line" data-reveal>Vos Jeux.</span>
+          <span class="line" data-reveal>Vos Règles.</span>
         </h1>
         <a class="btn btn-dark hero-cta" href="#events">Voir la solution</a>
         <div class="orbit" id="orbit" aria-hidden="true"></div>
@@ -109,14 +109,14 @@
             <span class="moon" aria-hidden="true"></span>
           </button>
         </div>
-        <p class="gateway-copy">Le but&nbsp;: faire revenir les joueurs. Bowling, laser game, pince ou butin, Arcade leur donne une raison de rejouer, puis vous dit s'ils l'ont fait.</p>
+        <p class="gateway-copy">Arcade est la solution de la salle. Vous activez le bowling, le laser game, la pince ou le butin, puis vous fixez les lots, les pourcentages et les espérances.</p>
         <div class="flies" id="flies" aria-hidden="true"></div>
       </div>
     </section>
 
     <section class="band" id="works" data-theme="dark">
       <div class="works-view">
-        <h2 class="center-title"><span class="line" data-reveal>Comment</span><span class="line" data-reveal>Les Fidéliser</span></h2>
+        <h2 class="center-title"><span class="line" data-reveal>Choisissez</span><span class="line" data-reveal>Les Jeux</span></h2>
         <div class="bento-clip">
         <div class="bento">
           <article class="card card-steps game-card" id="game-bowl">
@@ -711,20 +711,20 @@
             <div class="loot-grid" id="loot-grid"></div>
             <button class="btn btn-dark game-btn" type="button" id="loot-reset">Mélanger</button>
           </article>
-          <article class="card card-app">
-            <h3 data-scramble>En Logiciel</h3>
-            <p>Le geste reste simple. Le logiciel fait le suivi.</p>
+          <article class="card card-app" id="reglages">
+            <h3 data-scramble>Vous Réglez</h3>
+            <p>Lots, pourcentages, espérances. Vous les fixez.</p>
             <div class="app-phone" aria-hidden="true">
               <div class="phone mini"><div class="phone-frame"><div class="pin-hold" style="--yaw:-6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
             </div>
           </article>
-          <article class="card card-topics">
-            <h3 data-scramble>Vos Leviers</h3>
-            <p>Vous choisissez ce qui fait revenir.</p>
+          <article class="card card-topics" id="suivi">
+            <h3 data-scramble>Le Suivi</h3>
+            <p>Dashboard, joueurs, export RGPD.</p>
             <div class="hmarquee" aria-hidden="true">
-              <div class="hrow"><div class="htrack"><span>Visite</span><span>Offre</span><span>Retour</span><span>Mesure</span><span>Relation</span><span>Visite</span><span>Offre</span><span>Retour</span><span>Mesure</span><span>Relation</span></div></div>
-              <div class="hrow reverse"><div class="htrack"><span>Service</span><span>Équipe</span><span>Avis</span><span>Habitude</span><span>Accueil</span><span>Service</span><span>Équipe</span><span>Avis</span><span>Habitude</span><span>Accueil</span></div></div>
-              <div class="hrow"><div class="htrack"><span>Gain</span><span>Preuve</span><span>Suivi</span><span>Visite</span><span>Fidélité</span><span>Gain</span><span>Preuve</span><span>Suivi</span><span>Visite</span><span>Fidélité</span></div></div>
+              <div class="hrow"><div class="htrack"><span>Lots</span><span>Pourcentages</span><span>Espérances</span><span>Cadeaux</span><span>Retours</span><span>Lots</span><span>Pourcentages</span><span>Espérances</span><span>Cadeaux</span><span>Retours</span></div></div>
+              <div class="hrow reverse"><div class="htrack"><span>Dashboard</span><span>Joueurs</span><span>Export</span><span>RGPD</span><span>Parties</span><span>Dashboard</span><span>Joueurs</span><span>Export</span><span>RGPD</span><span>Parties</span></div></div>
+              <div class="hrow"><div class="htrack"><span>Bowling</span><span>Laser</span><span>Pince</span><span>Butin</span><span>Revanche</span><span>Bowling</span><span>Laser</span><span>Pince</span><span>Butin</span><span>Revanche</span></div></div>
             </div>
           </article>
         </div>
@@ -759,46 +759,46 @@
     <section class="band" id="events" data-theme="dark">
       <h2 class="center-title light" data-reveal>La Solution</h2>
       <div class="events-stage">
-        <a class="pill pill-now pill-l" style="--t:12%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Arcade<span class="pill-go">↗</span></a>
-        <a class="pill pill-now pill-l" style="--t:38%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Salles de jeux<span class="pill-go">↗</span></a>
-        <a class="pill pill-now pill-l" style="--t:64%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Laser game<span class="pill-go">↗</span></a>
-        <a class="pill pill-now pill-r" style="--t:16%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Bowling<span class="pill-go">↗</span></a>
-        <a class="pill pill-now pill-r" style="--t:42%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>Un cadeau<span class="pill-go">↗</span></a>
-        <a class="pill pill-now pill-r" style="--t:68%" href="https://restauwheel.com" rel="noopener noreferrer"><span class="pill-dot"></span>La revanche<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:12%" href="#hero"><span class="pill-dot"></span>Arcade<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:38%" href="#gateway"><span class="pill-dot"></span>Salles de jeux<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:64%" href="#game-laser"><span class="pill-dot"></span>Laser game<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:16%" href="#game-bowl"><span class="pill-dot"></span>Bowling<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:42%" href="#game-loot"><span class="pill-dot"></span>Un cadeau<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:68%" href="#community"><span class="pill-dot"></span>La revanche<span class="pill-go">↗</span></a>
         <div class="phone events-phone" aria-hidden="true"><div class="phone-frame"><div class="pin-hold" style="--yaw:6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
         <span class="shot shot-wheel" hidden></span>
       </div>
-      <p class="events-note">Arcade, pour faire revenir les joueurs.</p>
+      <p class="events-note">Arcade, la solution que la salle règle.</p>
     </section>
 
     <section class="band" id="stories" data-theme="light">
       <article class="story" data-side="right">
         <div class="story-copy">
-          <h2><span class="line" data-reveal>Le But,</span><span class="line" data-reveal>Les Faire Revenir</span></h2>
-          <div class="stores"><a class="store" href="#gateway">Le but</a><a class="store" href="#works">La méthode</a></div>
+          <h2><span class="line" data-reveal>Les Jeux</span><span class="line" data-reveal>Au Choix</span></h2>
+          <div class="stores"><a class="store" href="#game-bowl">Bowling</a><a class="store" href="#game-laser">Laser game</a></div>
         </div>
-        <div class="story-photo"><img src="/arcade/fid/img/story-1.jpg" alt="Clients autour d'une table"></div>
+        <div class="story-photo"><div class="story-poster is-lime" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
       </article>
       <article class="story" data-side="left">
         <div class="story-copy">
-          <h2><span class="line" data-reveal>Comment</span><span class="line" data-reveal>Les Fidéliser</span></h2>
-          <div class="stores"><a class="store" href="#works">La méthode</a><a class="store" href="#events">La solution</a></div>
+          <h2><span class="line" data-reveal>Vous Réglez</span><span class="line" data-reveal>Les Lots</span></h2>
+          <div class="stores"><a class="store" href="#reglages">Pourcentages</a><a class="store" href="#reglages">Espérances</a></div>
         </div>
-        <div class="story-photo"><img src="/arcade/fid/img/story-2.jpg" alt="Un moment de service"></div>
+        <div class="story-photo"><div class="story-poster is-cream" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
       </article>
       <article class="story" data-side="right">
         <div class="story-copy">
-          <h2><span class="line" data-reveal>Des Logiciels</span><span class="line" data-reveal>Pour Ça</span></h2>
-          <div class="stores"><a class="store" href="#events">La solution</a><a class="store" href="#footer">Nous écrire</a></div>
+          <h2><span class="line" data-reveal>Le Tableau</span><span class="line" data-reveal>De Bord</span></h2>
+          <div class="stores"><a class="store" href="#suivi">Dashboard</a><a class="store" href="#suivi">Export RGPD</a></div>
         </div>
-        <div class="story-photo"><img src="/arcade/fid/img/story-3.jpg" alt="Clients qui reviennent"></div>
+        <div class="story-photo"><div class="story-poster is-ink" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
       </article>
       <article class="story" data-side="left">
         <div class="story-copy">
-          <h2><span class="line" data-reveal>Une Solution,</span><span class="line" data-reveal>Restau Wheel</span></h2>
-          <div class="stores"><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Ouvrir Restau Wheel</a><a class="store" href="https://restauwheel.com" rel="noopener noreferrer">Sur le web</a></div>
+          <h2><span class="line" data-reveal>Une Solution,</span><span class="line" data-reveal>Arcade</span></h2>
+          <div class="stores"><a class="store" href="#works">Les jeux</a><a class="store" href="#footer">Nous écrire</a></div>
         </div>
-        <div class="story-photo"><img src="/arcade/fid/img/story-4.jpg" alt="Table de restaurant"></div>
+        <div class="story-photo"><div class="story-poster is-pink" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
       </article>
     </section>
   </main>
@@ -814,17 +814,17 @@
         <h3>Restez Informés</h3>
         <input type="email" name="email" required placeholder="vous@exemple.fr" aria-label="Email">
         <button class="btn btn-dark" type="submit">S'inscrire</button>
-        <p class="fine">Fidelize · © 2026</p>
+        <p class="fine">Arcade · © 2026</p>
       </form>
       <div class="fcard">
         <h3>Contacts</h3>
-        <p>contact@fidelize.si</p>
-        <p>fidelize.si</p>
+        <p>Arcade</p>
+        <p>Salles de jeux</p>
         <a class="fcard slim" href="/mentions">Mentions légales</a>
       </div>
       <div class="fcard socials">
-        <a href="https://restauwheel.com" aria-label="Restau Wheel" rel="noopener noreferrer">R</a>
-        <a href="https://restauwheel.com" aria-label="Site" rel="noopener noreferrer">W</a>
+        <a href="#hero" aria-label="Arcade">A</a>
+        <a href="#works" aria-label="Les jeux">J</a>
         <a href="/mentions" aria-label="Mentions">M</a>
       </div>
     </div>
@@ -833,8 +833,8 @@
   <script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
   <script src="/arcade/fid/vendor/gsap/ScrollTrigger.min.js"></script>
   <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>
-  <script src="/arcade/fid/js/solutions.js"></script>
-  <script src="/arcade/fid/js/fidelize.js"></script>
-  <script src="/arcade/fid/js/games.js"></script>
+  <script src="/arcade/fid/js/solutions.js?v=arcade"></script>
+  <script src="/arcade/fid/js/fidelize.js?v=arcade"></script>
+  <script src="/arcade/fid/js/games.js?v=arcade"></script>
 </body>
 </html>

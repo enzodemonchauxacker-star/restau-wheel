@@ -291,6 +291,14 @@ html.fid-motion .community-copy p {
 .story[data-side="right"] .story-photo { justify-self: end; }
 .story[data-side="left"] .story-photo { justify-self: start; }
 .story-photo img { width: 100%; height: 100%; object-fit: cover; }
+.story-poster {
+  width: 100%; height: 100%; display: grid; place-items: center;
+  background: var(--accent);
+}
+.story-poster .pin-draw { width: 46%; height: auto; }
+.story-poster.is-cream { background: #fff; }
+.story-poster.is-ink { background: var(--ink); }
+.story-poster.is-pink { background: #e45cb8; }
 .stores { display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; }
 .store { height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); display: inline-flex; align-items: center; font-size: 12px; font-weight: 500; }
 

@@ -5,8 +5,8 @@
   const TEXT = '#1E1E1E';
   const CREAM = '#FFF8F1';
   const ICONS = {
-    qr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h2v2h-2zM18 14h1v3h-3"/></svg>',
-    wheel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 5v3M12 16v3M5 12h3M16 12h3"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.2c1.7 0 2.9 1.5 2.9 3.2 0 1.3-.8 2.1-1.2 3.1-.4 1-.2 1.6.1 2.7.5 1.5 1.8 2.5 2.2 4.1.5 2-.4 3.9-1.6 4.5H9.6c-1.2-.6-2.1-2.5-1.6-4.5.4-1.6 1.7-2.6 2.2-4.1.3-1.1.5-1.7.1-2.7-.4-1-1.2-1.8-1.2-3.1 0-1.7 1.2-3.2 2.9-3.2z"/></svg>',
+    laser: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5"/></svg>',
     gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="9" rx="1.5"/><path d="M4 14h16M12 10v9"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4.5l1.8 4.2 4.6.5-3.4 3.1.9 4.5L12 14.6 7.1 16.8l.9-4.5L4.6 9.2l4.6-.5z"/></svg>',
     ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 1 0-4z"/></svg>',
@@ -15,7 +15,7 @@
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><path d="M8.5 12.2l2.3 2.3 4.7-5"/></svg>',
     offer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="16" r="2"/><path d="M7 17L17 7"/></svg>',
   };
-  const ORDER = ['qr', 'wheel', 'gift', 'star', 'ticket', 'heart', 'calendar', 'check', 'offer'];
+  const ORDER = ['pin', 'laser', 'gift', 'star', 'ticket', 'heart', 'calendar', 'check', 'offer'];
   const TILES = ['#6C5CE7', '#2ECC71', '#F1C40F', '#3498DB', '#E8FF95', '#E67E22', '#1ABC9C', '#9B59B6', '#F3E36A'];
   const SPEEDS = [0.82, 1.12, 1.28, 0.9, 1.18, 1.24, 0.86, 1.08, 1.2];
   const TILTS = [-8, 6, -4, 11, -12, 5, 8, -6, 9];
@@ -107,11 +107,6 @@
     title.dataset.final = title.textContent.trim();
   });
   paintOrbit();
-
-  const tool = window.Fidelize && window.Fidelize.list().find((item) => item.status === 'live');
-  if (tool) {
-    document.querySelectorAll('a[href="https://restauwheel.com"]').forEach((link) => { link.href = tool.href; });
-  }
 
   document.getElementById('theme-toggle').addEventListener('click', () => {
     document.getElementById('gate-screen')?.classList.toggle('is-night');
