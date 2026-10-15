@@ -146,6 +146,7 @@
       gap: 8px;
       font-size: 13px;
     }
+    button.chip { font: inherit; cursor: pointer; }
     .chip i {
       width: 8px; height: 8px; border-radius: 99px; background: var(--line);
     }
@@ -211,6 +212,11 @@
 
     .games { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .game { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .game-open {
+      flex: 1; text-align: left; background: transparent; border: 0; padding: 0;
+    }
+    .game-open h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
+    .back { margin-bottom: 14px; }
     .game h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
     .switch {
       width: 48px; height: 28px; border-radius: 999px; border: 0;
@@ -317,7 +323,6 @@
     <div class="venue" id="venue-label">Salle Arcade</div>
     <button class="nav-item active" type="button" data-page="tableau">Tableau de bord</button>
     <button class="nav-item" type="button" data-page="jeux">Jeux</button>
-    <button class="nav-item" type="button" data-page="lots">Lots</button>
     <button class="nav-item" type="button" data-page="joueurs">Joueurs</button>
     <button class="nav-item" type="button" data-page="reglages">Paramètres</button>
     <div class="side-foot"><a href="/arcade/">Retour à la page</a></div>
@@ -333,16 +338,17 @@
 
     <section class="page" id="page-jeux">
       <h1>Jeux</h1>
-      <p class="desc">La salle choisit les jeux proposés aux joueurs.</p>
+      <p class="desc">Cliquez un jeu pour régler les lots à gagner. Le jeu n'est pas un lot.</p>
       <div class="games" id="games"></div>
     </section>
 
-    <section class="page" id="page-lots">
-      <h1>Lots</h1>
-      <p class="desc">Pourcentages, espérances et cadeaux. Vous les fixez.</p>
+    <section class="page" id="page-jeu">
+      <button class="btn ghost back" type="button" id="back-games">Tous les jeux</button>
+      <h1 id="jeu-title">Bowling</h1>
+      <p class="desc" id="jeu-desc">Les lots à gagner dans ce jeu.</p>
       <div class="calc">
         <h2>Espérance</h2>
-        <p>Joueurs prévus et cadeaux à offrir. Arcade répartit les chances des lots gagnants.</p>
+        <p>Joueurs prévus et cadeaux à offrir dans ce jeu. Arcade répartit les chances des lots.</p>
         <div class="calc-row">
           <div>
             <label for="exp-players">Joueurs prévus</label>
@@ -395,12 +401,8 @@
       <h2 id="lot-title">Ajouter un lot</h2>
       <input type="hidden" id="lot-id">
       <div class="field">
-        <label for="lot-name">Nom</label>
+        <label for="lot-name">Nom du lot</label>
         <input id="lot-name" type="text" required maxlength="60">
-      </div>
-      <div class="field">
-        <label for="lot-game">Jeu</label>
-        <select id="lot-game"></select>
       </div>
       <div class="field">
         <label for="lot-pct">Pourcentage</label>
@@ -419,7 +421,7 @@
   </div>
 
   <script>
-    const KEY = 'arcade-dash-v1';
+    const KEY = 'arcade-dash-v2';
     const GAMES = [
       { id: 'bowling', name: 'Bowling' },
       { id: 'laser', name: 'Laser game' },
@@ -433,10 +435,12 @@
         cooldown: 24,
         games: { bowling: true, laser: true, pince: true, butin: true },
         lots: [
-          { id: 'l1', name: 'Partie offerte', game: 'bowling', percent: 8, days: 30, win: true },
+          { id: 'b1', name: 'Partie offerte', game: 'bowling', percent: 8, days: 30, win: true },
+          { id: 'b2', name: 'Boisson', game: 'bowling', percent: 5, days: 7, win: true },
+          { id: 'b3', name: 'Porte-clés', game: 'bowling', percent: 3, days: 30, win: true },
           { id: 'l2', name: 'Revanche', game: 'laser', percent: 6, days: 14, win: true },
           { id: 'l3', name: 'Cadeau', game: 'pince', percent: 4, days: 21, win: true },
-          { id: 'l4', name: 'Le butin', game: 'butin', percent: 3, days: 21, win: true },
+          { id: 'l4', name: 'Le cadeau', game: 'butin', percent: 3, days: 21, win: true },
         ],
         players: [
           row('p1', 'Léa', 'Martin', 'lea.martin@email.fr', '06 12 44 18 03', 'bowling', 'Partie offerte', true, 'used', 2, '2026-10-02'),
@@ -466,6 +470,7 @@
     }
 
     let state = load();
+    let currentGame = 'bowling';
     function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
 
     function esc(value) {
@@ -477,13 +482,27 @@
       return (GAMES.find((game) => game.id === id) || {}).name || id;
     }
     function gameOn(id) { return state.games[id] !== false; }
-    function activeLots() { return state.lots.filter((lot) => gameOn(lot.game)); }
+    function lotsOf(id) { return state.lots.filter((lot) => lot.game === id); }
 
     function showPage(name) {
-      const page = ['tableau', 'jeux', 'lots', 'joueurs', 'reglages'].includes(name) ? name : 'tableau';
+      const known = ['tableau', 'jeux', 'joueurs', 'reglages'];
+      let page = name;
+      if (String(name).startsWith('jeu-')) {
+        const id = name.slice(4);
+        if (!GAMES.some((game) => game.id === id)) page = 'jeux';
+        else {
+          currentGame = id;
+          page = 'jeu';
+          renderGameLots();
+        }
+      }
+      if (page === 'lots') page = 'jeux';
+      if (!known.includes(page) && page !== 'jeu') page = 'tableau';
       document.querySelectorAll('.page').forEach((el) => el.classList.toggle('active', el.id === 'page-' + page));
-      document.querySelectorAll('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.page === page));
-      if ((location.hash || '#tableau').slice(1) !== page) history.replaceState(null, '', '#' + page);
+      const nav = page === 'jeu' ? 'jeux' : page;
+      document.querySelectorAll('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.page === nav));
+      const hash = page === 'jeu' ? 'jeu-' + currentGame : page;
+      if ((location.hash || '#tableau').slice(1) !== hash) history.replaceState(null, '', '#' + hash);
     }
 
     function renderStats() {
@@ -503,38 +522,43 @@
           <div class="stat-value">${value}</div>
         </article>`).join('');
       document.getElementById('game-chips').innerHTML = GAMES.map((game) => `
-        <span class="chip ${gameOn(game.id) ? 'on' : 'off'}"><i></i>${esc(game.name)}</span>`).join('');
+        <button class="chip ${gameOn(game.id) ? 'on' : 'off'}" type="button" data-open="${game.id}"><i></i>${esc(game.name)}</button>`).join('');
     }
 
     function renderGames() {
-      document.getElementById('games').innerHTML = GAMES.map((game) => `
+      document.getElementById('games').innerHTML = GAMES.map((game) => {
+        const count = lotsOf(game.id).length;
+        return `
         <article class="game">
-          <div>
+          <button class="game-open" type="button" data-open="${game.id}">
             <h2>${esc(game.name)}</h2>
-            <p class="meta">${gameOn(game.id) ? 'Proposé aux joueurs' : 'Masqué'}</p>
-          </div>
-          <button class="switch ${gameOn(game.id) ? 'on' : ''}" type="button" data-game="${game.id}" aria-pressed="${gameOn(game.id)}" aria-label="${esc(game.name)}"><i></i></button>
-        </article>`).join('');
+            <p class="meta">${count} lot${count > 1 ? 's' : ''} · ${gameOn(game.id) ? 'proposé aux joueurs' : 'masqué'}</p>
+          </button>
+          <button class="switch ${gameOn(game.id) ? 'on' : ''}" type="button" data-game="${game.id}" aria-pressed="${gameOn(game.id)}" aria-label="Proposer ${esc(game.name)}"><i></i></button>
+        </article>`;
+      }).join('');
     }
 
-    function winRate() {
-      return activeLots().filter((lot) => lot.win).reduce((sum, lot) => sum + Number(lot.percent || 0), 0);
-    }
-
-    function renderLots() {
-      const rate = Math.round(winRate() * 10) / 10;
-      document.getElementById('lot-total').innerHTML = `Chances de cadeau, jeux actifs : <strong>${rate}%</strong>`;
-      document.getElementById('prizes').innerHTML = state.lots.map((lot) => `
-        <article class="prize ${gameOn(lot.game) ? '' : 'off-game'}">
+    function renderGameLots() {
+      const game = GAMES.find((item) => item.id === currentGame);
+      if (!game) return;
+      const lots = lotsOf(game.id);
+      const rate = Math.round(lots.filter((lot) => lot.win).reduce((sum, lot) => sum + Number(lot.percent || 0), 0) * 10) / 10;
+      document.getElementById('exp-note').classList.remove('show');
+      document.getElementById('jeu-title').textContent = game.name;
+      document.getElementById('jeu-desc').textContent = game.name + ' est le jeu. Ici, vous choisissez les lots à gagner.';
+      document.getElementById('lot-total').innerHTML = `Chances de cadeau dans ${esc(game.name)} : <strong>${rate}%</strong>`;
+      document.getElementById('prizes').innerHTML = lots.length ? lots.map((lot) => `
+        <article class="prize">
           <h3>${esc(lot.name)}</h3>
-          <p class="meta">${esc(gameName(lot.game))} · ${lot.days} jours${gameOn(lot.game) ? '' : ' · jeu masqué'}</p>
+          <p class="meta">Valable ${lot.days} jours</p>
           <div class="pct">${lot.percent}%</div>
           <div class="badges">${lot.win ? '<span class="badge win">Cadeau</span>' : '<span class="badge">Sans cadeau</span>'}</div>
           <div class="prize-actions">
             <button class="btn ghost small" type="button" data-edit="${lot.id}">Modifier</button>
             <button class="btn danger small" type="button" data-del="${lot.id}">Retirer</button>
           </div>
-        </article>`).join('');
+        </article>`).join('') : '<p class="empty">Aucun lot. Ajoutez ce que le joueur peut gagner.</p>';
     }
 
     function renderPlayers() {
@@ -571,7 +595,7 @@
     function render() {
       renderStats();
       renderGames();
-      renderLots();
+      renderGameLots();
       renderPlayers();
       renderSettings();
     }
@@ -595,16 +619,10 @@
       URL.revokeObjectURL(link.href);
     }
 
-    function fillGameSelect(selected) {
-      document.getElementById('lot-game').innerHTML = GAMES.map((game) =>
-        `<option value="${game.id}" ${game.id === selected ? 'selected' : ''}>${esc(game.name)}</option>`).join('');
-    }
-
     function openLot(lot) {
       document.getElementById('lot-title').textContent = lot ? 'Modifier le lot' : 'Ajouter un lot';
       document.getElementById('lot-id').value = lot ? lot.id : '';
       document.getElementById('lot-name').value = lot ? lot.name : '';
-      fillGameSelect(lot ? lot.game : 'bowling');
       document.getElementById('lot-pct').value = lot ? lot.percent : 5;
       document.getElementById('lot-days').value = lot ? lot.days : 30;
       document.getElementById('lot-win').checked = lot ? lot.win : true;
@@ -619,12 +637,21 @@
     });
 
     document.getElementById('games').addEventListener('click', (event) => {
-      const button = event.target.closest('[data-game]');
-      if (!button) return;
-      state.games[button.dataset.game] = !gameOn(button.dataset.game);
-      save();
-      render();
+      const toggle = event.target.closest('[data-game]');
+      if (toggle) {
+        state.games[toggle.dataset.game] = !gameOn(toggle.dataset.game);
+        save();
+        render();
+        return;
+      }
+      const open = event.target.closest('[data-open]');
+      if (open) showPage('jeu-' + open.dataset.open);
     });
+    document.getElementById('game-chips').addEventListener('click', (event) => {
+      const open = event.target.closest('[data-open]');
+      if (open) showPage('jeu-' + open.dataset.open);
+    });
+    document.getElementById('back-games').addEventListener('click', () => showPage('jeux'));
 
     document.getElementById('player-q').addEventListener('input', renderPlayers);
     document.getElementById('export-btn').addEventListener('click', exportPlayers);
@@ -641,7 +668,8 @@
       if (del) {
         state.lots = state.lots.filter((lot) => lot.id !== del.dataset.del);
         save();
-        renderLots();
+        renderGameLots();
+        renderGames();
       }
     });
 
@@ -650,7 +678,7 @@
       const lot = {
         id: document.getElementById('lot-id').value || 'l' + Date.now(),
         name: document.getElementById('lot-name').value.trim(),
-        game: document.getElementById('lot-game').value,
+        game: currentGame,
         percent: Math.min(100, Math.max(0, Number(document.getElementById('lot-pct').value) || 0)),
         days: Math.min(365, Math.max(1, Number(document.getElementById('lot-days').value) || 30)),
         win: document.getElementById('lot-win').checked,
@@ -660,17 +688,18 @@
       else state.lots.push(lot);
       save();
       closeLot();
-      renderLots();
+      renderGameLots();
+      renderGames();
     });
 
     document.getElementById('exp-apply').addEventListener('click', () => {
       const players = Math.max(1, Number(document.getElementById('exp-players').value) || 0);
       const gifts = Math.max(0, Number(document.getElementById('exp-gifts').value) || 0);
       const rate = Math.min(100, (gifts / players) * 100);
-      const wins = activeLots().filter((lot) => lot.win);
+      const wins = lotsOf(currentGame).filter((lot) => lot.win);
       const note = document.getElementById('exp-note');
       if (!wins.length) {
-        note.textContent = 'Activez un jeu qui a un lot cadeau.';
+        note.textContent = 'Ajoutez un lot cadeau dans ce jeu.';
         note.classList.add('show');
         return;
       }
@@ -687,8 +716,8 @@
         }
       });
       save();
-      renderLots();
-      note.textContent = `${players} joueurs, ${gifts} cadeaux : les lots gagnants visent ${target}% au total.`;
+      renderGameLots();
+      note.textContent = `${players} joueurs, ${gifts} cadeaux dans ${gameName(currentGame)} : les lots visent ${target}% au total.`;
       note.classList.add('show');
     });
 
