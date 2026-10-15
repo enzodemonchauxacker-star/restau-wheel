@@ -37,6 +37,24 @@ test('le mot de passe court et le doublon sont refusés', async () => {
   assert.equal(again.status, 409);
 });
 
+test('le compte met à jour email, salle et mot de passe', async () => {
+  const saved = store();
+  const created = await accounts.register(saved, {
+    email: 'salle@rekone.si', password: 'motdepasse', name: 'Camille', venue: 'Salle Nord',
+  });
+  const wrong = await accounts.updateAccount(saved, created.account.id, {
+    email: 'salle@rekone.si', name: 'Camille', venue: 'Salle Nord', password: 'nouveaumot', currentPassword: 'non',
+  });
+  assert.equal(wrong.status, 401);
+  const updated = await accounts.updateAccount(saved, created.account.id, {
+    email: 'nouveau@rekone.si', name: 'Camille Dupont', venue: 'Salle Sud', password: 'nouveaumot', currentPassword: 'motdepasse',
+  });
+  assert.equal(updated.account.email, 'nouveau@rekone.si');
+  assert.equal(updated.account.venue, 'Salle Sud');
+  const login = await accounts.authenticate(saved, { email: 'nouveau@rekone.si', password: 'nouveaumot' });
+  assert.equal(login.account.name, 'Camille Dupont');
+});
+
 test('la redirection après connexion reste dans Rekone', () => {
   assert.equal(accounts.safeNext('/arcade/dashboard/'), '/arcade/dashboard/');
   assert.equal(accounts.safeNext('https://example.com'), '/arcade/dashboard/');

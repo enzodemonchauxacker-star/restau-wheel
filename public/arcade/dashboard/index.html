@@ -154,7 +154,7 @@
     .chip.off { color: var(--muted); }
 
     .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    input[type="text"], input[type="number"], input[type="email"], input[type="search"], select, textarea {
+    input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="search"], select, textarea {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -335,13 +335,14 @@
     <button class="nav-item" type="button" data-page="jeux">Jeux</button>
     <button class="nav-item" type="button" data-page="joueurs">Joueurs</button>
     <button class="nav-item" type="button" data-page="reglages">Paramètres</button>
+    <button class="nav-item" type="button" data-page="compte">Compte</button>
     <div class="side-foot"><a href="/arcade/abonnement/">Abonnement</a><br><a href="/arcade/">Retour à la page</a></div>
   </aside>
 
   <main class="main">
     <section class="page active" id="page-tableau">
       <h1>Tableau de bord</h1>
-      <p class="desc">Vue d'ensemble de la salle.</p>
+      <p class="desc">Vue d'ensemble de la salle. <a href="#compte">Email, mot de passe et abonnement</a></p>
       <div class="stats" id="stats"></div>
       <div class="chips" id="game-chips"></div>
     </section>
@@ -398,6 +399,67 @@
       <div class="list" id="players"></div>
     </section>
 
+    <section class="page" id="page-compte">
+      <h1>Compte</h1>
+      <p class="desc">Email, mot de passe, salle et abonnement.</p>
+      <form class="settings" id="compte-guest">
+        <h2>Créer l'accès</h2>
+        <p class="desc">Si le paiement vous a ouvert le tableau de bord, enregistrez ici l'email et le mot de passe.</p>
+        <div class="field">
+          <label for="guest-email">Email de paiement</label>
+          <input id="guest-email" type="email" required maxlength="120" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="guest-name">Nom</label>
+          <input id="guest-name" type="text" required maxlength="80" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="guest-venue">Salle</label>
+          <input id="guest-venue" type="text" required maxlength="80">
+        </div>
+        <div class="field">
+          <label for="guest-password">Mot de passe</label>
+          <input id="guest-password" type="password" required minlength="8" maxlength="72" autocomplete="new-password">
+        </div>
+        <button class="btn" type="submit">Créer le compte</button>
+        <p class="save-note" id="guest-note" role="status"></p>
+        <p class="desc"><a href="/arcade/connexion/?next=/arcade/dashboard/%23compte">J'ai déjà un mot de passe</a></p>
+      </form>
+      <form class="settings" id="compte-form" hidden>
+        <h2>Informations</h2>
+        <div class="field">
+          <label for="compte-email">Email</label>
+          <input id="compte-email" type="email" required maxlength="120" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="compte-name">Nom</label>
+          <input id="compte-name" type="text" required maxlength="80" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="compte-venue">Salle</label>
+          <input id="compte-venue" type="text" required maxlength="80">
+        </div>
+        <h2>Mot de passe</h2>
+        <p class="desc">Remplissez ces champs seulement pour le changer.</p>
+        <div class="field">
+          <label for="compte-current">Mot de passe actuel</label>
+          <input id="compte-current" type="password" maxlength="72" autocomplete="current-password">
+        </div>
+        <div class="field">
+          <label for="compte-next">Nouveau mot de passe</label>
+          <input id="compte-next" type="password" minlength="8" maxlength="72" autocomplete="new-password">
+        </div>
+        <button class="btn" type="submit">Enregistrer</button>
+        <p class="save-note" id="compte-note" role="status"></p>
+        <h2>Abonnement</h2>
+        <div class="qr-actions">
+          <button class="btn lime" type="button" id="compte-portal">Gérer l'abonnement</button>
+          <a class="btn ghost" href="/arcade/resiliation/">Résilier</a>
+        </div>
+        <p class="save-note" id="compte-bill" role="status"></p>
+      </form>
+    </section>
+
     <section class="page" id="page-reglages">
       <h1>Paramètres</h1>
       <p class="desc">Le nom de la salle et le délai entre deux parties.</p>
@@ -443,6 +505,10 @@
 
   <script src="/arcade/dashboard/qrcode.js"></script>
   <script>
+    const paidSession = new URLSearchParams(location.search).get('session_id');
+    if (paidSession && /^cs_[A-Za-z0-9_]+$/.test(paidSession)) {
+      location.replace('/arcade/compte/?session_id=' + encodeURIComponent(paidSession));
+    }
     const KEY = 'arcade-dash-v2';
     const GAMES = [
       { id: 'bowling', name: 'Bowling' },
@@ -512,7 +578,7 @@
     function lotsOf(id) { return state.lots.filter((lot) => lot.game === id); }
 
     function showPage(name) {
-      const known = ['tableau', 'jeux', 'joueurs', 'reglages'];
+      const known = ['tableau', 'jeux', 'joueurs', 'reglages', 'compte'];
       let page = name;
       if (String(name).startsWith('jeu-')) {
         const id = name.slice(4);
@@ -812,9 +878,85 @@
     }
 
     window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+    const compteForm = document.getElementById('compte-form');
+    const compteGuest = document.getElementById('compte-guest');
+    const compteNote = document.getElementById('compte-note');
+    function fillCompte(me) {
+      document.getElementById('compte-email').value = me.email || '';
+      document.getElementById('compte-name').value = me.name || '';
+      document.getElementById('compte-venue').value = me.venue || '';
+      compteGuest.hidden = true;
+      compteForm.hidden = false;
+    }
+    document.getElementById('compte-guest').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const note = document.getElementById('guest-note');
+      note.textContent = '';
+      const res = await fetch('/arcade/api/compte/reprise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('guest-email').value,
+          name: document.getElementById('guest-name').value,
+          venue: document.getElementById('guest-venue').value,
+          password: document.getElementById('guest-password').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        note.textContent = data.error || 'Création impossible';
+        return;
+      }
+      fillCompte(data.account);
+      note.textContent = '';
+    });
+    compteForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      compteNote.textContent = '';
+      const res = await fetch('/arcade/api/compte', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('compte-email').value,
+          name: document.getElementById('compte-name').value,
+          venue: document.getElementById('compte-venue').value,
+          currentPassword: document.getElementById('compte-current').value,
+          password: document.getElementById('compte-next').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        compteNote.textContent = data.error || 'Mise à jour impossible';
+        return;
+      }
+      document.getElementById('compte-current').value = '';
+      document.getElementById('compte-next').value = '';
+      state.venue = data.account.venue;
+      save();
+      renderSettings();
+      compteNote.textContent = 'Informations enregistrées.';
+    });
+    document.getElementById('compte-portal').addEventListener('click', async () => {
+      const bill = document.getElementById('compte-bill');
+      bill.textContent = '';
+      const res = await fetch('/arcade/api/abonnement/portail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: document.getElementById('compte-email').value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        bill.textContent = data.error || 'Le portail Stripe est indisponible.';
+        return;
+      }
+      location.href = data.url;
+    });
+
     render();
     fetch('/arcade/api/compte/moi', { cache: 'no-store' }).then((res) => res.json()).then((me) => {
-      if (!me.loggedIn || !me.venue) return;
+      if (!me.loggedIn) return;
+      fillCompte(me);
+      if (!me.venue) return;
       if (!state.venue || state.venue === 'Salle Rekone') {
         state.venue = me.venue;
         save();
