@@ -10,6 +10,7 @@
   const throwBtn = document.getElementById('bowl-throw');
   const bowlScore = document.getElementById('bowl-score');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (throwBtn && wrap && rack && ball) {
   let sway = 0;
   let swayDir = 1;
   let phase = 'aim';
@@ -88,6 +89,7 @@
     roll = { t0: performance.now(), x0: sway, x1: sway * 0.34 };
     phase = 'roll';
   });
+  }
 
   const arena = document.getElementById('laser-arena');
   const laserBtn = document.getElementById('laser-start');
@@ -97,6 +99,7 @@
   let laserPoints = 0;
   let laserLeft = 0;
 
+  if (arena && laserBtn && laserScore) {
   function clearLaser() {
     window.clearInterval(laserTimer);
     window.clearInterval(laserSpawn);
@@ -160,6 +163,7 @@
       laserScore.textContent = laserLeft + ' s · ' + laserPoints;
     }, 1000);
   });
+  }
 
   const claw = document.getElementById('claw');
   const gift = document.getElementById('claw-gift');
@@ -167,6 +171,7 @@
   const clawMsg = document.getElementById('claw-msg');
   let clawBusy = false;
 
+  if (claw && gift && clawBtn && clawMsg) {
   function releaseClaw() {
     const cable = claw.querySelector('.cable');
     claw.classList.remove('is-open', 'is-shut');
@@ -240,12 +245,14 @@
       }, 240);
     }, 560);
   });
+  }
 
   const lootGrid = document.getElementById('loot-grid');
   const lootMsg = document.getElementById('loot-msg');
   const lootReset = document.getElementById('loot-reset');
   let lootLock = false;
 
+  if (lootGrid && lootMsg && lootReset) {
   function paintLoots() {
     lootLock = false;
     lootMsg.textContent = 'Un cadeau, neuf os.';
@@ -290,4 +297,5 @@
 
   lootReset.addEventListener('click', paintLoots);
   paintLoots();
+  }
 })();

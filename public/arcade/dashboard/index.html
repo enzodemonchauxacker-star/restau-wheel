@@ -217,6 +217,15 @@
     }
     .game-open h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
     .back { margin-bottom: 14px; }
+    .qr-box {
+      display: flex; gap: 18px; align-items: center;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; padding: 16px; margin-bottom: 14px;
+    }
+    .qr-box canvas { width: 168px; height: 168px; border-radius: 12px; background: #fff; flex: none; }
+    .qr-box h2 { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+    .qr-url { color: var(--muted); font-size: 13px; word-break: break-all; }
+    .qr-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
     .game h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
     .switch {
       width: 48px; height: 28px; border-radius: 999px; border: 0;
@@ -309,6 +318,7 @@
     }
     @media (max-width: 640px) {
       .stats, .games, .prizes, .calc-row { grid-template-columns: 1fr; }
+      .qr-box { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -346,6 +356,17 @@
       <button class="btn ghost back" type="button" id="back-games">Tous les jeux</button>
       <h1 id="jeu-title">Bowling</h1>
       <p class="desc" id="jeu-desc">Les lots à gagner dans ce jeu.</p>
+      <div class="qr-box">
+        <canvas id="qr-canvas" width="168" height="168" aria-label="QR code du jeu"></canvas>
+        <div>
+          <h2>QR code</h2>
+          <p class="qr-url" id="qr-url"></p>
+          <div class="qr-actions">
+            <a class="btn lime" id="qr-open" href="/arcade/jouer/?jeu=bowling" target="_blank" rel="noopener">Ouvrir le jeu</a>
+            <button class="btn ghost" type="button" id="qr-dl">Télécharger</button>
+          </div>
+        </div>
+      </div>
       <div class="calc">
         <h2>Espérance</h2>
         <p>Joueurs prévus et cadeaux à offrir dans ce jeu. Arcade répartit les chances des lots.</p>
@@ -420,6 +441,7 @@
     </form>
   </div>
 
+  <script src="/arcade/dashboard/qrcode.js"></script>
   <script>
     const KEY = 'arcade-dash-v2';
     const GAMES = [
@@ -539,6 +561,24 @@
       }).join('');
     }
 
+    function playPath(id) {
+      return '/arcade/jouer/?jeu=' + encodeURIComponent(id);
+    }
+
+    function renderQr() {
+      const url = location.origin + playPath(currentGame);
+      const canvas = document.getElementById('qr-canvas');
+      document.getElementById('qr-url').textContent = url;
+      document.getElementById('qr-open').href = playPath(currentGame);
+      if (window.QRCode && QRCode.toCanvas) {
+        QRCode.toCanvas(canvas, url, {
+          width: 168,
+          margin: 1,
+          color: { dark: '#1e1e1e', light: '#ffffff' },
+        });
+      }
+    }
+
     function renderGameLots() {
       const game = GAMES.find((item) => item.id === currentGame);
       if (!game) return;
@@ -546,6 +586,7 @@
       const rate = Math.round(lots.filter((lot) => lot.win).reduce((sum, lot) => sum + Number(lot.percent || 0), 0) * 10) / 10;
       document.getElementById('exp-note').classList.remove('show');
       document.getElementById('jeu-title').textContent = game.name;
+      renderQr();
       document.getElementById('jeu-desc').textContent = game.name + ' est le jeu. Ici, vous choisissez les lots à gagner.';
       document.getElementById('lot-total').innerHTML = `Chances de cadeau dans ${esc(game.name)} : <strong>${rate}%</strong>`;
       document.getElementById('prizes').innerHTML = lots.length ? lots.map((lot) => `
@@ -652,6 +693,12 @@
       if (open) showPage('jeu-' + open.dataset.open);
     });
     document.getElementById('back-games').addEventListener('click', () => showPage('jeux'));
+    document.getElementById('qr-dl').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.href = document.getElementById('qr-canvas').toDataURL('image/png');
+      link.download = 'qr-' + currentGame + '.png';
+      link.click();
+    });
 
     document.getElementById('player-q').addEventListener('input', renderPlayers);
     document.getElementById('export-btn').addEventListener('click', exportPlayers);
