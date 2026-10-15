@@ -22,7 +22,9 @@
     .field { display: grid; gap: 6px; margin-bottom: 12px; }
     .field span { font-size: 12px; color: var(--muted); }
     .field input { height: 44px; border-radius: 999px; border: 1px solid var(--line); padding: 0 16px; background: var(--cream); }
-    .check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; margin: 8px 0 16px; color: var(--text); }
+    .consent { display: flex; gap: 10px; align-items: flex-start; width: 100%; font-size: 12px; line-height: 1.4; margin: 8px 0 16px; color: var(--text); }
+    .consent input { margin-top: 2px; flex: none; }
+    .consent span { flex: 1; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .err, .ok { margin-top: 14px; font-size: 13px; }
     .err { color: #9a3b3b; }
@@ -44,7 +46,7 @@
     <p>Indiquez l’email de facturation Stripe. L’abonnement Rekone reste actif jusqu’à la fin de la période déjà payée.</p>
     <form id="cancel-form">
       <label class="field"><span>Email</span><input name="email" type="email" required maxlength="120" autocomplete="email"></label>
-      <label class="check">
+      <label class="consent">
         <input name="confirm" type="checkbox" required>
         <span>Je confirme vouloir arrêter l’abonnement Rekone à la fin de la période en cours.</span>
       </label>

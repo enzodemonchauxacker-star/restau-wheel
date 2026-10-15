@@ -38,8 +38,9 @@
       height: 44px; border-radius: 999px; border: 1px solid var(--line);
       padding: 0 16px; background: var(--cream);
     }
-    .check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; margin: 8px 0 16px; }
-    .check input { margin-top: 2px; }
+    .consent { display: flex; gap: 10px; align-items: flex-start; width: 100%; font-size: 12px; line-height: 1.4; margin: 8px 0 16px; }
+    .consent input { margin-top: 2px; flex: none; }
+    .consent span { flex: 1; }
     .pay-form .btn { width: 100%; height: 44px; }
     .note, .err, .ok { margin-top: 12px; font-size: 13px; }
     .err { color: #9a3b3b; }
@@ -82,7 +83,7 @@
       <label class="field"><span>Salle</span><input name="venue" required maxlength="80" autocomplete="organization" placeholder="Salle Rekone"></label>
       <label class="field"><span>Nom</span><input name="name" required maxlength="80" autocomplete="name" placeholder="Camille Dupont"></label>
       <label class="field"><span>Email de facturation</span><input name="email" type="email" required maxlength="120" autocomplete="email" placeholder="vous@salle.fr"></label>
-      <label class="check">
+      <label class="consent">
         <input id="confirm" type="checkbox" required>
         <span>Je confirme l’abonnement Rekone, renouvelé chaque mois et résiliable avant la prochaine échéance.</span>
       </label>
