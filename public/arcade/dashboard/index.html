@@ -813,6 +813,14 @@
 
     window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
     render();
+    fetch('/arcade/api/compte/moi', { cache: 'no-store' }).then((res) => res.json()).then((me) => {
+      if (!me.loggedIn || !me.venue) return;
+      if (!state.venue || state.venue === 'Salle Rekone') {
+        state.venue = me.venue;
+        save();
+        renderSettings();
+      }
+    }).catch(() => {});
     showPage(location.hash.slice(1) || 'tableau');
     pullPlayers();
     window.setInterval(pullPlayers, 4000);
