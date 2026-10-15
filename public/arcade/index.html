@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rekone — La solution des salles de jeux</title>
+  <link rel="canonical" href="https://rekone.si/">
   <meta name="description" content="Rekone est la solution des salles de jeux. La salle choisit le bowling, le laser game, la pince ou le butin, puis règle les lots, les pourcentages, les espérances et le suivi des joueurs.">
   <meta name="theme-color" content="#FFF8F1">
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@600&display=swap">
   <link rel="stylesheet" href="/arcade/fid/vendor/lenis/lenis.css">
-  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=arcade">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=abonnement">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -76,9 +77,10 @@
       <a href="#gateway">Le but</a>
       <a href="#works">Les jeux</a>
       <a href="#events">La solution</a>
+      <a href="#abonnement">L'abonnement</a>
       <a href="/arcade/dashboard">Le suivi</a>
     </nav>
-    <a class="btn btn-dark" href="#events">Voir la solution</a>
+    <a class="btn btn-dark" href="/arcade/abonnement/">S'abonner</a>
   </header>
 
   <main id="fid">
@@ -802,6 +804,22 @@
         <div class="story-photo"><div class="story-poster is-pink" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
       </article>
     </section>
+
+    <section class="band" id="abonnement" data-theme="light">
+      <div class="offer">
+        <p class="offer-kicker">Abonnement</p>
+        <h2><span id="offer-price">20 €</span> <span id="offer-period">par mois</span></h2>
+        <p class="offer-product" id="offer-product">Rekone</p>
+        <ul>
+          <li>Bowling, laser game, pince et butin</li>
+          <li>Lots, pourcentages et espérances</li>
+          <li>Tableau de bord et export RGPD</li>
+          <li>Prélèvement mensuel par Stripe</li>
+        </ul>
+        <a class="btn btn-dark" href="/arcade/abonnement/">S'abonner</a>
+        <p class="offer-legal">QuoteSaas · Enzo Demonchaux-Acker · SIRET 106 921 182 00015 · 33 C Avenue des Messeguières, 84360 Lauris · paiement Stripe · <a href="/arcade/resiliation/">Résilier</a></p>
+      </div>
+    </section>
   </main>
 
   <div class="veil" aria-hidden="true"></div>
@@ -820,7 +838,9 @@
       <div class="fcard">
         <h3>Contacts</h3>
         <p>Rekone</p>
-        <p>Salles de jeux</p>
+        <p><a href="https://rekone.si">rekone.si</a></p>
+        <p><a href="/arcade/abonnement/">S'abonner</a></p>
+        <p><a href="/arcade/resiliation/">Résilier</a></p>
         <a class="fcard slim" href="/mentions">Mentions légales</a>
       </div>
       <div class="fcard socials">
@@ -831,6 +851,18 @@
     </div>
   </footer>
 
+  <script>
+    fetch('/arcade/api/abonnement').then((res) => res.json()).then((offer) => {
+      const format = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: (offer.currency || 'eur').toUpperCase() });
+      const periods = { month: 'par mois', year: 'par an', week: 'par semaine', day: 'par jour' };
+      const price = document.getElementById('offer-price');
+      const period = document.getElementById('offer-period');
+      const product = document.getElementById('offer-product');
+      if (price) price.textContent = format.format((offer.amount || 2000) / 100);
+      if (period) period.textContent = periods[offer.interval] || 'par mois';
+      if (product) product.textContent = offer.productName && offer.productName !== 'Rekone' ? 'Offre Stripe : ' + offer.productName : 'Rekone';
+    }).catch(() => {});
+  </script>
   <script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
   <script src="/arcade/fid/vendor/gsap/ScrollTrigger.min.js"></script>
   <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>

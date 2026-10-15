@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekone — Abonnement</title>
+  <link rel="canonical" href="https://rekone.si/arcade/abonnement/">
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=abonnement">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+  <style>
+    body { min-height: 100vh; }
+    .pay-nav { position: sticky; }
+    .pay {
+      width: min(920px, calc(100% - 32px));
+      margin: 96px auto 64px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .pay-card, .pay-form, .pay-legal {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+    }
+    .pay-form { grid-column: 2; grid-row: 1 / span 2; }
+    .kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .pay h1 { font-size: 40px; font-weight: 500; letter-spacing: -0.03em; line-height: 1; }
+    .pay h1 span { color: var(--muted); font-size: 18px; }
+    .pay ul { list-style: none; margin: 18px 0; display: grid; gap: 8px; }
+    .pay li { padding-left: 16px; position: relative; }
+    .pay li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); position: absolute; left: 0; top: 5px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field span { font-size: 12px; color: var(--muted); }
+    .field input {
+      height: 44px; border-radius: 999px; border: 1px solid var(--line);
+      padding: 0 16px; background: var(--cream);
+    }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; margin: 8px 0 16px; }
+    .check input { margin-top: 2px; }
+    .pay-form .btn { width: 100%; height: 44px; }
+    .note, .err, .ok { margin-top: 12px; font-size: 13px; }
+    .err { color: #9a3b3b; }
+    .ok { background: var(--accent); border-radius: 16px; padding: 14px; }
+    .pay-legal { font-size: 12px; color: var(--muted); }
+    .pay-legal dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; margin-top: 12px; }
+    .pay-legal dt { color: var(--text); }
+    .links { display: flex; gap: 14px; margin-top: 16px; font-size: 12px; }
+    .links a { text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 760px) {
+      .pay { grid-template-columns: 1fr; margin-top: 88px; }
+      .pay-form { grid-column: auto; grid-row: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav pay-nav" id="nav">
+    <a class="logo" href="/arcade/">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
+      </span>
+      Rekone
+    </a>
+    <a class="btn btn-dark" href="/arcade/dashboard">Le suivi</a>
+  </header>
+  <main class="pay">
+    <section class="pay-card">
+      <p class="kicker">Abonnement</p>
+      <h1 id="price">20 € <span id="period">par mois</span></h1>
+      <p class="note" id="product">Rekone</p>
+      <ul>
+        <li>Bowling, laser game, pince et butin</li>
+        <li>Lots, pourcentages et espérances</li>
+        <li>Tableau de bord et export RGPD</li>
+        <li>Prélèvement mensuel par Stripe</li>
+      </ul>
+    </section>
+    <form class="pay-form" id="pay-form">
+      <h2>S'abonner</h2>
+      <label class="field"><span>Salle</span><input name="venue" required maxlength="80" autocomplete="organization" placeholder="Salle Rekone"></label>
+      <label class="field"><span>Nom</span><input name="name" required maxlength="80" autocomplete="name" placeholder="Camille Dupont"></label>
+      <label class="field"><span>Email de facturation</span><input name="email" type="email" required maxlength="120" autocomplete="email" placeholder="vous@salle.fr"></label>
+      <label class="check">
+        <input id="confirm" type="checkbox" required>
+        <span>Je confirme l’abonnement Rekone, renouvelé chaque mois et résiliable avant la prochaine échéance.</span>
+      </label>
+      <button class="btn btn-dark" id="submit" type="submit">Continuer vers Stripe</button>
+      <p class="err" id="err" hidden></p>
+      <p class="ok" id="ok" hidden></p>
+      <p class="note">La carte est saisie sur Stripe. Rekone ne la conserve pas.</p>
+      <div class="links">
+        <a href="/arcade/resiliation/">Résilier</a>
+        <a href="/mentions">Mentions légales</a>
+      </div>
+    </form>
+    <section class="pay-legal" id="legal">
+      <p class="kicker">Facturation</p>
+      <p>Le paiement est encaissé par Stripe pour le compte de l’éditeur.</p>
+      <dl>
+        <dt>Éditeur</dt><dd>Enzo Demonchaux-Acker</dd>
+        <dt>Forme</dt><dd>Entrepreneur individuel</dd>
+        <dt>Nom commercial</dt><dd>QuoteSaas</dd>
+        <dt>SIREN</dt><dd>106 921 182</dd>
+        <dt>SIRET</dt><dd>106 921 182 00015</dd>
+        <dt>APE</dt><dd>58.29C</dd>
+        <dt>RNE</dt><dd>03/07/2026</dd>
+        <dt>Adresse</dt><dd>33 C Avenue des Messeguières<br>84360 Lauris<br>France</dd>
+        <dt>Contact</dt><dd><a href="mailto:contact@restauwheel.com">contact@restauwheel.com</a></dd>
+        <dt>Site</dt><dd>rekone.si</dd>
+        <dt>Hébergeur</dt><dd>Vercel Inc.</dd>
+        <dt>Paiement</dt><dd>Stripe</dd>
+      </dl>
+    </section>
+  </main>
+  <script>
+    const money = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+    const periods = { month: 'par mois', year: 'par an', week: 'par semaine', day: 'par jour' };
+    const err = document.getElementById('err');
+    const ok = document.getElementById('ok');
+    const form = document.getElementById('pay-form');
+    const submit = document.getElementById('submit');
+
+    function showErr(message) {
+      err.hidden = false;
+      err.textContent = message;
+    }
+
+    fetch('/arcade/api/abonnement').then((res) => res.json()).then((offer) => {
+      const currency = (offer.currency || 'eur').toUpperCase();
+      const format = new Intl.NumberFormat('fr-FR', { style: 'currency', currency });
+      document.getElementById('price').firstChild.textContent = format.format((offer.amount || 2000) / 100) + ' ';
+      document.getElementById('period').textContent = periods[offer.interval] || 'par mois';
+      document.getElementById('product').textContent = offer.productName && offer.productName !== 'Rekone'
+        ? 'Offre Stripe : ' + offer.productName
+        : 'Rekone';
+      if (offer.ready === false) showErr('Le paiement Stripe n’est pas activé sur ce serveur.');
+    }).catch(() => {});
+
+    const params = new URLSearchParams(location.search);
+    if (params.get('canceled') === '1') showErr('Paiement annulé. Vous pouvez recommencer.');
+    if (params.get('session_id')) {
+      fetch('/arcade/api/abonnement/session?session_id=' + encodeURIComponent(params.get('session_id')))
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.paid) return;
+          form.hidden = true;
+          ok.hidden = false;
+          ok.textContent = 'Paiement confirmé pour ' + (data.email || 'votre salle') + '. L’abonnement Rekone est actif.';
+        }).catch(() => {});
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      err.hidden = true;
+      if (!document.getElementById('confirm').checked) {
+        showErr('Cochez la confirmation pour continuer.');
+        return;
+      }
+      const body = Object.fromEntries(new FormData(form));
+      submit.disabled = true;
+      submit.textContent = 'Ouverture de Stripe…';
+      try {
+        const res = await fetch('/arcade/api/abonnement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Erreur Stripe');
+        location.href = data.checkoutUrl;
+      } catch (error) {
+        showErr(error.message);
+        submit.disabled = false;
+        submit.textContent = 'Continuer vers Stripe';
+      }
+    });
+  </script>
+</body>
+</html>

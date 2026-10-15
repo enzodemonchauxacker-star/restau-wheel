@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekone — Résiliation</title>
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=abonnement">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+  <style>
+    .sheet {
+      width: min(520px, calc(100% - 32px));
+      margin: 110px auto 64px;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+    }
+    h1 { font-size: 36px; font-weight: 500; letter-spacing: -0.03em; margin-bottom: 8px; }
+    p { color: var(--muted); margin-bottom: 16px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field span { font-size: 12px; color: var(--muted); }
+    .field input { height: 44px; border-radius: 999px; border: 1px solid var(--line); padding: 0 16px; background: var(--cream); }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; margin: 8px 0 16px; color: var(--text); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .err, .ok { margin-top: 14px; font-size: 13px; }
+    .err { color: #9a3b3b; }
+    .ok { background: var(--accent); color: var(--text); border-radius: 16px; padding: 14px; }
+  </style>
+</head>
+<body>
+  <header class="nav" style="position:sticky">
+    <a class="logo" href="/arcade/">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
+      </span>
+      Rekone
+    </a>
+    <a class="btn btn-dark" href="/arcade/abonnement/">S'abonner</a>
+  </header>
+  <main class="sheet">
+    <h1>Résilier</h1>
+    <p>Indiquez l’email de facturation Stripe. L’abonnement Rekone reste actif jusqu’à la fin de la période déjà payée.</p>
+    <form id="cancel-form">
+      <label class="field"><span>Email</span><input name="email" type="email" required maxlength="120" autocomplete="email"></label>
+      <label class="check">
+        <input name="confirm" type="checkbox" required>
+        <span>Je confirme vouloir arrêter l’abonnement Rekone à la fin de la période en cours.</span>
+      </label>
+      <div class="actions">
+        <button class="btn btn-dark" id="stop" type="submit">Résilier</button>
+        <button class="btn btn-light" id="portal" type="button">Factures et carte</button>
+      </div>
+      <p class="err" id="err" hidden></p>
+      <p class="ok" id="ok" hidden></p>
+    </form>
+  </main>
+  <script>
+    const form = document.getElementById('cancel-form');
+    const err = document.getElementById('err');
+    const ok = document.getElementById('ok');
+    function showErr(message) { ok.hidden = true; err.hidden = false; err.textContent = message; }
+    function showOk(message) { err.hidden = true; ok.hidden = false; ok.textContent = message; }
+    function email() { return new FormData(form).get('email'); }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = document.getElementById('stop');
+      button.disabled = true;
+      try {
+        const res = await fetch('/arcade/api/abonnement/resilier', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email(), confirm: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur résiliation');
+        const when = data.period_end ? new Date(data.period_end).toLocaleDateString('fr-FR') : 'la fin de la période';
+        showOk(data.already ? 'Cet abonnement est déjà programmé pour s’arrêter.' : 'Résiliation enregistrée. L’accès continue jusqu’au ' + when + '.');
+      } catch (error) {
+        showErr(error.message);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById('portal').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/arcade/api/abonnement/portail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email() }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.url) throw new Error(data.error || 'Portail indisponible');
+        location.href = data.url;
+      } catch (error) {
+        showErr(error.message);
+      }
+    });
+  </script>
+</body>
+</html>

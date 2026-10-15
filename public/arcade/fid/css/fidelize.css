@@ -608,6 +608,24 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
   .loot.is-open .mark { opacity: 1; transform: translate(-50%, -50%); }
 }
 
+#abonnement { padding: 88px 24px; background: var(--cream); color: var(--text); }
+.offer {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  background: var(--card);
+  border-radius: 28px;
+  padding: 32px;
+}
+.offer h2 { font-size: 44px; }
+.offer h2 span:last-child { color: var(--muted); font-size: 18px; }
+.offer-kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.offer-product { margin: 8px 0 16px; color: var(--muted); }
+.offer ul { list-style: none; display: grid; gap: 8px; margin-bottom: 18px; }
+.offer li { padding-left: 16px; position: relative; }
+.offer li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); position: absolute; left: 0; top: 5px; }
+.offer-legal { margin-top: 16px; font-size: 12px; color: var(--muted); }
+.offer-legal a { text-decoration: underline; text-underline-offset: 3px; }
+
 @media (prefers-reduced-motion: reduce) {
   .word { color: var(--text); }
   .vmarquee-track, .htrack { animation: none; }

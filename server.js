@@ -10,6 +10,7 @@ const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail }
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { mount: mountArcadePlayers } = require('./lib/arcade-players');
+const rekoneBilling = require('./lib/rekone-billing');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,8 @@ if (process.env.VERCEL) {
 const metaSales = require('./lib/meta-sales');
 app.post('/api/webhooks/stripe-meta', express.raw({ type: 'application/json' }),
   metaSales.createHandler({ getStripe: () => stripe, store: metaSales.sqlStore(db) }));
+app.post('/api/webhooks/stripe-rekone', express.raw({ type: 'application/json' }),
+  rekoneBilling.createWebhookHandler({ getStripe: () => stripe }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -30,7 +33,7 @@ app.use((req, res, next) => {
     req.path.endsWith('.html') ||
     req.path === '/' ||
     /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video|arcade)\/?$/.test(req.path) ||
-    /^\/arcade\/(dashboard|jouer)\/?$/.test(req.path)
+    /^\/arcade\/(dashboard|jouer|abonnement|resiliation)\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -47,6 +50,7 @@ app.get('/carte.vcf', (req, res) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 mountArcadePlayers(app);
+rekoneBilling.mount(app, { getStripe: () => stripe });
 
 // Session en cookie (compatible Vercel serverless — pas de MemoryStore)
 app.use(cookieSession({
@@ -1178,7 +1182,7 @@ async function listBillingSubs(email) {
   return { demo: false, items };
 }
 
-async function cancelSubscriptionByEmail(email, via) {
+async function cancelSubscriptionByEmail(email, via, options = {}) {
   if (!stripe) return { ok: false, status: 503, error: 'Paiements non configurés' };
   const { items } = await listBillingSubs(email);
   if (!items.length) return { ok: false, status: 404, error: 'Aucun abonnement', code: 'none' };
@@ -1188,6 +1192,9 @@ async function cancelSubscriptionByEmail(email, via) {
   let periodEnd = null;
 
   for (const sub of items) {
+    const rekone = sub.metadata?.product === 'rekone';
+    if (options.product === 'restau' && rekone) continue;
+    if (options.product === 'rekone' && !rekone) continue;
     if (sub.cancel_at_period_end) {
       already++;
       periodEnd = sub.current_period_end;
@@ -1223,7 +1230,7 @@ app.post('/api/subscription/cancel', async (req, res) => {
     return res.status(400).json({ error: 'Email invalide' });
   }
   try {
-    const result = await cancelSubscriptionByEmail(email, 'restau-wheel-cancel-page');
+    const result = await cancelSubscriptionByEmail(email, 'restau-wheel-cancel-page', { product: 'restau' });
     if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
     res.json({
       success: true,
@@ -1264,7 +1271,7 @@ app.post('/api/admin/subscription/cancel', requireRestaurant, async (req, res) =
   const r = await db.prepare('SELECT email FROM restaurants WHERE id=?').get(req.session.restaurantId);
   const email = r?.email || '';
   try {
-    const result = await cancelSubscriptionByEmail(email, 'admin-settings');
+    const result = await cancelSubscriptionByEmail(email, 'admin-settings', { product: 'restau' });
     if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
     res.json({
       success: true,

@@ -1,13 +1,24 @@
 {
   "headers": [
     {
-      "source": "/arcade/(dashboard|jouer)(/.*)?",
+      "source": "/arcade/(dashboard|jouer|abonnement|resiliation)(/.*)?",
       "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.rekone.si" }],
+      "destination": "https://rekone.si/:path*",
+      "permanent": true
     }
   ],
   "rewrites": [
     { "source": "/arcade/api/joueurs", "destination": "/api/arcade-joueurs" },
     { "source": "/arcade/api/joueurs/:id", "destination": "/api/arcade-joueurs?id=:id" },
+    { "source": "/arcade/api/abonnement", "destination": "/api/arcade-billing" },
+    { "source": "/arcade/api/abonnement/:action", "destination": "/api/arcade-billing?action=:action" },
+    { "source": "/api/webhooks/stripe-rekone", "destination": "/api/arcade-billing?action=webhook" },
     { "source": "/", "destination": "/arcade/" }
   ]
 }
