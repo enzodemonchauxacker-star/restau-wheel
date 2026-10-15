@@ -141,6 +141,50 @@ app.post('/arcade/api/compte', async (req, res) => {
   }
 });
 
+app.post('/arcade/api/compte/reprise', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  const email = rekoneAccounts.cleanEmail(req.body?.email);
+  if (!email) return res.status(400).json({ error: 'Email invalide' });
+  try {
+    await ensureReady();
+    const customers = await stripe.customers.list({ email, limit: 10 });
+    let paid = false;
+    for (const customer of customers.data || []) {
+      const subs = await stripe.subscriptions.list({ customer: customer.id, status: 'all', limit: 20 });
+      paid = (subs.data || []).some((sub) => sub.metadata?.product === 'rekone' && ['active', 'trialing', 'past_due'].includes(sub.status));
+      if (paid) break;
+    }
+    if (!paid) return res.status(402).json({ error: 'Aucun abonnement Rekone payé pour cet email' });
+    const result = await rekoneAccounts.register(rekoneAccountStore(), {
+      email,
+      password: req.body?.password,
+      name: req.body?.name,
+      venue: req.body?.venue,
+      stripeSessionId: 'reprise:' + email,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error, code: result.code });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Création impossible' });
+  }
+});
+
+app.patch('/arcade/api/compte', async (req, res) => {
+  if (!req.session?.rekoneId) return res.status(401).json({ error: 'Connexion requise' });
+  try {
+    await ensureReady();
+    const result = await rekoneAccounts.updateAccount(rekoneAccountStore(), req.session.rekoneId, req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Mise à jour impossible' });
+  }
+});
+
 app.post('/arcade/api/connexion', async (req, res) => {
   try {
     await ensureReady();

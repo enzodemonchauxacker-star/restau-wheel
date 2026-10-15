@@ -106,7 +106,7 @@
           if (data.code === 'exists') lead.textContent = 'Un compte existe déjà pour cet email.';
           throw new Error(data.error || 'Création impossible');
         }
-        location.href = '/arcade/dashboard/';
+        location.href = '/arcade/dashboard/#compte';
       } catch (error) {
         showErr(error.message);
         submit.disabled = false;
