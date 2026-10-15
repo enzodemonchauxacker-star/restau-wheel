@@ -48,6 +48,17 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
 });
+app.use((req, res, next) => {
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '')
+    .split(',')[0].trim().split(':')[0].toLowerCase();
+  if (host === 'www.rekone.si') {
+    return res.redirect(301, 'https://rekone.si' + req.originalUrl);
+  }
+  if ((req.method === 'GET' || req.method === 'HEAD') && req.path === '/' && host === 'rekone.si') {
+    return res.sendFile(path.join(__dirname, 'public', 'arcade', 'index.html'));
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 mountArcadePlayers(app);
 rekoneBilling.mount(app, { getStripe: () => stripe });

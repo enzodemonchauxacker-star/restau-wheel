@@ -5,6 +5,14 @@
       "maxDuration": 60
     }
   },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.rekone.si" }],
+      "destination": "https://rekone.si/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/api" }
   ],
