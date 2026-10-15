@@ -50,6 +50,7 @@ button, input { font: inherit; }
   transition: background 300ms ease, color 300ms ease;
 }
 .btn-dark { background: var(--btn-dark); color: var(--cream); }
+.nav-login { background: transparent; color: inherit; border: 1px solid currentColor; }
 .btn-light { background: var(--btn-light); color: var(--text); }
 .nav.is-dark { color: var(--card); }
 .nav.is-dark .nav-links { color: rgba(255,248,241,.62); }
@@ -325,7 +326,8 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
 @media (max-width: 900px) {
   .hero-title { font-size: 40px; }
   .center-title, .gateway-grid h2, .story h2, .community-copy h2 { font-size: 32px; }
-  .nav { padding: 0 16px; gap: 10px; }
+  .nav { padding: 0 16px; gap: 8px; }
+  .nav .btn { padding: 0 12px; }
   .nav .logo { font-size: 22px; gap: 8px; }
   .nav .logo .mark { width: 34px; height: 34px; border-radius: 10px; }
   .nav .logo .mark svg { width: 20px; height: 20px; }

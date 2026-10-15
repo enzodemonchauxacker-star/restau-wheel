@@ -142,14 +142,7 @@
     const params = new URLSearchParams(location.search);
     if (params.get('canceled') === '1') showErr('Paiement annulé. Vous pouvez recommencer.');
     if (params.get('session_id')) {
-      fetch('/arcade/api/abonnement/session?session_id=' + encodeURIComponent(params.get('session_id')))
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.paid) return;
-          form.hidden = true;
-          ok.hidden = false;
-          ok.textContent = 'Paiement confirmé pour ' + (data.email || 'votre salle') + '. L’abonnement Rekone est actif.';
-        }).catch(() => {});
+      location.replace('/arcade/dashboard/?session_id=' + encodeURIComponent(params.get('session_id')));
     }
 
     form.addEventListener('submit', async (event) => {
