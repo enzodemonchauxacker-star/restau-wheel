@@ -28,7 +28,8 @@ app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video|arcade)\/?$/.test(req.path)
+    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video|arcade)\/?$/.test(req.path) ||
+    /^\/arcade\/dashboard\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }

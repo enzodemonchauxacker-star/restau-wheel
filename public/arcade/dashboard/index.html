@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcade — Tableau de bord</title>
+  <meta name="theme-color" content="#3B3B3B">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233B3B3B'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --cream: #fff8f1;
+      --accent: #e8ff95;
+      --ink: #3b3b3b;
+      --text: #1e1e1e;
+      --muted: #8d8d8d;
+      --card: #ffffff;
+      --line: #e8e2d9;
+      --green: #1f8a5b;
+      --amber: #9a6b12;
+      --red: #c43648;
+      --sans: "General Sans", "Inter Tight", sans-serif;
+      --tight: "Inter Tight", "General Sans", sans-serif;
+      --side: 232px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+    .sidebar {
+      background: var(--ink);
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 22px 20px 4px;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      text-decoration: none;
+    }
+    .mark {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: var(--accent); color: var(--ink);
+      display: grid; place-items: center; flex: none;
+    }
+    .mark svg { width: 18px; height: 18px; }
+    .venue {
+      padding: 4px 20px 16px;
+      color: rgba(255,248,241,.62);
+      font-size: 13px;
+      border-bottom: 1px solid rgba(232,255,149,.28);
+    }
+    .nav-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-left: 3px solid transparent;
+      color: rgba(255,248,241,.62);
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .nav-item:hover { color: var(--cream); }
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+    .side-foot {
+      margin-top: auto;
+      padding: 16px 18px 20px;
+      border-top: 1px solid rgba(232,255,149,.18);
+    }
+    .side-foot a {
+      color: rgba(255,248,241,.7);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .side-foot a:hover { color: var(--accent); }
+
+    .main { padding: 32px 28px 64px; max-width: 1080px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    h1 {
+      font-size: 32px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .desc { color: var(--muted); margin: 6px 0 22px; font-size: 15px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 16px 14px;
+    }
+    .stat.lime { background: var(--accent); border-color: transparent; }
+    .stat-label {
+      font-family: var(--tight);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .stat.lime .stat-label { color: #4d4d3a; }
+    .stat-value {
+      font-size: 34px;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .chip {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .chip i {
+      width: 8px; height: 8px; border-radius: 99px; background: var(--line);
+    }
+    .chip.on i { background: #b6d64a; box-shadow: 0 0 0 3px rgba(232,255,149,.7); }
+    .chip.off { color: var(--muted); }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    input[type="text"], input[type="number"], input[type="email"], input[type="search"], select, textarea {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .grow { flex: 1; min-width: 180px; }
+    .btn {
+      height: 42px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 0;
+      background: var(--ink);
+      color: var(--cream);
+      font-weight: 500;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .btn.lime { background: var(--accent); color: var(--text); }
+    .btn.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .btn.danger { background: transparent; color: var(--red); border: 1px solid #f0c8ce; }
+    .btn.small { height: 34px; padding: 0 12px; font-size: 13px; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .row-card, .prize, .game, .settings {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .who { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .who strong { font-weight: 500; font-size: 16px; }
+    .meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .badge {
+      font-family: var(--tight);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .badge.used { color: var(--green); border-color: #b7e3cf; background: #f3fbf7; }
+    .badge.pending { color: var(--amber); border-color: #ead7a4; background: #fffaf0; }
+    .badge.expired { color: var(--red); border-color: #f0c8ce; background: #fff6f7; }
+    .badge.win { color: var(--text); background: var(--accent); border-color: transparent; }
+    .empty { color: var(--muted); text-align: center; padding: 36px 0; }
+
+    .games { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .game { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .game h2 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; }
+    .switch {
+      width: 48px; height: 28px; border-radius: 999px; border: 0;
+      background: #ddd6cc; position: relative; flex: none;
+    }
+    .switch.on { background: var(--accent); }
+    .switch i {
+      position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
+      border-radius: 50%; background: white; transition: transform .15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    }
+    .switch.on i { transform: translateX(20px); background: var(--ink); }
+
+    .calc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .calc h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+    .calc p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+    .calc-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .note {
+      margin-top: 12px;
+      background: #f7f3ea;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      display: none;
+    }
+    .note.show { display: block; }
+    .total { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
+    .total strong { color: var(--text); font-weight: 500; }
+    .prizes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .prize h3 { font-size: 16px; font-weight: 500; }
+    .prize .pct { font-size: 28px; letter-spacing: -0.04em; font-weight: 500; margin: 8px 0 2px; }
+    .prize-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .off-game { opacity: .55; }
+
+    .settings { max-width: 560px; margin-bottom: 12px; }
+    .settings h2 { font-size: 18px; font-weight: 500; margin-bottom: 12px; }
+    .field { margin-bottom: 12px; }
+    .save-note { color: var(--green); font-size: 13px; margin-top: 8px; min-height: 1em; }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(30,30,30,.45);
+      display: none; align-items: center; justify-content: center; padding: 20px; z-index: 40;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      width: min(440px, 100%);
+      background: var(--cream);
+      border-radius: 22px;
+      padding: 20px;
+    }
+    .modal h2 { font-size: 22px; font-weight: 500; margin-bottom: 14px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .check { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 4px 0 12px; }
+    .check input { width: auto; }
+
+    @media (min-width: 901px) {
+      .sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0; width: var(--side);
+      }
+      .main { margin-left: var(--side); }
+    }
+    @media (max-width: 900px) {
+      .sidebar {
+        position: sticky; top: 0;
+        flex-direction: row; flex-wrap: wrap; align-items: center;
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 6px;
+      }
+      .brand { padding: 12px 12px 0; font-size: 18px; }
+      .venue { display: none; }
+      .nav-item {
+        width: auto;
+        border-left: 0;
+        border-bottom: 2px solid transparent;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      .nav-item.active { border-bottom-color: var(--accent); }
+      .side-foot { display: none; }
+      .main { padding: 20px 14px 48px; }
+      .stats, .games, .prizes, .calc-row { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 26px; }
+    }
+    @media (max-width: 640px) {
+      .stats, .games, .prizes, .calc-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/arcade/">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
+      </span>
+      Arcade
+    </a>
+    <div class="venue" id="venue-label">Salle Arcade</div>
+    <button class="nav-item active" type="button" data-page="tableau">Tableau de bord</button>
+    <button class="nav-item" type="button" data-page="jeux">Jeux</button>
+    <button class="nav-item" type="button" data-page="lots">Lots</button>
+    <button class="nav-item" type="button" data-page="joueurs">Joueurs</button>
+    <button class="nav-item" type="button" data-page="reglages">Paramètres</button>
+    <div class="side-foot"><a href="/arcade/">Retour à la page</a></div>
+  </aside>
+
+  <main class="main">
+    <section class="page active" id="page-tableau">
+      <h1>Tableau de bord</h1>
+      <p class="desc">Vue d'ensemble de la salle.</p>
+      <div class="stats" id="stats"></div>
+      <div class="chips" id="game-chips"></div>
+    </section>
+
+    <section class="page" id="page-jeux">
+      <h1>Jeux</h1>
+      <p class="desc">La salle choisit les jeux proposés aux joueurs.</p>
+      <div class="games" id="games"></div>
+    </section>
+
+    <section class="page" id="page-lots">
+      <h1>Lots</h1>
+      <p class="desc">Pourcentages, espérances et cadeaux. Vous les fixez.</p>
+      <div class="calc">
+        <h2>Espérance</h2>
+        <p>Joueurs prévus et cadeaux à offrir. Arcade répartit les chances des lots gagnants.</p>
+        <div class="calc-row">
+          <div>
+            <label for="exp-players">Joueurs prévus</label>
+            <input id="exp-players" type="number" min="1" value="200">
+          </div>
+          <div>
+            <label for="exp-gifts">Cadeaux à offrir</label>
+            <input id="exp-gifts" type="number" min="0" value="16">
+          </div>
+          <button class="btn lime" type="button" id="exp-apply">Appliquer</button>
+        </div>
+        <div class="note" id="exp-note"></div>
+      </div>
+      <p class="total" id="lot-total"></p>
+      <button class="btn" type="button" id="add-lot">Ajouter un lot</button>
+      <div class="prizes" id="prizes" style="margin-top:14px"></div>
+    </section>
+
+    <section class="page" id="page-joueurs">
+      <h1>Joueurs</h1>
+      <p class="desc">Liste des joueurs. L'export sert au suivi, dans le cadre du RGPD.</p>
+      <div class="toolbar">
+        <input class="grow" id="player-q" type="search" placeholder="Nom, e-mail, téléphone, jeu" aria-label="Filtrer les joueurs">
+        <button class="btn lime" type="button" id="export-btn">Exporter la liste</button>
+      </div>
+      <div class="list" id="players"></div>
+    </section>
+
+    <section class="page" id="page-reglages">
+      <h1>Paramètres</h1>
+      <p class="desc">Le nom de la salle et le délai entre deux parties.</p>
+      <form class="settings" id="settings-form">
+        <h2>La salle</h2>
+        <div class="field">
+          <label for="venue-name">Nom</label>
+          <input id="venue-name" type="text" required maxlength="80">
+        </div>
+        <div class="field">
+          <label for="cooldown">Délai entre deux parties (heures)</label>
+          <input id="cooldown" type="number" min="1" max="720" required>
+        </div>
+        <button class="btn" type="submit">Enregistrer</button>
+        <p class="save-note" id="save-note" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay">
+    <form class="modal" id="lot-form">
+      <h2 id="lot-title">Ajouter un lot</h2>
+      <input type="hidden" id="lot-id">
+      <div class="field">
+        <label for="lot-name">Nom</label>
+        <input id="lot-name" type="text" required maxlength="60">
+      </div>
+      <div class="field">
+        <label for="lot-game">Jeu</label>
+        <select id="lot-game"></select>
+      </div>
+      <div class="field">
+        <label for="lot-pct">Pourcentage</label>
+        <input id="lot-pct" type="number" min="0" max="100" step="0.1" required>
+      </div>
+      <div class="field">
+        <label for="lot-days">Validité (jours)</label>
+        <input id="lot-days" type="number" min="1" max="365" required>
+      </div>
+      <label class="check"><input id="lot-win" type="checkbox" checked> Ce lot est un cadeau</label>
+      <div class="modal-actions">
+        <button class="btn ghost" type="button" id="lot-cancel">Annuler</button>
+        <button class="btn" type="submit">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const KEY = 'arcade-dash-v1';
+    const GAMES = [
+      { id: 'bowling', name: 'Bowling' },
+      { id: 'laser', name: 'Laser game' },
+      { id: 'pince', name: 'La pince' },
+      { id: 'butin', name: 'Dix butins' },
+    ];
+
+    function seed() {
+      return {
+        venue: 'Salle Arcade',
+        cooldown: 24,
+        games: { bowling: true, laser: true, pince: true, butin: true },
+        lots: [
+          { id: 'l1', name: 'Partie offerte', game: 'bowling', percent: 8, days: 30, win: true },
+          { id: 'l2', name: 'Revanche', game: 'laser', percent: 6, days: 14, win: true },
+          { id: 'l3', name: 'Cadeau', game: 'pince', percent: 4, days: 21, win: true },
+          { id: 'l4', name: 'Le butin', game: 'butin', percent: 3, days: 21, win: true },
+        ],
+        players: [
+          row('p1', 'Léa', 'Martin', 'lea.martin@email.fr', '06 12 44 18 03', 'bowling', 'Partie offerte', true, 'used', 2, '2026-10-02'),
+          row('p2', 'Hugo', 'Bernard', 'hugo.bernard@email.fr', '06 88 21 09 44', 'laser', 'Revanche', true, 'pending', 1, '2026-10-11'),
+          row('p3', 'Chloé', 'Robert', 'chloe.robert@email.fr', '07 41 90 22 18', 'pince', 'Cadeau', true, 'pending', 1, '2026-10-12'),
+          row('p4', 'Adam', 'Petit', 'adam.petit@email.fr', '06 55 10 77 02', 'butin', 'Le butin', true, 'used', 3, '2026-09-28'),
+          row('p5', 'Inès', 'Morel', 'ines.morel@email.fr', '06 19 33 40 81', 'bowling', 'Rien cette fois', false, 'expired', 1, '2026-09-20'),
+          row('p6', 'Noah', 'Garcia', 'noah.garcia@email.fr', '07 62 14 55 90', 'laser', 'Rien cette fois', false, 'used', 2, '2026-10-08'),
+          row('p7', 'Manon', 'David', 'manon.david@email.fr', '06 70 28 41 16', 'bowling', 'Partie offerte', true, 'pending', 1, '2026-10-14'),
+          row('p8', 'Louis', 'Simon', 'louis.simon@email.fr', '06 33 81 09 27', 'laser', 'Revanche', true, 'expired', 1, '2026-09-14'),
+        ],
+      };
+    }
+
+    function row(id, first, last, email, phone, game, prize, win, status, visits, at) {
+      return { id, first, last, email, phone, game, prize, win, status, visits, at, consent: true };
+    }
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (saved && saved.lots && saved.players && saved.games) return saved;
+      } catch (error) { /* données locales illisibles */ }
+      const fresh = seed();
+      localStorage.setItem(KEY, JSON.stringify(fresh));
+      return fresh;
+    }
+
+    let state = load();
+    function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[char]));
+    }
+    function gameName(id) {
+      return (GAMES.find((game) => game.id === id) || {}).name || id;
+    }
+    function gameOn(id) { return state.games[id] !== false; }
+    function activeLots() { return state.lots.filter((lot) => gameOn(lot.game)); }
+
+    function showPage(name) {
+      const page = ['tableau', 'jeux', 'lots', 'joueurs', 'reglages'].includes(name) ? name : 'tableau';
+      document.querySelectorAll('.page').forEach((el) => el.classList.toggle('active', el.id === 'page-' + page));
+      document.querySelectorAll('.nav-item').forEach((el) => el.classList.toggle('active', el.dataset.page === page));
+      if ((location.hash || '#tableau').slice(1) !== page) history.replaceState(null, '', '#' + page);
+    }
+
+    function renderStats() {
+      const players = state.players;
+      const wins = players.filter((player) => player.win);
+      const cards = [
+        ['Joueurs', new Set(players.map((player) => player.email)).size, true],
+        ['Parties', players.length, false],
+        ['Gains', wins.length, false],
+        ['Utilisés', players.filter((player) => player.status === 'used').length, false],
+        ['En attente', players.filter((player) => player.status === 'pending').length, false],
+        ['Retours', players.filter((player) => player.visits > 1).length, false],
+      ];
+      document.getElementById('stats').innerHTML = cards.map(([label, value, lime]) => `
+        <article class="stat${lime ? ' lime' : ''}">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+        </article>`).join('');
+      document.getElementById('game-chips').innerHTML = GAMES.map((game) => `
+        <span class="chip ${gameOn(game.id) ? 'on' : 'off'}"><i></i>${esc(game.name)}</span>`).join('');
+    }
+
+    function renderGames() {
+      document.getElementById('games').innerHTML = GAMES.map((game) => `
+        <article class="game">
+          <div>
+            <h2>${esc(game.name)}</h2>
+            <p class="meta">${gameOn(game.id) ? 'Proposé aux joueurs' : 'Masqué'}</p>
+          </div>
+          <button class="switch ${gameOn(game.id) ? 'on' : ''}" type="button" data-game="${game.id}" aria-pressed="${gameOn(game.id)}" aria-label="${esc(game.name)}"><i></i></button>
+        </article>`).join('');
+    }
+
+    function winRate() {
+      return activeLots().filter((lot) => lot.win).reduce((sum, lot) => sum + Number(lot.percent || 0), 0);
+    }
+
+    function renderLots() {
+      const rate = Math.round(winRate() * 10) / 10;
+      document.getElementById('lot-total').innerHTML = `Chances de cadeau, jeux actifs : <strong>${rate}%</strong>`;
+      document.getElementById('prizes').innerHTML = state.lots.map((lot) => `
+        <article class="prize ${gameOn(lot.game) ? '' : 'off-game'}">
+          <h3>${esc(lot.name)}</h3>
+          <p class="meta">${esc(gameName(lot.game))} · ${lot.days} jours${gameOn(lot.game) ? '' : ' · jeu masqué'}</p>
+          <div class="pct">${lot.percent}%</div>
+          <div class="badges">${lot.win ? '<span class="badge win">Cadeau</span>' : '<span class="badge">Sans cadeau</span>'}</div>
+          <div class="prize-actions">
+            <button class="btn ghost small" type="button" data-edit="${lot.id}">Modifier</button>
+            <button class="btn danger small" type="button" data-del="${lot.id}">Retirer</button>
+          </div>
+        </article>`).join('');
+    }
+
+    function renderPlayers() {
+      const query = document.getElementById('player-q').value.trim().toLowerCase();
+      const rows = state.players.filter((player) => {
+        const blob = `${player.first} ${player.last} ${player.email} ${player.phone} ${gameName(player.game)}`.toLowerCase();
+        return blob.includes(query);
+      });
+      const statusLabel = { used: 'Utilisé', pending: 'En attente', expired: 'Expiré' };
+      document.getElementById('players').innerHTML = rows.length ? rows.map((player) => `
+        <article class="row-card">
+          <div class="who">
+            <div>
+              <strong>${esc(player.first)} ${esc(player.last)}</strong>
+              <p class="meta">${esc(player.email)} · ${esc(player.phone)}</p>
+            </div>
+            <p class="meta">${esc(player.at)}</p>
+          </div>
+          <div class="badges">
+            <span class="badge">${esc(gameName(player.game))}</span>
+            <span class="badge ${player.win ? 'win' : ''}">${esc(player.prize)}</span>
+            <span class="badge ${esc(player.status)}">${statusLabel[player.status] || ''}</span>
+            <span class="badge">${player.visits} partie${player.visits > 1 ? 's' : ''}</span>
+          </div>
+        </article>`).join('') : '<p class="empty">Aucun joueur pour cette recherche.</p>';
+    }
+
+    function renderSettings() {
+      document.getElementById('venue-name').value = state.venue;
+      document.getElementById('cooldown').value = state.cooldown;
+      document.getElementById('venue-label').textContent = state.venue;
+    }
+
+    function render() {
+      renderStats();
+      renderGames();
+      renderLots();
+      renderPlayers();
+      renderSettings();
+    }
+
+    function playersCsv() {
+      const header = ['Prénom', 'Nom', 'E-mail', 'Téléphone', 'Jeu', 'Lot', 'Gain', 'Statut', 'Parties', 'Date', 'Consentement'];
+      const lines = state.players.map((player) => [
+        player.first, player.last, player.email, player.phone, gameName(player.game),
+        player.prize, player.win ? 'oui' : 'non', player.status, player.visits, player.at,
+        player.consent ? 'oui' : 'non',
+      ]);
+      return [header, ...lines].map((cells) => cells.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';')).join('\n');
+    }
+
+    function exportPlayers() {
+      const blob = new Blob(['\uFEFF' + playersCsv()], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'joueurs-arcade.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function fillGameSelect(selected) {
+      document.getElementById('lot-game').innerHTML = GAMES.map((game) =>
+        `<option value="${game.id}" ${game.id === selected ? 'selected' : ''}>${esc(game.name)}</option>`).join('');
+    }
+
+    function openLot(lot) {
+      document.getElementById('lot-title').textContent = lot ? 'Modifier le lot' : 'Ajouter un lot';
+      document.getElementById('lot-id').value = lot ? lot.id : '';
+      document.getElementById('lot-name').value = lot ? lot.name : '';
+      fillGameSelect(lot ? lot.game : 'bowling');
+      document.getElementById('lot-pct').value = lot ? lot.percent : 5;
+      document.getElementById('lot-days').value = lot ? lot.days : 30;
+      document.getElementById('lot-win').checked = lot ? lot.win : true;
+      document.getElementById('overlay').classList.add('open');
+      document.getElementById('lot-name').focus();
+    }
+
+    function closeLot() { document.getElementById('overlay').classList.remove('open'); }
+
+    document.querySelectorAll('.nav-item').forEach((button) => {
+      button.addEventListener('click', () => showPage(button.dataset.page));
+    });
+
+    document.getElementById('games').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-game]');
+      if (!button) return;
+      state.games[button.dataset.game] = !gameOn(button.dataset.game);
+      save();
+      render();
+    });
+
+    document.getElementById('player-q').addEventListener('input', renderPlayers);
+    document.getElementById('export-btn').addEventListener('click', exportPlayers);
+    document.getElementById('add-lot').addEventListener('click', () => openLot(null));
+    document.getElementById('lot-cancel').addEventListener('click', closeLot);
+    document.getElementById('overlay').addEventListener('click', (event) => {
+      if (event.target.id === 'overlay') closeLot();
+    });
+
+    document.getElementById('prizes').addEventListener('click', (event) => {
+      const edit = event.target.closest('[data-edit]');
+      const del = event.target.closest('[data-del]');
+      if (edit) openLot(state.lots.find((lot) => lot.id === edit.dataset.edit));
+      if (del) {
+        state.lots = state.lots.filter((lot) => lot.id !== del.dataset.del);
+        save();
+        renderLots();
+      }
+    });
+
+    document.getElementById('lot-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const lot = {
+        id: document.getElementById('lot-id').value || 'l' + Date.now(),
+        name: document.getElementById('lot-name').value.trim(),
+        game: document.getElementById('lot-game').value,
+        percent: Math.min(100, Math.max(0, Number(document.getElementById('lot-pct').value) || 0)),
+        days: Math.min(365, Math.max(1, Number(document.getElementById('lot-days').value) || 30)),
+        win: document.getElementById('lot-win').checked,
+      };
+      const index = state.lots.findIndex((item) => item.id === lot.id);
+      if (index >= 0) state.lots[index] = lot;
+      else state.lots.push(lot);
+      save();
+      closeLot();
+      renderLots();
+    });
+
+    document.getElementById('exp-apply').addEventListener('click', () => {
+      const players = Math.max(1, Number(document.getElementById('exp-players').value) || 0);
+      const gifts = Math.max(0, Number(document.getElementById('exp-gifts').value) || 0);
+      const rate = Math.min(100, (gifts / players) * 100);
+      const wins = activeLots().filter((lot) => lot.win);
+      const note = document.getElementById('exp-note');
+      if (!wins.length) {
+        note.textContent = 'Activez un jeu qui a un lot cadeau.';
+        note.classList.add('show');
+        return;
+      }
+      const target = Math.round(rate * 10) / 10;
+      const weight = wins.reduce((sum, lot) => sum + (Number(lot.percent) || 1), 0);
+      let used = 0;
+      wins.forEach((lot, index) => {
+        if (index === wins.length - 1) {
+          lot.percent = Math.round((target - used) * 10) / 10;
+        } else {
+          const share = Math.round((((Number(lot.percent) || 1) / weight) * target) * 10) / 10;
+          lot.percent = share;
+          used += share;
+        }
+      });
+      save();
+      renderLots();
+      note.textContent = `${players} joueurs, ${gifts} cadeaux : les lots gagnants visent ${target}% au total.`;
+      note.classList.add('show');
+    });
+
+    document.getElementById('settings-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      state.venue = document.getElementById('venue-name').value.trim() || 'Salle Arcade';
+      state.cooldown = Math.min(720, Math.max(1, Number(document.getElementById('cooldown').value) || 24));
+      save();
+      renderSettings();
+      document.getElementById('save-note').textContent = 'Enregistré';
+    });
+
+    window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+    render();
+    showPage(location.hash.slice(1) || 'tableau');
+    window.arcadePlayersCsv = playersCsv;
+  </script>
+</body>
+</html>
