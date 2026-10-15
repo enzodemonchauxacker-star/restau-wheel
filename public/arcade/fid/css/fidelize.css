@@ -554,23 +554,86 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
   display: grid;
   place-items: end center;
 }
-.loot .sack { width: 52px; height: 66px; }
+.loot .sack { width: 52px; height: 66px; transform-origin: 50% 70%; }
+.loot.is-boom .sack { animation: sack-pop 0.42s ease forwards; }
 .loot .mark {
   position: absolute;
   left: 50%;
-  top: 62%;
-  width: 26px;
-  height: 28px;
-  transform: translate(-50%, -50%);
+  top: 58%;
+  opacity: 0;
+  transform: translate(-50%, -40%) scale(0.5);
 }
+.loot .mark-gift { width: 34px; height: 34px; }
+.loot .mark-bone { width: 44px; height: 24px; }
+.loot.is-open .mark { animation: prize-in 0.32s ease 0.28s forwards; }
+.loot.is-boom::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #e8ff95;
+  transform: translate(-50%, -50%);
+  animation: loot-ring 0.45s ease-out forwards;
+  pointer-events: none;
+}
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.burst i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 2px;
+  background: #e8ff95;
+  opacity: 0;
+}
+.loot.is-boom .burst i { animation: loot-spark 0.48s ease-out forwards; }
+.burst i:nth-child(1) { --dx: -24px; --dy: -20px; background: #e8ff95; }
+.burst i:nth-child(2) { --dx: 22px; --dy: -16px; background: #f6f1e6; }
+.burst i:nth-child(3) { --dx: -8px; --dy: -28px; background: #c9a56a; }
+.burst i:nth-child(4) { --dx: 10px; --dy: 18px; background: #e8ff95; }
+.burst i:nth-child(5) { --dx: -26px; --dy: 6px; background: #f6f1e6; }
+.burst i:nth-child(6) { --dx: 26px; --dy: 8px; background: #c9a56a; }
+.burst i:nth-child(7) { --dx: 0px; --dy: -8px; width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+.burst i:nth-child(8) { --dx: 4px; --dy: 22px; background: #e8ff95; }
 .loot.is-open { cursor: default; }
 .loot:disabled { cursor: default; }
+@keyframes sack-pop {
+  0% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.18) rotate(-6deg); opacity: 1; }
+  100% { transform: scale(1.45) rotate(8deg); opacity: 0; }
+}
+@keyframes prize-in {
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes loot-ring {
+  to { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+}
+@keyframes loot-spark {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.35) rotate(40deg); opacity: 0; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .bowl-ball, .claw { animation: none; }
   .bowl-ball { left: 46%; }
   .claw { left: calc(50% - 39px); }
   .bowl-pin, .cable, .claw-mech .arm, .gift { transition: none; }
+  .loot.is-boom .sack,
+  .loot.is-open .mark,
+  .loot.is-boom .burst i,
+  .loot.is-boom::after { animation: none; }
+  .loot.is-open .sack { opacity: 0; }
+  .loot.is-open .mark { opacity: 1; transform: translate(-50%, -50%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

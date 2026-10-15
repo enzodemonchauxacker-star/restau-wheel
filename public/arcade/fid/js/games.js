@@ -1,8 +1,8 @@
 (function () {
   const pinMarkup = '<svg viewBox="0 0 160 340" aria-hidden="true"><use href="#pin-glyph"/></svg>';
   const sackMarkup = '<svg class="sack" viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>';
-  const dollarMarkup = '<svg class="mark mark-dollar" viewBox="0 0 32 44" aria-hidden="true"><use href="#dollar-glyph"/></svg>';
-  const bombMarkup = '<svg class="mark mark-bomb" viewBox="0 0 48 48" aria-hidden="true"><use href="#bomb-glyph"/></svg>';
+  const giftMarkup = '<svg class="mark mark-gift" viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg>';
+  const boneMarkup = '<svg class="mark mark-bone" viewBox="0 0 72 36" aria-hidden="true"><use href="#bone-glyph"/></svg>';
 
   const lane = document.getElementById('bowl-lane');
   const rack = document.getElementById('bowl-pins');
@@ -241,7 +241,7 @@
 
   function paintLoots() {
     lootLock = false;
-    lootMsg.textContent = 'Un cadeau, neuf bombes.';
+    lootMsg.textContent = 'Un cadeau, neuf os.';
     lootReset.textContent = 'Mélanger';
     const giftAt = Math.floor(Math.random() * 10);
     lootGrid.innerHTML = '';
@@ -249,7 +249,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'loot';
-      button.dataset.kind = index === giftAt ? 'gift' : 'bomb';
+      button.dataset.kind = index === giftAt ? 'gift' : 'bone';
       button.innerHTML = sackMarkup;
       button.setAttribute('aria-label', 'Butin ' + (index + 1));
       button.addEventListener('click', () => openLoot(button));
@@ -258,23 +258,27 @@
   }
 
   function reveal(button) {
+    if (button.classList.contains('is-open')) return;
     button.disabled = true;
-    button.classList.add('is-open', button.dataset.kind === 'gift' ? 'is-gift' : 'is-bomb');
-    if (!button.querySelector('.mark')) {
-      button.insertAdjacentHTML('beforeend', button.dataset.kind === 'gift' ? dollarMarkup : bombMarkup);
-    }
-    button.setAttribute('aria-label', button.dataset.kind === 'gift' ? 'Cadeau' : 'Bombe');
+    button.classList.add('is-boom', 'is-open', button.dataset.kind === 'gift' ? 'is-gift' : 'is-bone');
+    const burst = document.createElement('span');
+    burst.className = 'burst';
+    burst.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>';
+    button.appendChild(burst);
+    button.insertAdjacentHTML('beforeend', button.dataset.kind === 'gift' ? giftMarkup : boneMarkup);
+    button.setAttribute('aria-label', button.dataset.kind === 'gift' ? 'Cadeau' : 'Os');
   }
 
   function openLoot(button) {
     if (lootLock || button.classList.contains('is-open')) return;
     lootLock = true;
     reveal(button);
-    lootMsg.textContent = button.dataset.kind === 'gift' ? 'Le cadeau.' : 'Une bombe.';
+    lootMsg.textContent = button.dataset.kind === 'gift' ? 'Le cadeau.' : 'Un os.';
     lootReset.textContent = 'Rejouer';
-    window.setTimeout(() => {
-      lootGrid.querySelectorAll('.loot').forEach(reveal);
-    }, 420);
+    const others = [...lootGrid.querySelectorAll('.loot')].filter((other) => other !== button);
+    others.forEach((other, index) => {
+      window.setTimeout(() => reveal(other), 220 + index * 80);
+    });
   }
 
   lootReset.addEventListener('click', paintLoots);
