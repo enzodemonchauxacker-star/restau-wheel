@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arcade — Tableau de bord</title>
+  <title>Rekone — Tableau de bord</title>
   <meta name="theme-color" content="#3B3B3B">
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap">
@@ -328,9 +328,9 @@
       <span class="mark" aria-hidden="true">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
       </span>
-      Arcade
+      Rekone
     </a>
-    <div class="venue" id="venue-label">Salle Arcade</div>
+    <div class="venue" id="venue-label">Salle Rekone</div>
     <button class="nav-item active" type="button" data-page="tableau">Tableau de bord</button>
     <button class="nav-item" type="button" data-page="jeux">Jeux</button>
     <button class="nav-item" type="button" data-page="joueurs">Joueurs</button>
@@ -369,7 +369,7 @@
       </div>
       <div class="calc">
         <h2>Espérance</h2>
-        <p>Joueurs prévus et cadeaux à offrir dans ce jeu. Arcade répartit les chances des lots.</p>
+        <p>Joueurs prévus et cadeaux à offrir dans ce jeu. Rekone répartit les chances des lots.</p>
         <div class="calc-row">
           <div>
             <label for="exp-players">Joueurs prévus</label>
@@ -453,7 +453,7 @@
 
     function seed() {
       return {
-        venue: 'Salle Arcade',
+        venue: 'Salle Rekone',
         cooldown: 24,
         games: { bowling: true, laser: true, pince: true, butin: true },
         lots: [
@@ -484,7 +484,10 @@
     function load() {
       try {
         const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (saved && saved.lots && saved.players && saved.games) return saved;
+        if (saved && saved.lots && saved.players && saved.games) {
+          if (saved.venue === 'Salle Arcade') saved.venue = 'Salle Rekone';
+          return saved;
+        }
       } catch (error) { /* données locales illisibles */ }
       const fresh = seed();
       localStorage.setItem(KEY, JSON.stringify(fresh));
@@ -672,7 +675,7 @@
       const blob = new Blob(['\uFEFF' + playersCsv()], { type: 'text/csv;charset=utf-8' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'joueurs-arcade.csv';
+      link.download = 'joueurs-rekone.csv';
       link.click();
       URL.revokeObjectURL(link.href);
     }
@@ -787,7 +790,7 @@
 
     document.getElementById('settings-form').addEventListener('submit', (event) => {
       event.preventDefault();
-      state.venue = document.getElementById('venue-name').value.trim() || 'Salle Arcade';
+      state.venue = document.getElementById('venue-name').value.trim() || 'Salle Rekone';
       state.cooldown = Math.min(720, Math.max(1, Number(document.getElementById('cooldown').value) || 24));
       save();
       renderSettings();

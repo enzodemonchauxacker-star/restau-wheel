@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arcade</title>
+  <title>Rekone</title>
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=qr">
   <style>
@@ -103,10 +103,10 @@
 </head>
 <body>
   <header class="play-bar">
-    <a class="mark" href="/arcade/" aria-label="Arcade">
+    <a class="mark" href="/arcade/" aria-label="Rekone">
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
     </a>
-    <strong id="play-title">Arcade</strong>
+    <strong id="play-title">Rekone</strong>
   </header>
   <section class="gate" id="gate">
     <form id="gate-form">
@@ -151,7 +151,7 @@
     const picked = GAMES[key] || GAMES.bowling;
     const gameId = GAMES[key] ? key : 'bowling';
     document.getElementById('play-title').textContent = picked[1];
-    document.title = 'Arcade — ' + picked[1];
+    document.title = 'Rekone — ' + picked[1];
 
     function readLots() {
       const raw = params.get('lots');

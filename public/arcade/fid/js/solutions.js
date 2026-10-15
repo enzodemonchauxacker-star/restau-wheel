@@ -1,5 +1,5 @@
 /**
- * Arcade — la solution des salles de jeux.
+ * Rekone — la solution des salles de jeux.
  * Le client choisit ses jeux, puis règle lots, pourcentages et suivi.
  */
 (function (root, factory) {
@@ -11,7 +11,7 @@
   const solutions = [
     {
       id: 'arcade',
-      name: 'Arcade',
+      name: 'Rekone',
       status: 'live',
       href: '/arcade/',
       accent: '#E8FF95',
@@ -20,14 +20,14 @@
         tagline: 'Vos jeux. Vos règles.',
         summary: 'La salle active le bowling, le laser game, la pince ou le butin. Elle fixe les lots, les pourcentages et les espérances, puis suit les joueurs.',
         points: ['Jeux au choix', 'Lots, pourcentages, espérances', 'Dashboard et export RGPD'],
-        cta: 'Voir Arcade',
+        cta: 'Voir Rekone',
       },
       en: {
         sector: 'Game venues',
         tagline: 'Your games. Your rules.',
         summary: 'The venue turns on bowling, laser game, the claw, or the loot. It sets prizes, odds, and expectations, then follows the players.',
         points: ['Games to choose from', 'Prizes, odds, expectations', 'Dashboard and GDPR export'],
-        cta: 'See Arcade',
+        cta: 'See Rekone',
       },
     },
   ];
