@@ -381,40 +381,54 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
 .game-btn { align-self: flex-start; }
 .card-keep.game-card { display: flex; flex-direction: column; align-items: stretch; }
 
-.lane {
+.lane.alley {
   position: relative;
-  height: 168px;
+  height: auto;
+  aspect-ratio: 560 / 268;
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(#f6ead4, #e7d3b0);
-  box-shadow: inset 8px 0 0 #c4a574, inset -8px 0 0 #c4a574;
+  background: #6d18b8;
 }
-.pin-rack { position: absolute; left: 14px; right: 14px; top: 8px; height: 78px; }
+.alley-art { width: 100%; height: 100%; display: block; }
+.pin-rack { position: absolute; left: 43.5%; width: 13%; top: 39%; height: 18%; z-index: 4; }
 .bowl-pin {
   position: absolute;
-  width: 16px;
-  height: 34px;
-  margin-left: -8px;
+  width: 28%;
+  height: 42%;
+  margin-left: -14%;
   transform-origin: 50% 100%;
   transition: transform 0.35s ease, opacity 0.35s ease;
 }
 .bowl-pin svg { width: 100%; height: 100%; }
-.bowl-pin.is-down { transform: translateY(10px) rotate(72deg); opacity: 0.35; }
+.bowl-pin.is-down { transform: translateY(6px) rotate(72deg); opacity: 0.35; }
 .bowl-ball {
   position: absolute;
-  left: 8%;
-  bottom: 8px;
-  width: 22px;
-  height: 22px;
+  left: 34%;
+  bottom: 7%;
+  width: 8.4%;
+  aspect-ratio: 1;
+  height: auto;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 32%, #fff 0 2px, #6d6d6d 3px, #2a2a2a 16px);
-  box-shadow: 0 4px 0 rgba(59, 59, 59, 0.18);
+  background:
+    radial-gradient(circle at 32% 32%, #ffd0d4 0 8%, #e23b4a 9% 72%, #9d1828 78%);
+  box-shadow: 0 3px 0 rgba(59, 20, 40, 0.25);
   animation: bowl-sway 1.15s ease-in-out infinite alternate;
-  z-index: 2;
+  z-index: 5;
 }
+.bowl-ball::before,
+.bowl-ball::after {
+  content: "";
+  position: absolute;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: #2a1a24;
+}
+.bowl-ball::before { left: 28%; top: 34%; box-shadow: 18% 0 0 #2a1a24; }
+.bowl-ball::after { left: 46%; top: 52%; }
 @keyframes bowl-sway {
-  from { left: 10%; }
-  to { left: calc(100% - 34px); }
+  from { left: 36%; }
+  to { left: 55%; }
 }
 
 .arena {

@@ -1,5 +1,5 @@
 (function () {
-  const pinMarkup = '<svg viewBox="0 0 160 340" aria-hidden="true"><use href="#pin-glyph"/></svg>';
+  const pinMarkup = '<svg viewBox="0 0 20 40" aria-hidden="true"><path fill="#fff" d="M10 1c4 0 6 4 6 8 0 3-1 5-2 7 2 4 5 8 5 14 0 5-3 8-9 8S1 35 1 30c0-6 3-10 5-14-1-2-2-4-2-7C4 5 6 1 10 1z"/><path d="M5 13h10M4.6 16.2h10.8" stroke="#e23d4a" stroke-width="1.5" stroke-linecap="round"/></svg>';
   const sackMarkup = '<svg class="sack" viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>';
   const giftMarkup = '<svg class="mark mark-gift" viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg>';
   const boneMarkup = '<svg class="mark mark-bone" viewBox="0 0 72 36" aria-hidden="true"><use href="#bone-glyph"/></svg>';
@@ -10,9 +10,9 @@
   const throwBtn = document.getElementById('bowl-throw');
   const bowlScore = document.getElementById('bowl-score');
   const formation = [
-    [0.12, 0], [0.37, 0], [0.63, 0], [0.88, 0],
-    [0.24, 1], [0.50, 1], [0.76, 1],
-    [0.37, 2], [0.63, 2],
+    [0.16, 0], [0.38, 0], [0.62, 0], [0.84, 0],
+    [0.27, 1], [0.50, 1], [0.73, 1],
+    [0.38, 2], [0.62, 2],
     [0.50, 3],
   ];
 
@@ -22,7 +22,7 @@
       pin.className = 'bowl-pin';
       pin.dataset.row = String(row);
       pin.style.left = (x * 100) + '%';
-      pin.style.top = (row * 16) + 'px';
+      pin.style.top = (row * 18) + '%';
       pin.innerHTML = pinMarkup;
       return pin.outerHTML;
     }).join('');
@@ -32,6 +32,7 @@
     ball.style.transition = 'none';
     ball.style.bottom = '';
     ball.style.left = '';
+    ball.style.transform = '';
     ball.style.animation = '';
   }
 
@@ -55,10 +56,11 @@
     const left = ballBox.left - laneBox.left;
     ball.style.animation = 'none';
     ball.style.left = left + 'px';
-    ball.style.bottom = '8px';
+    ball.style.bottom = '7%';
     requestAnimationFrame(() => {
-      ball.style.transition = 'bottom .42s cubic-bezier(.25,.7,.2,1)';
-      ball.style.bottom = (lane.clientHeight - 46) + 'px';
+      ball.style.transition = 'bottom .48s cubic-bezier(.25,.7,.2,1), transform .48s ease';
+      ball.style.bottom = '46%';
+      ball.style.transform = 'scale(.62)';
     });
     window.setTimeout(() => {
       const freshLane = lane.getBoundingClientRect();
@@ -69,7 +71,7 @@
         const row = Number(pin.dataset.row);
         const box = pin.getBoundingClientRect();
         const center = box.left + box.width / 2 - freshLane.left;
-        const reach = 20 + (3 - row) * 12;
+        const reach = 7 + (3 - row) * 4;
         if (Math.abs(center - impact) < reach) {
           pin.classList.add('is-down');
           down += 1;
@@ -79,7 +81,7 @@
       throwBtn.disabled = false;
       throwBtn.textContent = 'Rejouer';
       throwBtn.dataset.mode = 'reset';
-    }, 460);
+    }, 500);
   });
 
   const arena = document.getElementById('laser-arena');

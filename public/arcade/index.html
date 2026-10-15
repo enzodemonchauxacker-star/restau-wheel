@@ -124,7 +124,127 @@
               <h3 data-scramble>Bowling</h3>
               <p class="game-score" id="bowl-score">Vise, puis lance.</p>
             </div>
-            <div class="lane" id="bowl-lane">
+            <div class="lane alley" id="bowl-lane">
+              <svg class="alley-art" viewBox="0 0 560 268" aria-hidden="true">
+                <defs>
+                  <linearGradient id="alley-wall" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#f7b7d2"/>
+                    <stop offset="0.42" stop-color="#c45ae0"/>
+                    <stop offset="1" stop-color="#6d18b8"/>
+                  </linearGradient>
+                  <linearGradient id="alley-wood" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ffe38a"/>
+                    <stop offset="1" stop-color="#f6b31a"/>
+                  </linearGradient>
+                </defs>
+                <rect width="560" height="268" fill="url(#alley-wall)"/>
+                <circle cx="70" cy="36" r="26" fill="#fff" opacity=".16"/>
+                <circle cx="250" cy="18" r="18" fill="#fff" opacity=".12"/>
+                <circle cx="470" cy="48" r="30" fill="#fff" opacity=".1"/>
+                <circle cx="180" cy="70" r="14" fill="#fff" opacity=".1"/>
+                <g fill="#1e3d86">
+                  <rect x="128" y="8" width="92" height="40" rx="3"/>
+                  <rect x="234" y="8" width="92" height="40" rx="3"/>
+                  <rect x="340" y="8" width="92" height="40" rx="3"/>
+                </g>
+                <g fill="#d9f7ff">
+                  <rect x="133" y="12" width="82" height="28"/>
+                  <rect x="239" y="12" width="82" height="28"/>
+                  <rect x="345" y="12" width="82" height="28"/>
+                </g>
+                <g stroke="#7eb7e6" stroke-width="1">
+                  <path d="M133 18h82M133 24h82M133 30h82M133 35h82M239 18h82M239 24h82M239 30h82M239 35h82M345 18h82M345 24h82M345 30h82M345 35h82"/>
+                  <path d="M150 12v28M168 12v28M186 12v28M256 12v28M274 12v28M292 12v28M362 12v28M380 12v28M398 12v28"/>
+                </g>
+                <g fill="#1a1a1a">
+                  <path d="M118 62l6 6-6 6 6-6zM432 58l7 6-7 6 7-6zM96 96l5 4-5 4 5-4z"/>
+                </g>
+                <g fill="#fff">
+                  <path d="M156 70l5 5-5 5 5-5zM404 66l6 5-6 5 6-5zM206 54l4 4-4 4 4-4z"/>
+                </g>
+                <text x="280" y="78" text-anchor="middle" fill="#fff" font-family="General Sans, sans-serif" font-size="28" font-weight="700" letter-spacing="1">BOWLING</text>
+                <g font-family="General Sans, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">
+                  <rect x="146" y="96" width="22" height="14" rx="3" fill="#e46bd4"/>
+                  <rect x="176" y="96" width="22" height="14" rx="3" fill="#f08ad8"/>
+                  <rect x="206" y="96" width="22" height="14" rx="3" fill="#e46bd4"/>
+                  <rect x="236" y="96" width="22" height="14" rx="3" fill="#f08ad8"/>
+                  <rect x="269" y="94" width="22" height="16" rx="3" fill="#fff"/>
+                  <rect x="302" y="96" width="22" height="14" rx="3" fill="#e46bd4"/>
+                  <rect x="332" y="96" width="22" height="14" rx="3" fill="#f08ad8"/>
+                  <rect x="362" y="96" width="22" height="14" rx="3" fill="#e46bd4"/>
+                  <rect x="392" y="96" width="22" height="14" rx="3" fill="#f08ad8"/>
+                  <text x="157" y="107" fill="#fff">1</text>
+                  <text x="187" y="107">2</text>
+                  <text x="217" y="107">3</text>
+                  <text x="247" y="107">4</text>
+                  <text x="280" y="106" fill="#6d18b8">5</text>
+                  <text x="313" y="107">6</text>
+                  <text x="343" y="107">7</text>
+                  <text x="373" y="107">8</text>
+                  <text x="403" y="107">9</text>
+                </g>
+                <path fill="url(#alley-wood)" d="M24 268 L150 132 H410 L536 268 Z"/>
+                <path fill="#ffe7a0" d="M266 132 L294 132 L370 268 L190 268 Z"/>
+                <g stroke="#e8a31c" stroke-width="2.5" opacity=".45">
+                  <path d="M164 134 L56 266 M193 134 L104 266 M222 134 L152 266 M251 134 L208 266 M309 134 L352 266 M338 134 L408 266 M367 134 L456 266 M396 134 L504 266"/>
+                </g>
+                <g fill="none" stroke="#4b0d86" stroke-width="6" stroke-linecap="round">
+                  <path d="M150 132 L24 268"/>
+                  <path d="M179 132 L78 268"/>
+                  <path d="M208 132 L130 268"/>
+                  <path d="M237 132 L175 268"/>
+                  <path d="M266 132 L190 268"/>
+                  <path d="M294 132 L370 268"/>
+                  <path d="M323 132 L385 268"/>
+                  <path d="M352 132 L430 268"/>
+                  <path d="M381 132 L482 268"/>
+                  <path d="M410 132 L536 268"/>
+                </g>
+                <g fill="#fff">
+                  <ellipse cx="178" cy="128" rx="3.2" ry="7"/>
+                  <ellipse cx="186" cy="126" rx="3" ry="6.5"/>
+                  <ellipse cx="182" cy="136" rx="3" ry="6"/>
+                  <ellipse cx="214" cy="127" rx="3" ry="6.5"/>
+                  <ellipse cx="222" cy="129" rx="3.2" ry="7"/>
+                  <ellipse cx="218" cy="137" rx="3" ry="6"/>
+                  <ellipse cx="248" cy="126" rx="3.4" ry="7"/>
+                  <ellipse cx="258" cy="128" rx="3.2" ry="6.5"/>
+                  <ellipse cx="253" cy="136" rx="3" ry="6"/>
+                  <ellipse cx="330" cy="127" rx="3.2" ry="6.5"/>
+                  <ellipse cx="338" cy="125" rx="3.4" ry="7"/>
+                  <ellipse cx="334" cy="135" rx="3" ry="6"/>
+                  <ellipse cx="366" cy="128" rx="3" ry="6.5"/>
+                  <ellipse cx="374" cy="126" rx="3.2" ry="7"/>
+                  <ellipse cx="370" cy="136" rx="3" ry="6"/>
+                  <ellipse cx="402" cy="129" rx="3" ry="6"/>
+                  <ellipse cx="394" cy="127" rx="3.2" ry="6.5"/>
+                  <ellipse cx="398" cy="136" rx="3" ry="6"/>
+                </g>
+                <g>
+                  <path fill="#7a22c8" d="M8 176h78l14 18H18z"/>
+                  <path fill="#efeaff" d="M20 168h86l8 16H28z"/>
+                  <circle cx="48" cy="184" r="16" fill="#e23b4a"/>
+                  <circle cx="74" cy="178" r="14" fill="#2f6fe0"/>
+                  <g fill="#2a1a24">
+                    <circle cx="44" cy="180" r="1.6"/><circle cx="50" cy="176" r="1.6"/><circle cx="52" cy="184" r="1.6"/>
+                    <circle cx="70" cy="174" r="1.5"/><circle cx="76" cy="172" r="1.5"/><circle cx="78" cy="178" r="1.5"/>
+                  </g>
+                  <path fill="#6418aa" d="M18 198h70v28H10z"/>
+                </g>
+                <g>
+                  <path fill="#7a22c8" d="M552 176h-78l-14 18h82z"/>
+                  <path fill="#efeaff" d="M540 168h-96l-8 16h96z"/>
+                  <circle cx="470" cy="180" r="13" fill="#f07820"/>
+                  <circle cx="492" cy="176" r="13" fill="#f5d000"/>
+                  <circle cx="514" cy="184" r="14" fill="#2f6fe0"/>
+                  <g fill="#2a1a24">
+                    <circle cx="466" cy="176" r="1.4"/><circle cx="472" cy="174" r="1.4"/><circle cx="474" cy="180" r="1.4"/>
+                    <circle cx="488" cy="172" r="1.4"/><circle cx="494" cy="170" r="1.4"/><circle cx="496" cy="176" r="1.4"/>
+                    <circle cx="510" cy="180" r="1.5"/><circle cx="516" cy="176" r="1.5"/><circle cx="518" cy="184" r="1.5"/>
+                  </g>
+                  <path fill="#6418aa" d="M542 198h-70v28h78z"/>
+                </g>
+              </svg>
               <div class="pin-rack" id="bowl-pins"></div>
               <div class="bowl-ball" id="bowl-ball"></div>
             </div>
