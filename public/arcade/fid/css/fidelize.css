@@ -191,12 +191,12 @@ svg { display: block; }
 .card-keep { min-height: 230px; }
 .card-app, .card-topics { min-height: 360px; }
 .card h3 { font-size: 22px; margin-bottom: 8px; }
-.card-steps { grid-column: 1; grid-row: 1; }
-.card-people { grid-column: 2; grid-row: 1; }
-.card-tools { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; }
-.card-keep { grid-column: 1 / span 2; grid-row: 2; display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; align-items: center; }
-.card-app { grid-column: 1; grid-row: 3; overflow: hidden; min-height: 230px; position: relative; }
-.card-topics { grid-column: 2 / span 2; grid-row: 3; overflow: hidden; }
+.card-steps { grid-column: 1 / -1; grid-row: 1; }
+.card-people { grid-column: 1 / span 2; grid-row: 2; }
+.card-tools { grid-column: 3; grid-row: 2 / span 2; display: flex; flex-direction: column; }
+.card-keep { grid-column: 1 / span 2; grid-row: 3; display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; align-items: center; }
+.card-app { grid-column: 1; grid-row: 4; overflow: hidden; min-height: 230px; position: relative; }
+.card-topics { grid-column: 2 / span 2; grid-row: 4; overflow: hidden; }
 .steps { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
 .steps li { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .check {
@@ -384,52 +384,13 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
 .lane.alley {
   position: relative;
   height: auto;
-  aspect-ratio: 560 / 268;
+  aspect-ratio: 563 / 258;
   border-radius: 16px;
   overflow: hidden;
-  background: #6d18b8;
+  background: #e45cb8;
 }
 .alley-art { width: 100%; height: 100%; display: block; }
-.pin-rack { position: absolute; left: 43.5%; width: 13%; top: 39%; height: 18%; z-index: 4; }
-.bowl-pin {
-  position: absolute;
-  width: 28%;
-  height: 42%;
-  margin-left: -14%;
-  transform-origin: 50% 100%;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-}
-.bowl-pin svg { width: 100%; height: 100%; }
-.bowl-pin.is-down { transform: translateY(6px) rotate(72deg); opacity: 0.35; }
-.bowl-ball {
-  position: absolute;
-  left: 34%;
-  bottom: 7%;
-  width: 8.4%;
-  aspect-ratio: 1;
-  height: auto;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 32% 32%, #ffd0d4 0 8%, #e23b4a 9% 72%, #9d1828 78%);
-  box-shadow: 0 3px 0 rgba(59, 20, 40, 0.25);
-  animation: bowl-sway 1.15s ease-in-out infinite alternate;
-  z-index: 5;
-}
-.bowl-ball::before,
-.bowl-ball::after {
-  content: "";
-  position: absolute;
-  width: 14%;
-  height: 14%;
-  border-radius: 50%;
-  background: #2a1a24;
-}
-.bowl-ball::before { left: 28%; top: 34%; box-shadow: 18% 0 0 #2a1a24; }
-.bowl-ball::after { left: 46%; top: 52%; }
-@keyframes bowl-sway {
-  from { left: 36%; }
-  to { left: 55%; }
-}
+.bowl-pin.is-down { opacity: 0.2; }
 
 .arena {
   position: relative;
@@ -638,8 +599,7 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bowl-ball, .claw { animation: none; }
-  .bowl-ball { left: 46%; }
+  .claw { animation: none; }
   .claw { left: calc(50% - 39px); }
   .bowl-pin, .cable, .claw-mech .arm, .gift { transition: none; }
   .loot.is-boom .sack,
