@@ -476,83 +476,101 @@ html.fid-motion .works-view { height: 100vh; overflow: hidden; }
   border-radius: 999px;
   background: #e4d3b4;
 }
-.claw-track { position: absolute; left: 12px; right: 12px; top: 0; bottom: 0; }
-.claw { position: absolute; top: 6px; left: 0; width: 36px; animation: claw-sweep 2.2s ease-in-out infinite alternate; }
+.cab-rail {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  right: 10px;
+  top: 8px;
+  height: 7px;
+  border-radius: 4px;
+  background: linear-gradient(#eef2f6, #8e98a3);
+  box-shadow: 0 2px 0 #5d6670;
+}
+.claw-track { position: absolute; left: 8px; right: 8px; top: 0; bottom: 0; }
+.claw {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 78px;
+  z-index: 3;
+  animation: claw-sweep 2.4s ease-in-out infinite alternate;
+}
 .cable {
   display: block;
-  width: 2px;
-  height: 26px;
-  margin: 0 auto;
-  background: var(--ink);
-  transition: height 0.42s ease;
+  width: 5px;
+  height: 28px;
+  margin: 0 auto -2px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(-32deg, #2a3036 0 2px, #9aa3ad 2px 4px, #4e565f 4px 6px);
+  box-shadow: 0 0 0 0.5px #1c2126;
 }
-.claw.is-down .cable { height: 128px; }
-.jaws { display: flex; justify-content: center; gap: 3px; margin-top: -1px; }
-.jaws i {
-  width: 12px;
-  height: 16px;
-  border: 2px solid var(--ink);
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
-  transition: transform 0.25s ease 0.32s;
+.claw-mech { display: block; width: 78px; height: 96px; overflow: visible; }
+.claw-mech .arm {
+  transform-box: view-box;
+  transform-origin: 60px 46px;
+  transition: transform 0.28s cubic-bezier(0.2, 1.4, 0.32, 1);
 }
-.jaws i:first-child { transform: rotate(22deg); transform-origin: 50% 0; }
-.jaws i:last-child { transform: rotate(-22deg); transform-origin: 50% 0; }
-.claw.is-down .jaws i:first-child { transform: rotate(-6deg); }
-.claw.is-down .jaws i:last-child { transform: rotate(6deg); }
+.claw-mech .arm-l { transform: rotate(-26deg); }
+.claw-mech .arm-r { transform: rotate(26deg); }
+.claw.is-open .arm-l { transform: rotate(-46deg); }
+.claw.is-open .arm-r { transform: rotate(46deg); }
+.claw.is-shut .arm-l { transform: rotate(-4deg); }
+.claw.is-shut .arm-r { transform: rotate(4deg); }
 @keyframes claw-sweep {
   from { left: 0; }
-  to { left: calc(100% - 36px); }
+  to { left: calc(100% - 78px); }
 }
 .prize-row {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 16px;
+  bottom: 14px;
   display: flex;
   justify-content: center;
+  z-index: 1;
 }
-.gift {
-  width: 46px;
-  height: 46px;
-  display: block;
-  transition: transform 0.45s ease 0.12s;
+.gift.sack-prize { position: relative; width: 58px; height: 72px; display: block; }
+.gift.sack-prize > svg:first-child { width: 100%; height: 100%; }
+.sack-dollar {
+  position: absolute;
+  left: 50%;
+  top: 64%;
+  width: 16px;
+  height: 22px;
+  transform: translate(-50%, -50%);
 }
-.gift svg { width: 100%; height: 100%; }
-.gift.is-caught { filter: drop-shadow(0 8px 0 rgba(59, 59, 59, 0.08)); }
+.gift.is-caught { filter: drop-shadow(0 6px 0 rgba(59, 59, 59, 0.12)); }
 
-.loot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.loot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .loot {
   position: relative;
-  height: 64px;
+  height: 86px;
   border: 0;
-  border-radius: 14px;
-  background: var(--cream);
-  box-shadow: inset 0 0 0 1.5px var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
+  display: grid;
+  place-items: end center;
 }
-.loot::before {
-  content: "";
+.loot .sack { width: 52px; height: 66px; }
+.loot .mark {
   position: absolute;
-  left: 22%;
-  right: 22%;
-  top: 46%;
-  height: 4px;
-  border-radius: 99px;
-  background: var(--accent);
+  left: 50%;
+  top: 62%;
+  width: 26px;
+  height: 28px;
+  transform: translate(-50%, -50%);
 }
-.loot svg { width: 34px; height: 34px; margin: 0 auto; }
-.loot.is-open::before { display: none; }
-.loot.is-open { display: grid; place-items: center; cursor: default; }
-.loot.is-gift { background: var(--accent); box-shadow: none; }
-.loot.is-bomb { background: var(--ink); box-shadow: none; }
+.loot.is-open { cursor: default; }
 .loot:disabled { cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
   .bowl-ball, .claw { animation: none; }
   .bowl-ball { left: 46%; }
-  .claw { left: calc(50% - 18px); }
-  .bowl-pin, .cable, .jaws i, .gift { transition: none; }
+  .claw { left: calc(50% - 39px); }
+  .bowl-pin, .cable, .claw-mech .arm, .gift { transition: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

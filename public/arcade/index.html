@@ -27,15 +27,27 @@
       <path d="M64 40C74 26 92 24 102 36" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
       <path fill="none" stroke="#3b3b3b" stroke-width="3.5" stroke-linejoin="round" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
     </symbol>
-    <symbol id="gift-glyph" viewBox="0 0 64 64">
-      <rect x="8" y="28" width="48" height="28" rx="6" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
-      <path d="M32 28v28M8 40h48" fill="none" stroke="#3b3b3b" stroke-width="3"/>
-      <path d="M32 28c-8-14-22-8-16 0M32 28c8-14 22-8 16 0" fill="none" stroke="#3b3b3b" stroke-width="3" stroke-linecap="round"/>
+    <symbol id="sack-glyph" viewBox="0 0 80 100">
+      <ellipse cx="40" cy="94" rx="26" ry="4.5" fill="#6b5130" opacity="0.28"/>
+      <path fill="#c9a56a" d="M16 58c-2 14 2 30 10 36 6 4 22 6 28 4 10-4 14-20 12-36-2-10-8-16-14-18-8 4-32 4-36 14z"/>
+      <path fill="#a98450" d="M48 46c10 6 16 20 14 38-1 8-8 12-8 12 8-2 16-14 16-30 0-14-8-24-16-28-2 2-4 5-6 8z"/>
+      <path fill="none" stroke="#8a643c" stroke-width="1.7" stroke-linecap="round" opacity="0.55" d="M27 54c2 12-1 24-4 36M35 50c-1 14 2 26 0 38"/>
+      <path fill="#d2b27a" d="M22 52c6-16 12-22 18-24 8 2 16 10 20 24-8-6-28-6-38 0z"/>
+      <path fill="#b58b52" d="M30 38c2-8 6-12 10-14 5 2 9 8 11 14-6-3-16-3-21 0z"/>
+      <ellipse cx="40" cy="27" rx="7" ry="4.5" fill="#9a7344"/>
+      <path d="M24 31h22" stroke="#6d5334" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M46 31c8-1 14 4 12 10" fill="none" stroke="#6d5334" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M33 25c-2-6 2-10 6-8" fill="none" stroke="#6d5334" stroke-width="2" stroke-linecap="round"/>
     </symbol>
-    <symbol id="bomb-glyph" viewBox="0 0 64 64">
-      <circle cx="30" cy="40" r="15" fill="#fff8f1"/>
-      <path d="M40 28c4-9 14-9 16-3" fill="none" stroke="#fff8f1" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="56" cy="20" r="5" fill="#e8ff95"/>
+    <symbol id="dollar-glyph" viewBox="0 0 32 44">
+      <path d="M21 8c-7 0-11 2.5-11 7s4.5 6 11 7 11 3 11 8-5 8-12 8c-5 0-9-1.5-11-4" fill="none" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+      <path d="M16 3v38" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="bomb-glyph" viewBox="0 0 48 48">
+      <circle cx="22" cy="30" r="13" fill="#2a2a2a"/>
+      <circle cx="17" cy="25" r="4" fill="#6d6d6d"/>
+      <path d="M30 20c3-7 10-8 12-3" fill="none" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="41" cy="14" r="4" fill="#e8ff95" stroke="#2a2a2a" stroke-width="1.4"/>
     </symbol>
   </svg>
   <header class="nav" id="nav">
@@ -117,14 +129,34 @@
               <p class="game-score" id="claw-msg">Attrape le cadeau.</p>
             </div>
             <div class="cab-glass" id="claw-cab">
+              <div class="cab-rail" aria-hidden="true"></div>
               <div class="claw-track" id="claw-track">
                 <div class="claw" id="claw">
                   <span class="cable"></span>
-                  <span class="jaws"><i></i><i></i></span>
+                  <svg class="claw-mech" viewBox="0 0 120 150" aria-hidden="true">
+                    <g class="arm arm-l">
+                      <path fill="#8b95a1" d="M52 46 L46 78 Q40 110 36 128 Q34 138 44 136 Q50 120 54 90 L64 46 Z"/>
+                      <path fill="#6e7884" d="M36 124 Q32 136 44 134 Q48 128 44 122 Z"/>
+                    </g>
+                    <g class="arm arm-r">
+                      <path fill="#9aa3ae" d="M68 46 L74 78 Q80 110 84 128 Q86 138 76 136 Q70 120 66 90 L56 46 Z"/>
+                      <path fill="#7d8794" d="M84 124 Q88 136 76 134 Q72 128 76 122 Z"/>
+                    </g>
+                    <path fill="#7d8794" d="M54 64 L60 138 L66 64 Z"/>
+                    <path fill="#aeb6c0" d="M60 64 L66 64 L60 138 Z"/>
+                    <rect x="38" y="0" width="44" height="16" rx="3" fill="#e23d3d"/>
+                    <rect x="48" y="14" width="24" height="12" rx="2" fill="#8b949e"/>
+                    <rect x="26" y="34" width="68" height="12" rx="5" fill="#e23d3d"/>
+                    <path fill="#e7edf2" d="M60 40 L48 56 L60 68 L72 56 Z"/>
+                    <circle cx="60" cy="54" r="5" fill="#5c6772"/>
+                  </svg>
                 </div>
               </div>
               <div class="prize-row">
-                <span class="gift" id="claw-gift"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg></span>
+                <span class="gift sack-prize" id="claw-gift">
+                  <svg viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>
+                  <svg class="sack-dollar" viewBox="0 0 32 44" aria-hidden="true"><use href="#dollar-glyph"/></svg>
+                </span>
               </div>
             </div>
             <button class="btn btn-dark game-btn" type="button" id="claw-go">Attraper</button>

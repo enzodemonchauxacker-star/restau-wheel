@@ -1,7 +1,8 @@
 (function () {
   const pinMarkup = '<svg viewBox="0 0 160 340" aria-hidden="true"><use href="#pin-glyph"/></svg>';
-  const giftMarkup = '<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#gift-glyph"/></svg>';
-  const bombMarkup = '<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#bomb-glyph"/></svg>';
+  const sackMarkup = '<svg class="sack" viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>';
+  const dollarMarkup = '<svg class="mark mark-dollar" viewBox="0 0 32 44" aria-hidden="true"><use href="#dollar-glyph"/></svg>';
+  const bombMarkup = '<svg class="mark mark-bomb" viewBox="0 0 48 48" aria-hidden="true"><use href="#bomb-glyph"/></svg>';
 
   const lane = document.getElementById('bowl-lane');
   const rack = document.getElementById('bowl-pins');
@@ -160,8 +161,10 @@
   let clawBusy = false;
 
   function releaseClaw() {
-    claw.classList.remove('is-down');
-    claw.querySelector('.cable').style.height = '';
+    const cable = claw.querySelector('.cable');
+    claw.classList.remove('is-open', 'is-shut');
+    cable.style.height = '';
+    cable.style.transition = '';
     claw.style.animation = '';
     claw.style.left = '';
     gift.classList.remove('is-caught');
@@ -186,38 +189,49 @@
     const left = getComputedStyle(claw).left;
     const clawBox = claw.getBoundingClientRect();
     const giftBox = gift.getBoundingClientRect();
-    const hit = clawBox.right > giftBox.left + 8 && clawBox.left < giftBox.right - 8;
-    const reach = Math.max(72, giftBox.top - clawBox.top - 6);
+    const clawMid = (clawBox.left + clawBox.right) / 2;
+    const giftMid = (giftBox.left + giftBox.right) / 2;
+    const hit = Math.abs(clawMid - giftMid) < 28;
+    const extra = Math.max(48, giftBox.top + giftBox.height * 0.28 - clawBox.bottom);
+    const rest = 28;
     claw.style.animation = 'none';
     claw.style.left = left;
-    cable.style.height = reach + 'px';
-    claw.classList.add('is-down');
+    claw.classList.add('is-open');
+    cable.style.transition = 'height .56s cubic-bezier(.55,.05,.85,.4)';
+    window.requestAnimationFrame(() => {
+      cable.style.height = (rest + extra) + 'px';
+    });
     window.setTimeout(() => {
-      if (hit) {
-        gift.classList.add('is-caught');
-        gift.style.transition = 'transform .45s ease';
-        gift.style.transform = 'translateY(' + (-(reach - 34)) + 'px) scale(.9)';
-        cable.style.height = '34px';
-        clawMsg.textContent = 'Cadeau attrapé.';
-        clawBtn.disabled = false;
-        clawBtn.textContent = 'Rejouer';
-        clawBtn.dataset.mode = 'reset';
-        return;
-      }
-      clawMsg.textContent = 'À côté.';
-      cable.style.height = '26px';
+      claw.classList.remove('is-open');
+      claw.classList.add('is-shut');
       window.setTimeout(() => {
-        claw.classList.remove('is-down');
-        window.setTimeout(() => {
-          cable.style.height = '';
-          claw.style.animation = '';
-          claw.style.left = '';
-          clawBusy = false;
+        cable.style.transition = 'height .62s cubic-bezier(.16,.8,.28,1)';
+        cable.style.height = rest + 'px';
+        if (hit) {
+          gift.classList.add('is-caught');
+          gift.style.transition = 'transform .62s cubic-bezier(.16,.8,.28,1)';
+          gift.style.transform = 'translateY(' + (-extra) + 'px)';
+          clawMsg.textContent = 'Cadeau attrapé.';
           clawBtn.disabled = false;
-          clawMsg.textContent = 'Attrape le cadeau.';
-        }, 280);
-      }, 480);
-    }, 480);
+          clawBtn.textContent = 'Rejouer';
+          clawBtn.dataset.mode = 'reset';
+          return;
+        }
+        clawMsg.textContent = 'À côté.';
+        window.setTimeout(() => {
+          claw.classList.remove('is-shut');
+          window.setTimeout(() => {
+            cable.style.height = '';
+            cable.style.transition = '';
+            claw.style.animation = '';
+            claw.style.left = '';
+            clawBusy = false;
+            clawBtn.disabled = false;
+            clawMsg.textContent = 'Attrape le cadeau.';
+          }, 280);
+        }, 640);
+      }, 240);
+    }, 560);
   });
 
   const lootGrid = document.getElementById('loot-grid');
@@ -236,6 +250,7 @@
       button.type = 'button';
       button.className = 'loot';
       button.dataset.kind = index === giftAt ? 'gift' : 'bomb';
+      button.innerHTML = sackMarkup;
       button.setAttribute('aria-label', 'Butin ' + (index + 1));
       button.addEventListener('click', () => openLoot(button));
       lootGrid.appendChild(button);
@@ -245,7 +260,9 @@
   function reveal(button) {
     button.disabled = true;
     button.classList.add('is-open', button.dataset.kind === 'gift' ? 'is-gift' : 'is-bomb');
-    button.innerHTML = button.dataset.kind === 'gift' ? giftMarkup : bombMarkup;
+    if (!button.querySelector('.mark')) {
+      button.insertAdjacentHTML('beforeend', button.dataset.kind === 'gift' ? dollarMarkup : bombMarkup);
+    }
     button.setAttribute('aria-label', button.dataset.kind === 'gift' ? 'Cadeau' : 'Bombe');
   }
 
