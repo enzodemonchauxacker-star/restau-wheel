@@ -5,7 +5,7 @@
 
   function safeNext(value) {
     const text = String(value || '');
-    return /^\/arcade\/[A-Za-z0-9/?=&._%-]{0,180}$/.test(text) ? text : '/arcade/dashboard/';
+    return /^\/arcade\/[A-Za-z0-9/?=&._#%-]{0,180}$/.test(text) ? text : '/arcade/dashboard/';
   }
 
   fetch('/arcade/api/compte/moi', { cache: 'no-store', credentials: 'same-origin' })
