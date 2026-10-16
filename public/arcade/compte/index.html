@@ -107,6 +107,7 @@
           if (data.code === 'exists') lead.textContent = 'Un compte existe déjà pour cet email.';
           throw new Error(data.error || 'Création impossible');
         }
+        try { localStorage.setItem('rekone-compte', '1'); } catch (error) {}
         location.href = '/arcade/dashboard/#compte';
       } catch (error) {
         showErr(error.message);

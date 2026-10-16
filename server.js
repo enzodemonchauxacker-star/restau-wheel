@@ -85,10 +85,13 @@ function rekoneAccountStore() {
 }
 
 function rememberRekone(req, account) {
-  req.session.rekoneId = account.id;
-  req.session.rekoneEmail = account.email;
-  req.session.rekoneName = account.name;
-  req.session.rekoneVenue = account.venue;
+  req.session = {
+    ...(req.session || {}),
+    rekoneId: account.id,
+    rekoneEmail: account.email,
+    rekoneName: account.name,
+    rekoneVenue: account.venue,
+  };
 }
 
 app.get('/arcade/api/compte', async (req, res) => {

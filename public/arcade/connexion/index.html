@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=login">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+  <script>document.documentElement.classList.add('session-checking');</script>
   <style>
     body { min-height: 100vh; }
     .sheet { width: min(480px, calc(100% - 32px)); margin: 112px auto 64px; background: var(--card); border-radius: 24px; padding: 28px; }
@@ -19,6 +20,8 @@
     .field input { height: 44px; border-radius: 999px; border: 1px solid var(--line); padding: 0 16px; background: var(--cream); }
     .sheet .btn { width: 100%; height: 44px; }
     .err { color: #9a3b3b; margin-top: 12px; }
+    html.session-checking #login-form,
+    html.session-checking .links { display: none; }
     .links { margin-top: 16px; font-size: 13px; }
     .links a { text-decoration: underline; text-underline-offset: 3px; }
   </style>
@@ -33,7 +36,7 @@
   </header>
   <main class="sheet">
     <h1>Se connecter</h1>
-    <p class="lead">Entrez l'email et le mot de passe choisis après l'abonnement.</p>
+    <p class="lead" id="lead">Ouverture du tableau de bord…</p>
     <form id="login-form">
       <label class="field"><span>Email</span><input name="email" type="email" required maxlength="120" autocomplete="username"></label>
       <label class="field"><span>Mot de passe</span><input name="password" type="password" required minlength="8" maxlength="72" autocomplete="current-password"></label>
@@ -62,6 +65,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Connexion impossible');
+        try { localStorage.setItem('rekone-compte', '1'); } catch (error) {}
         location.href = data.next || '/arcade/dashboard/';
       } catch (error) {
         err.hidden = false;

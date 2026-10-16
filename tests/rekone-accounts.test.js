@@ -70,7 +70,10 @@ test('le retour au site garde le compte ouvert', () => {
   assert.match(home, /session-nav\.js/);
   assert.match(login, /session-nav\.js/);
   assert.match(sessionNav, /\/arcade\/api\/compte\/moi/);
-  assert.match(sessionNav, /Tableau de bord/);
+  assert.match(sessionNav, /\/arcade\/dashboard\//);
+  assert.match(sessionNav, /rekone-compte/);
+  assert.match(login, /session-checking/);
+  assert.match(login, /localStorage.setItem\('rekone-compte'/);
 });
 
 test('les pages de compte existent', () => {
