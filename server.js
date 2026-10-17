@@ -10,7 +10,15 @@ const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail }
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { mount: mountArcadePlayers } = require('./lib/arcade-players');
-const { buildCrmSnapshot } = require('./lib/crm');
+const {
+  buildCrmSnapshot,
+  STAGES,
+  personCard,
+  buildPersonFile,
+  parsePersonInput,
+  cleanNote,
+  cleanTaskTitle,
+} = require('./lib/crm');
 const {
   cleanBaseUrl,
   chunk,
@@ -1141,6 +1149,267 @@ app.get('/api/superadmin/crm', requireSuperAdmin, async (req, res) => {
   } catch (e) {
     console.error('[sa-crm]', e.message);
     res.status(500).json({ error: 'Impossible de charger le CRM' });
+  }
+});
+
+const CRM_PERSON_FROM = `
+  FROM customers c
+  JOIN restaurants r ON r.id = c.restaurant_id
+  LEFT JOIN spins s ON s.customer_id = c.id
+`;
+
+function crmPersonFilters(query) {
+  const clauses = [];
+  const params = [];
+  const rid = parseInt(query.restaurant_id, 10);
+  if (rid > 0) {
+    clauses.push('c.restaurant_id=?');
+    params.push(rid);
+  }
+  const q = String(query.q || '').trim();
+  if (q.length >= 2) {
+    const term = `%${q}%`;
+    clauses.push("(c.first_name ILIKE ? OR c.last_name ILIKE ? OR c.email ILIKE ? OR COALESCE(c.phone,'') ILIKE ? OR r.name ILIKE ?)");
+    params.push(term, term, term, term, term);
+  }
+  const stage = STAGES.includes(query.stage) ? query.stage : '';
+  return { clauses, params, stage };
+}
+
+async function loadCrmPerson(id) {
+  return db.prepare(`
+    SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at,
+           c.restaurant_id, c.crm_stage,
+           r.name AS restaurant_name,
+           COUNT(s.id)::int AS spin_count,
+           COUNT(s.id) FILTER (WHERE s.prize_id IS NOT NULL)::int AS win_count,
+           COUNT(s.id) FILTER (WHERE s.used = 1 AND s.prize_id IS NOT NULL)::int AS redeemed_count,
+           COUNT(s.id) FILTER (
+             WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+               AND (s.deadline IS NULL OR s.deadline > NOW())
+           )::int AS pending_count,
+           MAX(s.won_at) AS last_spin_at,
+           (SELECT COUNT(*)::int FROM crm_notes n WHERE n.customer_id = c.id) AS note_count,
+           (SELECT COUNT(*)::int FROM crm_tasks t WHERE t.customer_id = c.id AND COALESCE(t.done, 0) = 0) AS open_tasks
+    ${CRM_PERSON_FROM}
+    WHERE c.id=?
+    GROUP BY c.id, r.name
+  `).get(id);
+}
+
+async function loadCrmFile(id) {
+  const customer = await loadCrmPerson(id);
+  if (!customer) return null;
+  const notes = await db.prepare(
+    'SELECT id, body, created_at FROM crm_notes WHERE customer_id=? ORDER BY created_at DESC, id DESC'
+  ).all(id);
+  const tasks = await db.prepare(
+    'SELECT id, title, done, created_at FROM crm_tasks WHERE customer_id=? ORDER BY done ASC, created_at DESC, id DESC'
+  ).all(id);
+  const spins = await db.prepare(`
+    SELECT s.id, s.won_at, s.used, s.deadline, p.name AS prize_name
+    FROM spins s
+    LEFT JOIN prizes p ON p.id = s.prize_id
+    WHERE s.customer_id=?
+    ORDER BY s.won_at DESC
+    LIMIT 12
+  `).all(id);
+  return buildPersonFile({ customer, notes, tasks, spins });
+}
+
+async function assertRestaurant(id) {
+  return db.prepare('SELECT id FROM restaurants WHERE id=?').get(id);
+}
+
+app.get('/api/superadmin/crm/people', requireSuperAdmin, async (req, res) => {
+  const { clauses, params, stage } = crmPersonFilters(req.query);
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  try {
+    const rows = await db.prepare(`
+      SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at,
+             c.restaurant_id, c.crm_stage,
+             r.name AS restaurant_name,
+             COUNT(s.id)::int AS spin_count,
+             COUNT(s.id) FILTER (
+               WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+                 AND (s.deadline IS NULL OR s.deadline > NOW())
+             )::int AS pending_count,
+             MAX(s.won_at) AS last_spin_at,
+             (SELECT COUNT(*)::int FROM crm_notes n WHERE n.customer_id = c.id) AS note_count,
+             (SELECT COUNT(*)::int FROM crm_tasks t WHERE t.customer_id = c.id AND COALESCE(t.done, 0) = 0) AS open_tasks
+      ${CRM_PERSON_FROM}
+      ${where}
+      GROUP BY c.id, r.name
+      ORDER BY MAX(s.won_at) DESC NULLS LAST, c.created_at DESC
+      LIMIT 500
+    `).all(...params);
+    let people = rows.map((row) => personCard(row));
+    if (stage) people = people.filter((person) => person.stage === stage);
+    res.json({ people, truncated: rows.length >= 500 });
+  } catch (e) {
+    console.error('[sa-crm-people]', e.message);
+    res.status(500).json({ error: 'Impossible de charger les fiches' });
+  }
+});
+
+app.get('/api/superadmin/crm/people/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  try {
+    const file = await loadCrmFile(id);
+    if (!file) return res.status(404).json({ error: 'Fiche introuvable' });
+    res.json(file);
+  } catch (e) {
+    console.error('[sa-crm-file]', e.message);
+    res.status(500).json({ error: 'Impossible de charger la fiche' });
+  }
+});
+
+app.post('/api/superadmin/crm/people', requireSuperAdmin, async (req, res) => {
+  const parsed = parsePersonInput(req.body, { creating: true });
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const value = parsed.value;
+  try {
+    if (!await assertRestaurant(value.restaurant_id)) {
+      return res.status(400).json({ error: 'Restaurant introuvable' });
+    }
+    const dup = await db.prepare(
+      'SELECT id FROM customers WHERE restaurant_id=? AND lower(email)=lower(?)'
+    ).get(value.restaurant_id, value.email);
+    if (dup) return res.status(409).json({ error: 'Cette fiche existe déjà pour ce restaurant.' });
+    const created = await db.prepare(
+      'INSERT INTO customers (restaurant_id, email, first_name, last_name, phone, crm_stage) VALUES (?,?,?,?,?,?)'
+    ).run(value.restaurant_id, value.email, value.first_name, value.last_name, value.phone || null, value.crm_stage || null);
+    const file = await loadCrmFile(created.lastInsertRowid);
+    res.status(201).json(file);
+  } catch (e) {
+    console.error('[sa-crm-create]', e.message);
+    res.status(500).json({ error: 'Impossible de créer la fiche' });
+  }
+});
+
+app.patch('/api/superadmin/crm/people/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  const parsed = parsePersonInput(req.body, { creating: false });
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const value = parsed.value;
+  if (!Object.keys(value).length) return res.status(400).json({ error: 'Rien à enregistrer' });
+  try {
+    const current = await db.prepare('SELECT id, email, restaurant_id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    if (value.restaurant_id && !await assertRestaurant(value.restaurant_id)) {
+      return res.status(400).json({ error: 'Restaurant introuvable' });
+    }
+    const email = value.email || current.email;
+    const restaurantId = value.restaurant_id || current.restaurant_id;
+    if (value.email || value.restaurant_id) {
+      const dup = await db.prepare(
+        'SELECT id FROM customers WHERE restaurant_id=? AND lower(email)=lower(?) AND id<>?'
+      ).get(restaurantId, email, id);
+      if (dup) return res.status(409).json({ error: 'Cette fiche existe déjà pour ce restaurant.' });
+    }
+    const sets = [];
+    const params = [];
+    for (const key of ['first_name', 'last_name', 'email', 'phone', 'restaurant_id', 'crm_stage']) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+      sets.push(`${key}=?`);
+      params.push(value[key]);
+    }
+    params.push(id);
+    await db.prepare(`UPDATE customers SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    res.json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-patch]', e.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la fiche' });
+  }
+});
+
+app.post('/api/superadmin/crm/people/:id/notes', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const body = cleanNote(req.body?.body);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  if (!body) return res.status(400).json({ error: 'La note est vide.' });
+  try {
+    const current = await db.prepare('SELECT id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    await db.prepare('INSERT INTO crm_notes (customer_id, body) VALUES (?,?)').run(id, body);
+    res.status(201).json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-note]', e.message);
+    res.status(500).json({ error: 'Impossible d’ajouter la note' });
+  }
+});
+
+app.delete('/api/superadmin/crm/notes/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Note invalide' });
+  try {
+    const note = await db.prepare('SELECT customer_id FROM crm_notes WHERE id=?').get(id);
+    if (!note) return res.status(404).json({ error: 'Note introuvable' });
+    await db.prepare('DELETE FROM crm_notes WHERE id=?').run(id);
+    res.json(await loadCrmFile(note.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-note-del]', e.message);
+    res.status(500).json({ error: 'Impossible de supprimer la note' });
+  }
+});
+
+app.post('/api/superadmin/crm/people/:id/tasks', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const title = cleanTaskTitle(req.body?.title);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  if (!title) return res.status(400).json({ error: 'La tâche est vide.' });
+  try {
+    const current = await db.prepare('SELECT id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    await db.prepare('INSERT INTO crm_tasks (customer_id, title) VALUES (?,?)').run(id, title);
+    res.status(201).json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-task]', e.message);
+    res.status(500).json({ error: 'Impossible d’ajouter la tâche' });
+  }
+});
+
+app.patch('/api/superadmin/crm/tasks/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Tâche invalide' });
+  try {
+    const task = await db.prepare('SELECT id, customer_id, title FROM crm_tasks WHERE id=?').get(id);
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    const sets = [];
+    const params = [];
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'title')) {
+      const title = cleanTaskTitle(req.body.title);
+      if (!title) return res.status(400).json({ error: 'La tâche est vide.' });
+      sets.push('title=?');
+      params.push(title);
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'done')) {
+      sets.push('done=?');
+      params.push(req.body.done ? 1 : 0);
+    }
+    if (!sets.length) return res.status(400).json({ error: 'Rien à enregistrer' });
+    params.push(id);
+    await db.prepare(`UPDATE crm_tasks SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    res.json(await loadCrmFile(task.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-task-patch]', e.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la tâche' });
+  }
+});
+
+app.delete('/api/superadmin/crm/tasks/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Tâche invalide' });
+  try {
+    const task = await db.prepare('SELECT customer_id FROM crm_tasks WHERE id=?').get(id);
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    await db.prepare('DELETE FROM crm_tasks WHERE id=?').run(id);
+    res.json(await loadCrmFile(task.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-task-del]', e.message);
+    res.status(500).json({ error: 'Impossible de supprimer la tâche' });
   }
 });
 
