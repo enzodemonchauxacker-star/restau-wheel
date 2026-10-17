@@ -10,6 +10,7 @@ const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail }
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { mount: mountArcadePlayers } = require('./lib/arcade-players');
+const { buildCrmSnapshot } = require('./lib/crm');
 const rekoneBilling = require('./lib/rekone-billing');
 const rekoneAccounts = require('./lib/rekone-accounts');
 
@@ -1063,6 +1064,75 @@ app.get('/api/superadmin/customers', requireSuperAdmin, async (req, res) => {
   } catch (e) {
     console.error('[sa-customers]', e.message);
     res.status(500).json({ error: 'Impossible de charger les clients' });
+  }
+});
+
+app.get('/api/superadmin/crm', requireSuperAdmin, async (req, res) => {
+  const rawId = String(req.query.restaurant_id || '').trim();
+  let restaurant = null;
+  const params = [];
+  let where = '';
+  if (rawId) {
+    const rid = parseInt(rawId, 10);
+    if (!rid || rid < 1) return res.status(400).json({ error: 'Restaurant invalide' });
+    restaurant = await db.prepare('SELECT id, name FROM restaurants WHERE id=?').get(rid);
+    if (!restaurant) return res.status(404).json({ error: 'Restaurant introuvable' });
+    where = 'WHERE c.restaurant_id=?';
+    params.push(rid);
+  }
+  try {
+    const customers = await db.prepare(`
+      SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at, c.restaurant_id,
+             r.name AS restaurant_name,
+             COUNT(s.id)::int AS spin_count,
+             COUNT(s.id) FILTER (WHERE s.prize_id IS NOT NULL)::int AS win_count,
+             COUNT(s.id) FILTER (WHERE s.used = 1 AND s.prize_id IS NOT NULL)::int AS redeemed_count,
+             COUNT(s.id) FILTER (
+               WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+                 AND (s.deadline IS NULL OR s.deadline > NOW())
+             )::int AS pending_count,
+             MAX(s.won_at) AS last_spin_at
+      FROM customers c
+      JOIN restaurants r ON r.id = c.restaurant_id
+      LEFT JOIN spins s ON s.customer_id = c.id
+      ${where}
+      GROUP BY c.id, r.name
+      ORDER BY c.created_at DESC
+      LIMIT 5001
+    `).all(...params);
+    const weekly = await db.prepare(`
+      SELECT to_char(date_trunc('week', c.created_at AT TIME ZONE 'Europe/Paris'), 'YYYY-MM-DD') AS week,
+             COUNT(*)::int AS customers
+      FROM customers c
+      WHERE c.created_at >= NOW() - INTERVAL '70 days'
+      ${rawId ? 'AND c.restaurant_id=?' : ''}
+      GROUP BY 1
+      ORDER BY 1
+    `).all(...params);
+    const prizes = await db.prepare(`
+      SELECT p.name,
+             COUNT(*)::int AS wins,
+             COUNT(*) FILTER (WHERE s.used = 1)::int AS redeemed
+      FROM spins s
+      JOIN prizes p ON p.id = s.prize_id
+      JOIN customers c ON c.id = s.customer_id
+      WHERE s.prize_id IS NOT NULL
+      ${rawId ? 'AND c.restaurant_id=?' : ''}
+      GROUP BY p.name
+      ORDER BY wins DESC, p.name
+      LIMIT 5
+    `).all(...params);
+    const truncated = customers.length > 5000;
+    res.json(buildCrmSnapshot({
+      customers: truncated ? customers.slice(0, 5000) : customers,
+      weekly,
+      prizes,
+      restaurant,
+      truncated,
+    }));
+  } catch (e) {
+    console.error('[sa-crm]', e.message);
+    res.status(500).json({ error: 'Impossible de charger le CRM' });
   }
 });
 

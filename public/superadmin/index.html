@@ -251,6 +251,49 @@
     .traffic-n { font-size:.68rem; font-weight:700; color:var(--ink); line-height:1; }
     .traffic-d { font-size:.62rem; color:var(--muted); font-family:var(--font-mono); }
     .stat-sub { color:var(--muted); font-size:.75rem; margin-top:2px; }
+    .crm-note {
+      background: var(--ticket);
+      border: 1px solid var(--ink);
+      padding: 12px 14px;
+      font-size: .9rem;
+      margin: -12px 0 20px;
+    }
+    .crm-grid { display: grid; grid-template-columns: 1.25fr .85fr; gap: 14px; margin-bottom: 18px; }
+    .crm-panel { text-align: left; }
+    .crm-panel .section-title { margin-bottom: 12px; }
+    .crm-kpis .stat-value { font-size: 1.55rem; }
+    .seg-row {
+      display: grid; grid-template-columns: 108px 1fr 32px; gap: 8px;
+      align-items: center; margin-bottom: 10px; font-size: .82rem;
+    }
+    .seg-track { background: var(--ticket); height: 12px; border: 1px solid var(--ink); }
+    .seg-fill { height: 100%; }
+    .seg-pending { background: var(--wine); }
+    .seg-regular { background: var(--green); }
+    .seg-new { background: var(--cyan); }
+    .seg-once { background: var(--brass); }
+    .seg-dormant { background: #8a8a8a; }
+    .crm-people { display: flex; flex-direction: column; }
+    .person {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--line);
+    }
+    .person:last-child { border-bottom: none; padding-bottom: 0; }
+    .person strong { display: block; }
+    .person .meta { color: var(--muted); font-size: .78rem; margin-top: 2px; }
+    .chip {
+      font-family: var(--font-mono); font-size: .66rem; font-weight: 700;
+      letter-spacing: .04em; padding: 3px 8px; white-space: nowrap; color: var(--ink);
+    }
+    .chip.pending { background: var(--wine); color: var(--ivory); }
+    .chip.regular { background: var(--green); }
+    .chip.new { background: var(--cyan); }
+    .chip.once { background: var(--brass); }
+    .chip.dormant { background: #d9d3c5; }
+    @media (max-width: 800px) {
+      .crm-grid { grid-template-columns: 1fr; }
+      .main { padding: 24px 16px; }
+    }
   </style>
 </head>
 <body>
@@ -283,6 +326,7 @@
       <span class="topbar-badge" data-i18n="sa.top.badge">SUPER ADMIN</span>
       <nav class="topbar-nav" aria-label="Super admin">
         <button type="button" class="active" data-page="dash" onclick="showPage('dash')" data-i18n="sa.nav.dash">Tableau de bord</button>
+        <button type="button" data-page="crm" onclick="showPage('crm')" data-i18n="sa.nav.crm">CRM</button>
         <button type="button" data-page="clients" onclick="showPage('clients')" data-i18n="sa.nav.clients">Clients</button>
       </nav>
     </div>
@@ -468,6 +512,56 @@
     </div>
     </div>
 
+    <div id="page-crm" style="display:none">
+      <div class="page-title" data-i18n="sa.crm.title">CRM clientèle</div>
+      <p class="page-desc" data-i18n="sa.crm.desc">Visuel de la clientèle d’un restaurant : segments, inscriptions et lots.</p>
+      <p class="crm-note" data-i18n="sa.crm.note">Prévisualisation opérateur. Le dashboard restaurant n’affiche pas encore ce CRM.</p>
+      <div class="clients-bar">
+        <select id="crm-resto" onchange="loadCrm()">
+          <option value="" data-i18n="sa.clients.all">Tous les restaurants</option>
+        </select>
+      </div>
+      <p class="page-desc" id="crm-status" style="margin-bottom:12px"></p>
+      <div class="stats-row crm-kpis" id="crm-kpis"></div>
+      <div class="crm-grid">
+        <div class="stat-card crm-panel">
+          <div class="section-title" data-i18n="sa.crm.weeks">Inscriptions · 8 semaines</div>
+          <div class="traffic-bars" id="crm-weeks"></div>
+        </div>
+        <div class="stat-card crm-panel">
+          <div class="section-title" data-i18n="sa.crm.segments">Segments</div>
+          <div id="crm-segments"></div>
+        </div>
+      </div>
+      <div class="crm-grid">
+        <div>
+          <div class="section-header">
+            <div class="section-title" data-i18n="sa.crm.prizes">Lots les plus gagnés</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="sa.crm.prize">Lot</th>
+                  <th data-i18n="sa.crm.wins">Gains</th>
+                  <th data-i18n="sa.crm.used">Utilisés</th>
+                  <th data-i18n="sa.crm.rate">Taux</th>
+                </tr>
+              </thead>
+              <tbody id="crm-prizes"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="section-header">
+            <div class="section-title" data-i18n="sa.crm.recent">Dernières fiches</div>
+            <button type="button" class="action-btn" onclick="openClientsFromCrm()" data-i18n="sa.crm.list">Voir la liste</button>
+          </div>
+          <div class="stat-card crm-panel crm-people" id="crm-people"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="page-clients" style="display:none">
       <div class="page-title" data-i18n="sa.clients.title">Clients</div>
       <p class="page-desc" data-i18n="sa.clients.desc">Tous les joueurs de tous les restaurants. Filtrez par nom, email, téléphone ou resto.</p>
@@ -536,7 +630,9 @@ document.addEventListener('rw:lang', () => {
   loadProspects();
   loadDemoTraffic();
   fillClientsRestoFilter();
+  fillCrmRestoFilter();
   if (currentPage === 'clients') loadCustomers();
+  if (currentPage === 'crm') loadCrm();
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
@@ -581,7 +677,7 @@ async function showApp() {
   prospectFilterCity = document.getElementById('scan-city').value.trim();
   await loadProspects();
   const hash = (location.hash || '').replace('#', '');
-  showPage(hash === 'clients' ? 'clients' : 'dash');
+  showPage(hash === 'clients' || hash === 'crm' ? hash : 'dash');
 }
 
 async function loadSMTP() {
@@ -640,6 +736,7 @@ async function loadRestaurants() {
       <td>${new Date(r.created_at).toLocaleDateString(loc())}</td>
       <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
       <td>
+        <button class="action-btn" onclick="openCrm(${r.id})">${t('sa.act.crm')}</button>
         <button class="action-btn" onclick="editResto(${r.id})">${t('sa.act.edit')}</button>
         <button class="action-btn ${r.active ? 'danger' : ''}" onclick="toggleActive(${r.id}, ${r.active})">
           ${r.active ? t('sa.act.suspend') : t('sa.act.restore')}
@@ -648,6 +745,7 @@ async function loadRestaurants() {
     </tr>
   `).join('');
   fillClientsRestoFilter();
+  fillCrmRestoFilter();
 }
 
 function uniqLabel(n) {
@@ -956,15 +1054,127 @@ async function savePwd() {
 
 // Vérifier si déjà connecté
 function showPage(name) {
-  currentPage = name === 'clients' ? 'clients' : 'dash';
+  currentPage = name === 'clients' || name === 'crm' ? name : 'dash';
   document.getElementById('page-dash').style.display = currentPage === 'dash' ? 'block' : 'none';
+  document.getElementById('page-crm').style.display = currentPage === 'crm' ? 'block' : 'none';
   document.getElementById('page-clients').style.display = currentPage === 'clients' ? 'block' : 'none';
   document.querySelectorAll('.topbar-nav [data-page]').forEach((el) => {
     el.classList.toggle('active', el.getAttribute('data-page') === currentPage);
   });
-  const nextHash = currentPage === 'clients' ? '#clients' : '#dash';
+  const nextHash = currentPage === 'dash' ? '#dash' : `#${currentPage}`;
   if (location.hash !== nextHash) history.replaceState(null, '', nextHash);
   if (currentPage === 'clients') loadCustomers();
+  if (currentPage === 'crm') loadCrm();
+}
+
+function fillCrmRestoFilter() {
+  const sel = document.getElementById('crm-resto');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${t('sa.clients.all')}</option>` +
+    restaurants.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  if ([...sel.options].some((o) => o.value === current)) sel.value = current;
+}
+
+function openCrm(id) {
+  fillCrmRestoFilter();
+  const sel = document.getElementById('crm-resto');
+  if (sel && id) sel.value = String(id);
+  showPage('crm');
+}
+
+function openClientsFromCrm() {
+  const rid = document.getElementById('crm-resto').value;
+  const sel = document.getElementById('clients-resto');
+  if (sel) sel.value = rid;
+  showPage('clients');
+}
+
+function pct(rate) {
+  if (rate == null || Number.isNaN(Number(rate))) return '—';
+  return `${Math.round(Number(rate) * 100)} %`;
+}
+
+function weekLabel(iso) {
+  const parts = String(iso || '').split('-');
+  if (parts.length < 3) return iso || '';
+  return `${parts[2]}/${parts[1]}`;
+}
+
+async function loadCrm() {
+  const rid = document.getElementById('crm-resto').value;
+  const status = document.getElementById('crm-status');
+  const params = rid ? `?restaurant_id=${encodeURIComponent(rid)}` : '';
+  const res = await fetch('/api/superadmin/crm' + params);
+  if (!res.ok) {
+    status.textContent = t('sa.crm.err');
+    return;
+  }
+  const data = await res.json();
+  const k = data.kpis || {};
+  status.textContent = data.truncated ? t('sa.crm.truncated') : '';
+  document.getElementById('crm-kpis').innerHTML = [
+    [k.customers ?? 0, t('sa.crm.kpi.customers'), ''],
+    [k.new_30d ?? 0, t('sa.crm.kpi.new'), ''],
+    [k.returning ?? 0, t('sa.crm.kpi.returning'), t('sa.crm.kpi.return', { rate: pct(k.return_rate) })],
+    [k.pending ?? 0, t('sa.crm.kpi.pending'), ''],
+    [pct(k.redemption_rate), t('sa.crm.kpi.redeem'), t('sa.crm.kpi.redeemsub', { used: k.redeemed ?? 0, wins: k.wins ?? 0 })],
+    [pct(k.phone_rate), t('sa.crm.kpi.phone'), t('sa.crm.kpi.phonesub', { n: k.with_phone ?? 0 })],
+  ].map(([value, label, sub]) => `
+    <div class="stat-card">
+      <div class="stat-value">${esc(value)}</div>
+      <div class="stat-label">${esc(label)}</div>
+      ${sub ? `<div class="stat-sub">${esc(sub)}</div>` : ''}
+    </div>
+  `).join('');
+
+  const weeks = data.weekly || [];
+  const maxWeek = Math.max(1, ...weeks.map((w) => w.customers || 0));
+  document.getElementById('crm-weeks').innerHTML = weeks.map((w, i) => {
+    const h = Math.max(3, Math.round(((w.customers || 0) / maxWeek) * 100));
+    const today = i === weeks.length - 1 ? ' is-today' : '';
+    return `<div class="traffic-col${today}" title="${esc(w.week)}">
+      <div class="traffic-n">${w.customers || 0}</div>
+      <div class="traffic-bar" style="height:${h}%"></div>
+      <div class="traffic-d">${weekLabel(w.week)}</div>
+    </div>`;
+  }).join('') || `<p class="muted">${t('sa.crm.empty')}</p>`;
+
+  const total = k.customers || 0;
+  document.getElementById('crm-segments').innerHTML = (data.segments || []).map((s) => {
+    const width = total ? Math.round((s.count / total) * 100) : 0;
+    return `<div class="seg-row">
+      <span>${esc(t('sa.crm.seg.' + s.key))}</span>
+      <div class="seg-track"><div class="seg-fill seg-${esc(s.key)}" style="width:${width}%"></div></div>
+      <strong>${s.count || 0}</strong>
+    </div>`;
+  }).join('') || `<p class="muted">${t('sa.crm.empty')}</p>`;
+
+  const prizes = data.prizes || [];
+  document.getElementById('crm-prizes').innerHTML = prizes.length
+    ? prizes.map((p) => `<tr>
+        <td><strong>${esc(p.name || '—')}</strong></td>
+        <td>${p.wins || 0}</td>
+        <td>${p.redeemed || 0}</td>
+        <td>${pct(p.redemption_rate)}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" class="muted">${t('sa.crm.noprize')}</td></tr>`;
+
+  const people = data.recent || [];
+  document.getElementById('crm-people').innerHTML = people.length
+    ? people.map((p) => {
+        const when = p.last_spin_at ? new Date(p.last_spin_at).toLocaleDateString(loc()) : '—';
+        const who = p.restaurant_name && !rid ? ` · ${p.restaurant_name}` : '';
+        return `<div class="person">
+          <div>
+            <strong>${esc(p.name || '—')}</strong>
+            <div class="meta">${esc(p.email || '—')}${esc(who)}</div>
+            <div class="meta">${t('sa.crm.person', { n: p.spin_count || 0, date: when })}</div>
+          </div>
+          <span class="chip ${esc(p.segment)}">${esc(t('sa.crm.seg.' + p.segment))}</span>
+        </div>`;
+      }).join('')
+    : `<p class="muted">${t('sa.crm.empty')}</p>`;
 }
 
 function fillClientsRestoFilter() {
