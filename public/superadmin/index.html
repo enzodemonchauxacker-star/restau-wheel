@@ -290,8 +290,50 @@
     .chip.new { background: var(--cyan); }
     .chip.once { background: var(--brass); }
     .chip.dormant { background: #d9d3c5; }
+    .crm-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .crm-views { display: flex; gap: 6px; flex-wrap: wrap; }
+    .crm-views button {
+      background: transparent; border: 1px solid var(--ink); color: var(--ink);
+      border-radius: var(--radius); padding: 7px 12px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-body); font-size: .86rem;
+    }
+    .crm-views button.active { background: var(--ink); color: var(--ticket); }
+    .crm-board { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: flex-start; }
+    .crm-col { flex: 1 1 160px; min-width: 160px; background: var(--ticket); border: 1px solid var(--ink); padding: 10px; }
+    .crm-col.is-over { outline: 2px solid var(--wine); }
+    .crm-col h3 { font-size: .82rem; margin: 0 0 10px; display: flex; justify-content: space-between; }
+    .crm-card {
+      background: var(--ivory); border: 1px solid var(--ink); padding: 10px; margin-bottom: 8px;
+      cursor: grab; text-align: left; width: 100%; font: inherit; color: inherit;
+    }
+    .crm-card strong { display: block; }
+    .crm-card .meta { color: var(--muted); font-size: .75rem; margin-top: 3px; }
+    .crm-drawer {
+      position: fixed; top: 0; right: 0; height: 100vh; width: min(440px, 100%);
+      background: var(--ivory); color: var(--ink); z-index: 50; overflow: auto;
+      border-left: 1px solid var(--ink); padding: 18px 18px 32px;
+    }
+    .crm-backdrop { position: fixed; inset: 0; background: rgba(10,10,10,.4); z-index: 49; }
+    .crm-drawer h2 { font-family: var(--font-display); font-size: 1.4rem; margin: 0 0 12px; }
+    .crm-drawer .field { margin-bottom: 12px; }
+    .crm-drawer textarea, .crm-drawer select, .crm-drawer input {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--ticket); color: var(--ink); font-family: var(--font-body); font-size: .95rem;
+    }
+    .crm-row { display: flex; gap: 8px; align-items: center; }
+    .crm-note-item, .crm-task-item, .crm-spin-item {
+      padding: 8px 0; border-bottom: 1px solid var(--line); font-size: .9rem;
+    }
+    .crm-task-item { display: flex; gap: 8px; align-items: flex-start; }
+    .crm-task-item span { flex: 1; }
+    .crm-task-item.done span { text-decoration: line-through; color: var(--muted); }
+    .crm-file-error { color: var(--wine); font-size: .86rem; min-height: 1.1em; }
+    .crm-section { margin-top: 18px; }
+    button.person { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line); cursor: pointer; font: inherit; color: inherit; text-align: left; }
+    tr.crm-open { cursor: pointer; }
     @media (max-width: 800px) {
       .crm-grid { grid-template-columns: 1fr; }
+      .crm-col { min-width: 78vw; }
       .main { padding: 24px 16px; }
       .topbar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
       .topbar-left { flex-wrap: wrap; min-width: 0; }
@@ -517,14 +559,24 @@
 
     <div id="page-crm" style="display:none">
       <div class="page-title" data-i18n="sa.crm.title">CRM clientèle</div>
-      <p class="page-desc" data-i18n="sa.crm.desc">Visuel de la clientèle d’un restaurant : segments, inscriptions et lots.</p>
-      <p class="crm-note" data-i18n="sa.crm.note">Cet écran est dans Restau Wheel. Il se remplit avec les joueurs de la roue.</p>
+      <p class="page-desc" data-i18n="sa.crm.desc">Personnes, pipeline et notes. Tout reste dans Restau Wheel.</p>
+      <p class="crm-note" data-i18n="sa.crm.note">Les joueurs de la roue arrivent ici tout seuls. Tu peux aussi créer une fiche à la main.</p>
+      <div class="crm-toolbar">
+        <div class="crm-views" role="tablist">
+          <button type="button" data-crm-view="overview" class="active" data-i18n="sa.crm.views.overview">Aperçu</button>
+          <button type="button" data-crm-view="people" data-i18n="sa.crm.views.people">Personnes</button>
+          <button type="button" data-crm-view="board" data-i18n="sa.crm.views.board">Pipeline</button>
+        </div>
+        <button type="button" class="action-btn" id="crm-new" data-i18n="sa.crm.new">Nouvelle fiche</button>
+      </div>
       <div class="clients-bar">
-        <select id="crm-resto" onchange="loadCrm()">
+        <select id="crm-resto" onchange="onCrmScope()">
           <option value="" data-i18n="sa.clients.all">Tous les restaurants</option>
         </select>
+        <input type="search" id="crm-q" data-i18n-placeholder="sa.crm.search" placeholder="Nom, e-mail, téléphone…" oninput="onCrmSearch()">
       </div>
       <p class="page-desc" id="crm-status" style="margin-bottom:12px"></p>
+      <div id="crm-view-overview">
       <div class="stats-row crm-kpis" id="crm-kpis"></div>
       <div class="crm-grid">
         <div class="stat-card crm-panel">
@@ -562,6 +614,28 @@
           </div>
           <div class="stat-card crm-panel crm-people" id="crm-people"></div>
         </div>
+      </div>
+      </div>
+      <div id="crm-view-people" style="display:none">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="sa.crm.col.name">Nom</th>
+                <th data-i18n="sa.crm.col.email">E-mail</th>
+                <th data-i18n="sa.crm.col.phone">Téléphone</th>
+                <th data-i18n="sa.crm.col.company">Restaurant</th>
+                <th data-i18n="sa.crm.col.stage">Étape</th>
+                <th data-i18n="sa.crm.col.notes">Notes</th>
+                <th data-i18n="sa.crm.col.tasks">Tâches</th>
+              </tr>
+            </thead>
+            <tbody id="crm-people-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="crm-view-board" style="display:none">
+        <div id="crm-board" class="crm-board"></div>
       </div>
     </div>
 
@@ -619,6 +693,9 @@
   </div>
 </div>
 
+<div id="crm-backdrop" class="crm-backdrop" hidden></div>
+<aside id="crm-drawer" class="crm-drawer" hidden></aside>
+
 <script src="/js/i18n.js"></script>
 <script>
 const t = (k, v) => window.RW_I18N.t(k, v);
@@ -626,6 +703,7 @@ const loc = () => window.RW_I18N.locale();
 let editingId = null;
 let restaurants = [];
 let currentPage = 'dash';
+window.crmRestaurants = () => restaurants;
 
 document.addEventListener('rw:lang', () => {
   if (document.getElementById('app').style.display !== 'flex') return;
@@ -635,7 +713,10 @@ document.addEventListener('rw:lang', () => {
   fillClientsRestoFilter();
   fillCrmRestoFilter();
   if (currentPage === 'clients') loadCustomers();
-  if (currentPage === 'crm') loadCrm();
+  if (currentPage === 'crm') {
+    loadCrm();
+    if (window.CrmWorkspace) CrmWorkspace.render();
+  }
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
@@ -1067,7 +1148,7 @@ function showPage(name) {
   const nextHash = currentPage === 'dash' ? '#dash' : `#${currentPage}`;
   if (location.hash !== nextHash) history.replaceState(null, '', nextHash);
   if (currentPage === 'clients') loadCustomers();
-  if (currentPage === 'crm') loadCrm();
+  if (currentPage === 'crm') onCrmScope();
 }
 
 function fillCrmRestoFilter() {
@@ -1084,6 +1165,18 @@ function openCrm(id) {
   const sel = document.getElementById('crm-resto');
   if (sel && id) sel.value = String(id);
   showPage('crm');
+}
+
+function onCrmScope() {
+  loadCrm();
+  if (window.CrmWorkspace) CrmWorkspace.reload();
+}
+
+function onCrmSearch() {
+  clearTimeout(onCrmSearch.t);
+  onCrmSearch.t = setTimeout(() => {
+    if (window.CrmWorkspace) CrmWorkspace.reload();
+  }, 250);
 }
 
 function openClientsFromCrm() {
@@ -1115,7 +1208,8 @@ async function loadCrm() {
   }
   const data = await res.json();
   const k = data.kpis || {};
-  status.textContent = data.truncated ? t('sa.crm.truncated') : '';
+  const overviewOn = document.getElementById('crm-view-overview').style.display !== 'none';
+  if (overviewOn) status.textContent = data.truncated ? t('sa.crm.truncated') : '';
   document.getElementById('crm-kpis').innerHTML = [
     [k.customers ?? 0, t('sa.crm.kpi.customers'), ''],
     [k.new_30d ?? 0, t('sa.crm.kpi.new'), ''],
@@ -1168,14 +1262,14 @@ async function loadCrm() {
     ? people.map((p) => {
         const when = p.last_spin_at ? new Date(p.last_spin_at).toLocaleDateString(loc()) : '—';
         const who = p.restaurant_name && !rid ? ` · ${p.restaurant_name}` : '';
-        return `<div class="person">
+        return `<button type="button" class="person" data-person="${p.id}">
           <div>
             <strong>${esc(p.name || '—')}</strong>
             <div class="meta">${esc(p.email || '—')}${esc(who)}</div>
             <div class="meta">${t('sa.crm.person', { n: p.spin_count || 0, date: when })}</div>
           </div>
           <span class="chip ${esc(p.segment)}">${esc(t('sa.crm.seg.' + p.segment))}</span>
-        </div>`;
+        </button>`;
       }).join('')
     : `<p class="muted">${t('sa.crm.empty')}</p>`;
 }
@@ -1237,5 +1331,6 @@ async function loadCustomers() {
   if (d.isSuperAdmin) showApp();
 })();
 </script>
+<script src="/js/crm-workspace.js"></script>
 </body>
 </html>
