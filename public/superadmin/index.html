@@ -258,17 +258,6 @@
       font-size: .9rem;
       margin: -12px 0 20px;
     }
-    .twenty-box { margin-bottom: 28px; }
-    .twenty-frame {
-      width: 100%;
-      height: 72vh;
-      min-height: 480px;
-      border: 1px solid var(--ink);
-      background: #fff;
-      margin-top: 14px;
-    }
-    .twenty-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-    .twenty-actions a, .twenty-actions button { text-decoration: none; }
     .crm-grid { display: grid; grid-template-columns: 1.25fr .85fr; gap: 14px; margin-bottom: 18px; }
     .crm-panel { text-align: left; }
     .crm-panel .section-title { margin-bottom: 12px; }
@@ -528,34 +517,8 @@
 
     <div id="page-crm" style="display:none">
       <div class="page-title" data-i18n="sa.crm.title">CRM clientèle</div>
-      <p class="page-desc" data-i18n="sa.twenty.desc">Twenty est le CRM de Restau Wheel. L’instance tourne à côté, la clientèle de la roue y est synchronisée.</p>
-      <div class="scan-box twenty-box">
-        <h3 data-i18n="sa.twenty.h">Twenty</h3>
-        <p class="hint" data-i18n="sa.twenty.hint">Colle l’adresse de l’instance et une clé API (Réglages → Developers → API). En local : docker compose -f docker-compose.twenty.yml up -d, puis http://localhost:3020.</p>
-        <div class="scan-row">
-          <div class="field">
-            <label data-i18n="sa.twenty.app">Adresse de l’interface</label>
-            <input type="text" id="twenty-app" placeholder="http://localhost:3020">
-          </div>
-          <div class="field">
-            <label data-i18n="sa.twenty.api">Adresse API (si différente)</label>
-            <input type="text" id="twenty-api" placeholder="https://api.twenty.com">
-          </div>
-          <div class="field">
-            <label data-i18n="sa.twenty.key">Clé API</label>
-            <input type="password" id="twenty-key" placeholder="••••" autocomplete="off">
-          </div>
-        </div>
-        <div class="twenty-actions">
-          <button type="button" class="btn-save-pwd" onclick="saveTwenty()" data-i18n="sa.twenty.save">Enregistrer</button>
-          <button type="button" class="btn-save-pwd" style="background:var(--ink)" onclick="testTwenty()" data-i18n="sa.twenty.test">Tester</button>
-          <button type="button" class="btn-save-pwd" onclick="syncTwenty()" data-i18n="sa.twenty.sync">Synchroniser la clientèle</button>
-          <a class="action-btn" id="twenty-open" href="#" target="_blank" rel="noopener" hidden data-i18n="sa.twenty.open">Ouvrir Twenty</a>
-        </div>
-        <p class="notice" id="twenty-notice"></p>
-        <iframe class="twenty-frame" id="twenty-frame" title="Twenty" hidden></iframe>
-      </div>
-      <p class="crm-note" data-i18n="sa.crm.note">Aperçu Restau Wheel, calculé sur les tirages. Le dashboard restaurant ne l’affiche pas encore.</p>
+      <p class="page-desc" data-i18n="sa.crm.desc">Visuel de la clientèle d’un restaurant : segments, inscriptions et lots.</p>
+      <p class="crm-note" data-i18n="sa.crm.note">Cet écran est dans Restau Wheel. Il se remplit avec les joueurs de la roue.</p>
       <div class="clients-bar">
         <select id="crm-resto" onchange="loadCrm()">
           <option value="" data-i18n="sa.clients.all">Tous les restaurants</option>
@@ -672,10 +635,7 @@ document.addEventListener('rw:lang', () => {
   fillClientsRestoFilter();
   fillCrmRestoFilter();
   if (currentPage === 'clients') loadCustomers();
-  if (currentPage === 'crm') {
-    loadCrm();
-    loadTwenty();
-  }
+  if (currentPage === 'crm') loadCrm();
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
@@ -716,7 +676,7 @@ async function doLogout() {
 async function showApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  await Promise.all([loadRestaurants(), loadSMTP(), loadScanSettings(), loadDemoTraffic(), loadTwenty()]);
+  await Promise.all([loadRestaurants(), loadSMTP(), loadScanSettings(), loadDemoTraffic()]);
   prospectFilterCity = document.getElementById('scan-city').value.trim();
   await loadProspects();
   const hash = (location.hash || '').replace('#', '');
@@ -1142,86 +1102,6 @@ function weekLabel(iso) {
   const parts = String(iso || '').split('-');
   if (parts.length < 3) return iso || '';
   return `${parts[2]}/${parts[1]}`;
-}
-
-function twentyNotice(text, ok) {
-  const n = document.getElementById('twenty-notice');
-  n.style.color = ok ? 'var(--green)' : 'var(--wine)';
-  n.style.display = 'block';
-  n.textContent = text;
-}
-
-function applyTwentyFrame(appUrl) {
-  const frame = document.getElementById('twenty-frame');
-  const open = document.getElementById('twenty-open');
-  if (!appUrl) {
-    frame.hidden = true;
-    frame.removeAttribute('src');
-    open.hidden = true;
-    return;
-  }
-  frame.hidden = false;
-  if (frame.getAttribute('src') !== appUrl) frame.src = appUrl;
-  open.hidden = false;
-  open.href = appUrl;
-}
-
-async function loadTwenty() {
-  const res = await fetch('/api/superadmin/twenty');
-  if (!res.ok) return;
-  const data = await res.json();
-  const app = document.getElementById('twenty-app');
-  const api = document.getElementById('twenty-api');
-  const key = document.getElementById('twenty-key');
-  app.value = data.app_url || '';
-  api.value = data.api_url || '';
-  key.value = '';
-  key.placeholder = data.api_key_hint || '••••';
-  app.disabled = !!data.from_env?.app;
-  api.disabled = !!data.from_env?.api;
-  key.disabled = !!data.from_env?.key;
-  applyTwentyFrame(data.app_url || '');
-}
-
-async function saveTwenty() {
-  const res = await fetch('/api/superadmin/twenty', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      app_url: document.getElementById('twenty-app').value.trim(),
-      api_url: document.getElementById('twenty-api').value.trim(),
-      api_key: document.getElementById('twenty-key').value,
-    }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    twentyNotice(data.error || t('sa.twenty.saveerr'), false);
-    return;
-  }
-  twentyNotice(t('sa.twenty.saved'), true);
-  await loadTwenty();
-}
-
-async function testTwenty() {
-  twentyNotice(t('sa.twenty.testing'), true);
-  const res = await fetch('/api/superadmin/twenty/test', { method: 'POST' });
-  const data = await res.json().catch(() => ({}));
-  twentyNotice(res.ok ? t('sa.twenty.ok') : (data.error || t('sa.twenty.fail')), res.ok);
-}
-
-async function syncTwenty() {
-  twentyNotice(t('sa.twenty.syncing'), true);
-  const res = await fetch('/api/superadmin/twenty/sync', { method: 'POST' });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    twentyNotice(data.error || t('sa.twenty.fail'), false);
-    return;
-  }
-  twentyNotice(t('sa.twenty.synced', {
-    companies: data.companies_created || 0,
-    people: data.people_upserted || 0,
-    skipped: data.skipped_duplicates || 0,
-  }), true);
 }
 
 async function loadCrm() {

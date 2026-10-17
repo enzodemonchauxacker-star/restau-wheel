@@ -61,12 +61,13 @@ describe('payloads Twenty', () => {
 });
 
 describe('intégration super-admin', () => {
-  it('branche Twenty dans le super-admin, pas dans le dashboard restaurant', () => {
-    const server = fs.readFileSync(path.join(__dirname, '../server.js'), 'utf8');
+  it('garde le CRM dans Restau Wheel et masque Twenty à l’écran', () => {
     const sa = fs.readFileSync(path.join(__dirname, '../public/superadmin/index.html'), 'utf8');
+    const i18n = fs.readFileSync(path.join(__dirname, '../public/js/i18n.js'), 'utf8');
     const admin = fs.readFileSync(path.join(__dirname, '../public/admin/index.html'), 'utf8');
-    assert.match(server, /\/api\/superadmin\/twenty\/sync/);
-    assert.match(sa, /id="twenty-frame"/);
+    assert.match(sa, /id="page-crm"/);
+    assert.doesNotMatch(sa, /twenty-frame|Ouvrir Twenty|teddy\.twenty/i);
+    assert.doesNotMatch(i18n, /sa\.twenty\.|Twenty/);
     assert.doesNotMatch(admin, /twenty-frame|\/api\/admin\/twenty/);
   });
 });
