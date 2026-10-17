@@ -266,7 +266,7 @@
       display: grid; grid-template-columns: 108px 1fr 32px; gap: 8px;
       align-items: center; margin-bottom: 10px; font-size: .82rem;
     }
-    .seg-track { background: var(--ticket); height: 12px; border: 1px solid var(--ink); }
+    .seg-track { background: rgba(10,10,10,.08); height: 12px; border: 1px solid var(--ink); }
     .seg-fill { height: 100%; }
     .seg-pending { background: var(--wine); }
     .seg-regular { background: var(--green); }
@@ -293,6 +293,9 @@
     @media (max-width: 800px) {
       .crm-grid { grid-template-columns: 1fr; }
       .main { padding: 24px 16px; }
+      .topbar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+      .topbar-left { flex-wrap: wrap; min-width: 0; }
+      .topbar-nav { margin-left: 0; }
     }
   </style>
 </head>
