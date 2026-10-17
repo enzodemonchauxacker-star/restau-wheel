@@ -60,5 +60,9 @@ describe('joueurs Arcade', () => {
     assert.match(html, /name="last"/);
     assert.match(html, /type="email"/);
     assert.match(html, /type="tel"/);
+    assert.match(html, /id="result-again"/);
+    assert.match(html, /@keyframes game-leave/);
+    assert.match(html, /Gagné/);
+    assert.match(html, /Perdu/);
   });
 });

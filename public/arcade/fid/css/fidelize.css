@@ -50,7 +50,7 @@ button, input { font: inherit; }
   transition: background 300ms ease, color 300ms ease;
 }
 .btn-dark { background: var(--btn-dark); color: var(--cream); }
-.nav-login { background: transparent; color: inherit; border: 1px solid currentColor; }
+.nav-login { background: transparent; color: inherit; border: 1px solid currentColor; white-space: nowrap; }
 .btn-light { background: var(--btn-light); color: var(--text); }
 .nav.is-dark { color: var(--card); }
 .nav.is-dark .nav-links { color: rgba(255,248,241,.62); }
