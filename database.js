@@ -184,6 +184,8 @@ async function initSchema() {
     await sql`ALTER TABLE spins ADD COLUMN IF NOT EXISTS device_id TEXT`;
     await sql`CREATE INDEX IF NOT EXISTS spins_device_id_idx ON spins (device_id)`;
     await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS privacy_consent_at TIMESTAMPTZ`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS twenty_company_id TEXT`;
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS twenty_person_id TEXT`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS settings (

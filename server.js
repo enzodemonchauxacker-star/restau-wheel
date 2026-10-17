@@ -11,6 +11,14 @@ const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { mount: mountArcadePlayers } = require('./lib/arcade-players');
 const { buildCrmSnapshot } = require('./lib/crm');
+const {
+  cleanBaseUrl,
+  chunk,
+  companyPayload,
+  personPayload,
+  dedupeCustomers,
+  createdRecords,
+} = require('./lib/twenty');
 const rekoneBilling = require('./lib/rekone-billing');
 const rekoneAccounts = require('./lib/rekone-accounts');
 
@@ -1133,6 +1141,184 @@ app.get('/api/superadmin/crm', requireSuperAdmin, async (req, res) => {
   } catch (e) {
     console.error('[sa-crm]', e.message);
     res.status(500).json({ error: 'Impossible de charger le CRM' });
+  }
+});
+
+function twentyHint(value) {
+  const s = String(value || '');
+  if (s.length < 8) return s ? '••••' : '';
+  return `••••${s.slice(-4)}`;
+}
+
+async function twentyConfig() {
+  const read = async (key) => {
+    const row = await db.prepare('SELECT value FROM settings WHERE key=?').get(key);
+    return String(row?.value || '').trim();
+  };
+  const envApp = cleanBaseUrl(process.env.TWENTY_APP_URL || '');
+  const envApi = cleanBaseUrl(process.env.TWENTY_API_URL || '');
+  const envKey = String(process.env.TWENTY_API_KEY || '').trim();
+  const storedApp = cleanBaseUrl(await read('twenty_app_url')) || '';
+  const storedApi = cleanBaseUrl(await read('twenty_api_url')) || '';
+  const storedKey = await read('twenty_api_key');
+  const appUrl = envApp || storedApp || '';
+  const apiUrl = envApi || storedApi || appUrl;
+  const apiKey = envKey || storedKey;
+  return {
+    app_url: appUrl,
+    api_url: apiUrl,
+    api_key: apiKey,
+    api_key_hint: twentyHint(apiKey),
+    from_env: {
+      app: !!envApp,
+      api: !!envApi,
+      key: !!envKey,
+    },
+  };
+}
+
+async function twentyFetch(config, path, { method = 'GET', body } = {}) {
+  const response = await fetch(`${config.api_url}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${config.api_key}`,
+      'Content-Type': 'application/json',
+    },
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!response.ok) {
+    const message = data?.messages?.[0]?.message
+      || data?.messages?.[0]
+      || data?.message
+      || data?.error
+      || `Twenty a répondu ${response.status}`;
+    const error = new Error(typeof message === 'string' ? message : 'Twenty a refusé la requête');
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+app.get('/api/superadmin/twenty', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    res.json({
+      app_url: config.app_url,
+      api_url: config.api_url === config.app_url ? '' : config.api_url,
+      api_key_set: !!config.api_key,
+      api_key_hint: config.api_key_hint,
+      from_env: config.from_env,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Configuration Twenty illisible' });
+  }
+});
+
+app.put('/api/superadmin/twenty', requireSuperAdmin, async (req, res) => {
+  try {
+    const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)');
+    const appUrl = cleanBaseUrl(req.body?.app_url);
+    const apiUrl = cleanBaseUrl(req.body?.api_url);
+    if (appUrl == null || apiUrl == null) {
+      return res.status(400).json({ error: 'Adresse Twenty invalide' });
+    }
+    if (!process.env.TWENTY_APP_URL) await set.run('twenty_app_url', appUrl);
+    if (!process.env.TWENTY_API_URL) await set.run('twenty_api_url', apiUrl);
+    const key = String(req.body?.api_key || '').trim();
+    if (!process.env.TWENTY_API_KEY && key && !isSecretPlaceholder(key)) {
+      await set.run('twenty_api_key', key);
+    }
+    const config = await twentyConfig();
+    res.json({
+      success: true,
+      app_url: config.app_url,
+      api_url: config.api_url === config.app_url ? '' : config.api_url,
+      api_key_set: !!config.api_key,
+    });
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Enregistrement impossible' });
+  }
+});
+
+app.post('/api/superadmin/twenty/test', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    if (!config.api_url || !config.api_key) {
+      return res.status(400).json({ error: 'Adresse API et clé Twenty requises' });
+    }
+    await twentyFetch(config, '/rest/people?limit=1&fields=id');
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(502).json({ error: e.message || 'Twenty injoignable' });
+  }
+});
+
+app.post('/api/superadmin/twenty/sync', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    if (!config.api_url || !config.api_key) {
+      return res.status(400).json({ error: 'Adresse API et clé Twenty requises' });
+    }
+    const restaurants = await db.prepare(
+      'SELECT id, name, twenty_company_id FROM restaurants ORDER BY id'
+    ).all();
+    const missing = restaurants.filter((restaurant) => !restaurant.twenty_company_id);
+    let companiesCreated = 0;
+    for (const group of chunk(missing)) {
+      const created = createdRecords(
+        await twentyFetch(config, '/rest/batch/companies?fields=id', {
+          method: 'POST',
+          body: group.map(companyPayload),
+        }),
+        'companies',
+      );
+      for (let i = 0; i < created.length; i += 1) {
+        const id = created[i]?.id;
+        if (!id || !group[i]) continue;
+        group[i].twenty_company_id = id;
+        await db.prepare('UPDATE restaurants SET twenty_company_id=? WHERE id=?').run(id, group[i].id);
+        companiesCreated += 1;
+      }
+    }
+    const companyByRestaurant = new Map(restaurants.map((restaurant) => [restaurant.id, restaurant.twenty_company_id]));
+    const customers = await db.prepare(`
+      SELECT id, first_name, last_name, email, phone, restaurant_id
+      FROM customers
+      ORDER BY id
+      LIMIT 5000
+    `).all();
+    const { unique, skipped } = dedupeCustomers(customers);
+    let peopleUpserted = 0;
+    for (const group of chunk(unique)) {
+      const created = createdRecords(
+        await twentyFetch(config, '/rest/batch/people?upsert=true&fields=id,emails', {
+          method: 'POST',
+          body: group.map((customer) => personPayload(customer, companyByRestaurant.get(customer.restaurant_id))),
+        }),
+        'people',
+      );
+      const byEmail = new Map(created.map((row) => [
+        String(row?.emails?.primaryEmail || '').toLowerCase(),
+        row?.id,
+      ]));
+      for (let i = 0; i < group.length; i += 1) {
+        const id = byEmail.get(String(group[i].email || '').trim().toLowerCase()) || created[i]?.id;
+        if (!id) continue;
+        await db.prepare('UPDATE customers SET twenty_person_id=? WHERE id=?').run(id, group[i].id);
+        peopleUpserted += 1;
+      }
+    }
+    res.json({
+      companies_created: companiesCreated,
+      people_upserted: peopleUpserted,
+      skipped_duplicates: skipped,
+    });
+  } catch (e) {
+    console.error('[sa-twenty]', e.message);
+    res.status(502).json({ error: e.message || 'Synchronisation impossible' });
   }
 });
 
