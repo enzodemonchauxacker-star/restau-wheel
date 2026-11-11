@@ -45,6 +45,7 @@
     </form>
     <p class="links"><a href="/arcade/connexion/">J'ai déjà un compte</a></p>
   </main>
+  <script src="/arcade/fid/js/session-nav.js?v=compte"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const sessionId = params.get('session_id') || '';
@@ -106,6 +107,7 @@
           if (data.code === 'exists') lead.textContent = 'Un compte existe déjà pour cet email.';
           throw new Error(data.error || 'Création impossible');
         }
+        try { localStorage.setItem('rekone-compte', '1'); } catch (error) {}
         location.href = '/arcade/dashboard/#compte';
       } catch (error) {
         showErr(error.message);

@@ -60,6 +60,24 @@ test('la redirection après connexion reste dans Rekone', () => {
   assert.equal(accounts.safeNext('https://example.com'), '/arcade/dashboard/');
 });
 
+test('le retour au site garde le compte ouvert', () => {
+  const home = fs.readFileSync(path.join(__dirname, '../public/arcade/index.html'), 'utf8');
+  const dash = fs.readFileSync(path.join(__dirname, '../public/arcade/dashboard/index.html'), 'utf8');
+  const login = fs.readFileSync(path.join(__dirname, '../public/arcade/connexion/index.html'), 'utf8');
+  const sessionNav = fs.readFileSync(path.join(__dirname, '../public/arcade/fid/js/session-nav.js'), 'utf8');
+  assert.match(dash, /class="brand" href="#tableau"/);
+  assert.match(dash, /id="compte-logout"/);
+  assert.match(dash, /Se déconnecter/);
+  assert.match(dash, /\/arcade\/api\/deconnexion/);
+  assert.match(home, /session-nav\.js/);
+  assert.match(login, /session-nav\.js/);
+  assert.match(sessionNav, /\/arcade\/api\/compte\/moi/);
+  assert.match(sessionNav, /\/arcade\/dashboard\//);
+  assert.match(sessionNav, /rekone-compte/);
+  assert.match(login, /session-checking/);
+  assert.match(login, /localStorage.setItem\('rekone-compte'/);
+});
+
 test('les pages de compte existent', () => {
   const compte = fs.readFileSync(path.join(__dirname, '../public/arcade/compte/index.html'), 'utf8');
   const login = fs.readFileSync(path.join(__dirname, '../public/arcade/connexion/index.html'), 'utf8');

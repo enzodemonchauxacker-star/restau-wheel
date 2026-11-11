@@ -20,24 +20,119 @@
     }
     .play-bar .mark svg { width: 18px; height: 18px; }
     .play-bar strong { font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
-    .play-wrap { width: min(1100px, calc(100% - 32px)); margin: 18px auto 16px; }
+    .play-slot {
+      position: relative;
+      width: min(1100px, calc(100% - 32px));
+      margin: 18px auto 40px;
+    }
+    .play-wrap { width: 100%; margin: 0; }
     .play-miss { color: #8d8d8d; padding: 24px 0; }
+    #stage.is-leaving {
+      animation: game-leave 380ms ease forwards;
+      pointer-events: none;
+    }
+    #stage.is-covered { visibility: hidden; }
+    @keyframes game-leave {
+      to { opacity: 0; transform: scale(0.94); }
+    }
     .result {
       display: none;
-      width: min(1100px, calc(100% - 32px));
-      margin: 0 auto 40px;
-      padding: 22px 24px;
-      border-radius: 22px;
-      background: #fff;
-      border: 1px solid #e8e2d9;
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      align-items: center;
+      justify-content: center;
       font-family: "General Sans", sans-serif;
     }
-    .result.show { display: block; }
-    .result.win { background: #e8ff95; border-color: transparent; }
-    .result p { color: #5c5c5c; font-size: 15px; }
+    .result.show { display: flex; }
+    .result-card {
+      position: relative;
+      width: min(440px, calc(100% - 24px));
+      text-align: center;
+      background: #fff;
+      border: 1px solid #e8e2d9;
+      border-radius: 28px;
+      padding: 36px 28px 28px;
+      overflow: hidden;
+    }
+    .result.win .result-card { background: #e8ff95; border-color: transparent; }
+    .result.show .result-card { animation: card-in 560ms cubic-bezier(.16, 1, .3, 1) both; }
+    .result-seal {
+      width: 84px; height: 84px; margin: 0 auto 14px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      background: #fff;
+      color: #1e1e1e;
+      border: 1px solid #e8e2d9;
+    }
+    .result.win .result-seal { background: #1e1e1e; color: #e8ff95; border-color: transparent; }
+    .result.show .result-seal { animation: seal-in 640ms cubic-bezier(.16, 1, .3, 1) both; }
+    .result.lose.show .result-seal { animation: seal-drop 620ms ease both; }
+    .seal-win, .seal-lose { display: none; width: 36px; height: 36px; }
+    .result.win .seal-win, .result.lose .seal-lose { display: block; }
+    .result-sparks { position: absolute; left: 50%; top: 78px; width: 0; height: 0; pointer-events: none; }
+    .result-sparks i {
+      position: absolute; left: 0; top: 0;
+      width: 8px; height: 8px; margin: -4px 0 0 -4px;
+      border-radius: 99px; background: #1e1e1e; opacity: 0;
+    }
+    .result.win.show .result-sparks i { animation: spark 760ms ease-out forwards; }
+    .result.win.show .result-sparks i:nth-child(even) { border-radius: 2px; background: #fff8f1; animation-delay: 40ms; }
+    .result-kicker { color: #5c5c5c; font-size: 14px; }
     .result h2 {
-      font-size: 32px; font-weight: 500; letter-spacing: -0.03em;
-      margin: 4px 0 6px; color: #1e1e1e;
+      font-size: 48px; font-weight: 500; letter-spacing: -0.04em;
+      margin: 2px 0 8px; color: #1e1e1e;
+    }
+    .result .result-detail { color: #3b3b3b; font-size: 16px; }
+    .result.show .result-kicker,
+    .result.show h2,
+    .result.show .result-detail,
+    .result.show .result-again {
+      animation: rise 480ms ease both;
+    }
+    .result.show h2 { animation-delay: 90ms; }
+    .result.show .result-detail { animation-delay: 160ms; }
+    .result.show .result-again { animation-delay: 230ms; }
+    .result-again {
+      margin-top: 18px;
+      height: 44px; padding: 0 18px;
+      border: 0; border-radius: 999px;
+      background: #1e1e1e; color: #fff8f1;
+      font: inherit; font-size: 15px; cursor: pointer;
+    }
+    .result.win .result-again { background: #1e1e1e; }
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(16px) scale(0.92); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes seal-in {
+      0% { opacity: 0; transform: scale(0.35) rotate(-14deg); }
+      70% { transform: scale(1.08) rotate(3deg); }
+      100% { opacity: 1; transform: none; }
+    }
+    @keyframes seal-drop {
+      0% { opacity: 0; transform: translateY(-18px); }
+      65% { opacity: 1; transform: translateY(5px); }
+      100% { transform: none; }
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes spark {
+      0% { opacity: 0; transform: scale(0.3); }
+      25% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #stage.is-leaving,
+      .result.show .result-card,
+      .result.show .result-seal,
+      .result.show .result-kicker,
+      .result.show h2,
+      .result.show .result-detail,
+      .result.show .result-again,
+      .result.win.show .result-sparks i { animation: none; }
     }
     .gate {
       width: min(560px, calc(100% - 32px));
@@ -133,12 +228,31 @@
       <button type="submit" id="gate-go">Commencer la partie</button>
     </form>
   </section>
-  <main class="play-wrap" id="stage" hidden><p class="play-miss" id="play-status">Chargement du jeu…</p></main>
-  <section class="result" id="result" aria-live="polite">
-    <p id="result-kicker"></p>
-    <h2 id="result-title"></h2>
-    <p id="result-detail"></p>
-  </section>
+  <div class="play-slot" id="play-slot">
+    <main class="play-wrap" id="stage" hidden><p class="play-miss" id="play-status">Chargement du jeu…</p></main>
+    <section class="result" id="result" aria-live="polite">
+      <div class="result-card">
+        <div class="result-sparks" aria-hidden="true">
+          <i style="--x:-72px;--y:-28px"></i>
+          <i style="--x:76px;--y:-24px"></i>
+          <i style="--x:-96px;--y:18px"></i>
+          <i style="--x:98px;--y:14px"></i>
+          <i style="--x:-34px;--y:-58px"></i>
+          <i style="--x:38px;--y:-62px"></i>
+          <i style="--x:-16px;--y:34px"></i>
+          <i style="--x:18px;--y:38px"></i>
+        </div>
+        <div class="result-seal" aria-hidden="true">
+          <svg class="seal-win" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.2 17 19 7"/></svg>
+          <svg class="seal-lose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7l10 10M17 7 7 17"/></svg>
+        </div>
+        <p class="result-kicker" id="result-kicker"></p>
+        <h2 id="result-title"></h2>
+        <p class="result-detail" id="result-detail"></p>
+        <button class="result-again" id="result-again" type="button">Rejouer</button>
+      </div>
+    </section>
+  </div>
   <script>
     const GAMES = {
       bowling: ['game-bowl', 'Bowling'],
@@ -189,25 +303,44 @@
       const lot = lots.length ? drawLot() : null;
       const won = !!(lot && lot.win);
       if (!lots.length) {
-        return { won: false, kicker: 'Résultat', title: 'Aucun lot configuré', detail: 'Ce jeu n’a pas encore de lots à gagner.', prize: 'Aucun lot', record: false };
+        return { won: false, kicker: 'Résultat', title: 'Aucun lot', detail: 'Ce jeu n’a pas encore de lots à gagner.', prize: 'Aucun lot', record: false };
       }
       return {
         won,
-        kicker: won ? 'Gagné' : 'Perdu',
-        title: won ? lot.name : 'Pas de lot cette fois',
-        detail: won ? 'À utiliser sous ' + lot.days + ' jours.' : 'Retentez une partie.',
+        kicker: won ? 'Votre lot' : 'Cette fois',
+        title: won ? 'Gagné' : 'Perdu',
+        detail: won ? lot.name + ' · à utiliser sous ' + lot.days + ' jours.' : 'Pas de lot. Retentez une partie.',
         prize: won ? lot.name : 'Pas de lot cette fois',
         record: true,
       };
     }
 
-    function showResult(result) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let revealTimer = 0;
+
+    function hideResult() {
+      window.clearTimeout(revealTimer);
+      const stage = document.getElementById('stage');
       const box = document.getElementById('result');
-      box.classList.toggle('win', result.won);
-      box.classList.add('show');
-      document.getElementById('result-kicker').textContent = result.kicker;
-      document.getElementById('result-title').textContent = result.title;
-      document.getElementById('result-detail').textContent = result.detail;
+      stage.classList.remove('is-leaving', 'is-covered');
+      box.classList.remove('show', 'win', 'lose');
+    }
+
+    function showResult(result) {
+      const stage = document.getElementById('stage');
+      const box = document.getElementById('result');
+      window.clearTimeout(revealTimer);
+      box.classList.remove('show', 'win', 'lose');
+      stage.classList.remove('is-covered');
+      stage.classList.add('is-leaving');
+      const wait = reduceMotion ? 0 : 380;
+      revealTimer = window.setTimeout(() => {
+        stage.classList.add('is-covered');
+        box.classList.add('show', result.won ? 'win' : 'lose');
+        document.getElementById('result-kicker').textContent = result.kicker;
+        document.getElementById('result-title').textContent = result.title;
+        document.getElementById('result-detail').textContent = result.detail;
+      }, wait);
     }
 
     async function remember(result) {
@@ -236,13 +369,19 @@
 
     window.addEventListener('arcade-round', (event) => {
       if (!event.detail || event.detail.phase === 'start') {
-        document.getElementById('result').classList.remove('show', 'win');
+        hideResult();
         settled = false;
         return;
       }
       const result = outcome();
       showResult(result);
       remember(result);
+    });
+
+    document.getElementById('result-again').addEventListener('click', () => {
+      hideResult();
+      const replay = document.querySelector('#bowl-throw[data-mode="reset"], #claw-go[data-mode="reset"], #loot-reset, #laser-start');
+      if (replay && !replay.disabled) replay.click();
     });
 
     function openGame() {
