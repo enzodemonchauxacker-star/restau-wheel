@@ -9,6 +9,27 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const { mount: mountArcadePlayers } = require('./lib/arcade-players');
+const {
+  buildCrmSnapshot,
+  STAGES,
+  personCard,
+  buildPersonFile,
+  parsePersonInput,
+  cleanNote,
+  cleanTaskTitle,
+} = require('./lib/crm');
+const {
+  cleanBaseUrl,
+  chunk,
+  companyPayload,
+  personPayload,
+  dedupeCustomers,
+  createdRecords,
+} = require('./lib/twenty');
+const rekoneBilling = require('./lib/rekone-billing');
+const rekoneAccounts = require('./lib/rekone-accounts');
+const { seriesFromRows } = require('./lib/admin-series');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -17,14 +38,30 @@ if (process.env.VERCEL) {
   app.set('trust proxy', 1);
 }
 
+const metaSales = require('./lib/meta-sales');
+app.post('/api/webhooks/stripe-meta', express.raw({ type: 'application/json' }),
+  metaSales.createHandler({ getStripe: () => stripe, store: metaSales.sqlStore(db) }));
+app.post('/api/webhooks/stripe-rekone', express.raw({ type: 'application/json' }),
+  rekoneBilling.createWebhookHandler({ getStripe: () => stripe }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieSession({
+  name: 'rw_sess',
+  keys: [process.env.SESSION_SECRET || 'restau-wheel-secret-2024', 'rw-fallback-key'],
+  maxAge: 8 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+}));
 // HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
 app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo)\/?$/.test(req.path)
+    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|video|arcade)\/?$/.test(req.path) ||
+    /^\/arcade\/(dashboard|jouer|abonnement|resiliation|compte|connexion)\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -39,18 +76,232 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
 });
-app.use(express.static(path.join(__dirname, 'public')));
+function isRekoneHost(req) {
+  const raw = [].concat(req.headers['x-forwarded-host'] || [], req.headers.host || []);
+  return String(raw).split(',')
+    .map((h) => h.trim().split(':')[0].toLowerCase().replace(/\.$/, ''))
+    .some((h) => h === 'rekone.si' || h === 'www.rekone.si');
+}
 
-// Session en cookie (compatible Vercel serverless — pas de MemoryStore)
-app.use(cookieSession({
-  name: 'rw_sess',
-  keys: [process.env.SESSION_SECRET || 'restau-wheel-secret-2024', 'rw-fallback-key'],
-  maxAge: 8 * 60 * 60 * 1000,
-  httpOnly: true,
-  secure: process.env.VERCEL === '1' || process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
-  path: '/',
-}));
+app.use((req, res, next) => {
+  if (!isRekoneHost(req) || (req.method !== 'GET' && req.method !== 'HEAD') || req.path !== '/') return next();
+  res.setHeader('Cache-Control', 'no-store');
+  return res.sendFile(path.join(__dirname, 'public', 'arcade', 'index.html'));
+});
+app.use((req, res, next) => {
+  if (!/^\/arcade\/dashboard(?:\/index\.html)?\/?$/.test(req.path)) return next();
+  if (req.session?.rekoneId) return next();
+  const nextUrl = encodeURIComponent(req.originalUrl.split('#')[0] || '/arcade/dashboard/');
+  return res.redirect(302, '/arcade/connexion/?next=' + nextUrl);
+});
+
+// Vercel refuse un corps de réponse au-delà de 4,5 Mo. La vidéo fait ~8,5 Mo :
+// on ne renvoie jamais plus d’un morceau, et le lecteur enchaîne les Range.
+const EXPLAINER_VIDEO = path.join(__dirname, 'public', 'video', 'restau_wheel_explainer.mp4');
+const EXPLAINER_CHUNK = 2 * 1024 * 1024;
+
+app.get('/video/restau_wheel_explainer.mp4', (req, res) => {
+  let size;
+  try {
+    size = fs.statSync(EXPLAINER_VIDEO).size;
+  } catch {
+    return res.status(404).end();
+  }
+
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+
+  const header = String(req.headers.range || '');
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header);
+  let start = 0;
+  let end = size - 1;
+
+  if (header && !match) {
+    res.status(416);
+    res.setHeader('Content-Range', `bytes */${size}`);
+    return res.end();
+  }
+  if (match) {
+    if (match[1] === '') {
+      const suffix = parseInt(match[2], 10);
+      if (!Number.isFinite(suffix) || suffix <= 0) {
+        res.status(416);
+        res.setHeader('Content-Range', `bytes */${size}`);
+        return res.end();
+      }
+      start = Math.max(0, size - suffix);
+    } else {
+      start = parseInt(match[1], 10);
+      end = match[2] ? parseInt(match[2], 10) : size - 1;
+    }
+  }
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start >= size || end < start) {
+    res.status(416);
+    res.setHeader('Content-Range', `bytes */${size}`);
+    return res.end();
+  }
+  end = Math.min(end, size - 1, start + EXPLAINER_CHUNK - 1);
+
+  // Sans Content-Range, un 200 tronqué ferait croire que la vidéo s’arrête là.
+  const partial = Boolean(header) || end < size - 1;
+  res.status(partial ? 206 : 200);
+  if (partial) res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+  res.setHeader('Content-Length', String(end - start + 1));
+  if (req.method === 'HEAD') return res.end();
+  const length = end - start + 1;
+  const buf = Buffer.alloc(length);
+  const fd = fs.openSync(EXPLAINER_VIDEO, 'r');
+  try {
+    fs.readSync(fd, buf, 0, length, start);
+  } finally {
+    fs.closeSync(fd);
+  }
+  res.end(buf);
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+mountArcadePlayers(app);
+rekoneBilling.mount(app, { getStripe: () => stripe });
+
+function rekoneAccountStore() {
+  return rekoneAccounts.sqlStore(db);
+}
+
+function rememberRekone(req, account) {
+  req.session.rekoneId = account.id;
+  req.session.rekoneEmail = account.email;
+  req.session.rekoneName = account.name;
+  req.session.rekoneVenue = account.venue;
+}
+
+app.get('/arcade/api/compte', async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const id = String(req.query.session_id || '');
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return res.status(400).json({ error: 'Session invalide' });
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  try {
+    await ensureReady();
+    const session = await stripe.checkout.sessions.retrieve(id);
+    if (session.metadata?.product !== 'rekone') return res.status(404).json({ error: 'Session inconnue' });
+    if (session.payment_status !== 'paid') return res.status(402).json({ error: 'Paiement non confirmé' });
+    const email = rekoneAccounts.cleanEmail(session.customer_details?.email || session.customer_email || '');
+    const existing = email ? await rekoneAccountStore().getByEmail(email) : null;
+    res.json({
+      paid: true,
+      email,
+      name: session.metadata?.customer_name || '',
+      venue: session.metadata?.venue || '',
+      exists: Boolean(existing),
+    });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(404).json({ error: 'Session inconnue' });
+  }
+});
+
+app.post('/arcade/api/compte', async (req, res) => {
+  const id = String(req.body?.session_id || '');
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return res.status(400).json({ error: 'Session invalide' });
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  try {
+    await ensureReady();
+    const session = await stripe.checkout.sessions.retrieve(id);
+    if (session.metadata?.product !== 'rekone') return res.status(404).json({ error: 'Session inconnue' });
+    if (session.payment_status !== 'paid') return res.status(402).json({ error: 'Paiement non confirmé' });
+    const result = await rekoneAccounts.register(rekoneAccountStore(), {
+      email: session.customer_details?.email || session.customer_email || '',
+      password: req.body?.password,
+      name: req.body?.name || session.metadata?.customer_name || '',
+      venue: req.body?.venue || session.metadata?.venue || '',
+      stripeSessionId: id,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error, code: result.code });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Création impossible' });
+  }
+});
+
+app.post('/arcade/api/compte/reprise', async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré' });
+  const email = rekoneAccounts.cleanEmail(req.body?.email);
+  if (!email) return res.status(400).json({ error: 'Email invalide' });
+  try {
+    await ensureReady();
+    const customers = await stripe.customers.list({ email, limit: 10 });
+    let paid = false;
+    for (const customer of customers.data || []) {
+      const subs = await stripe.subscriptions.list({ customer: customer.id, status: 'all', limit: 20 });
+      paid = (subs.data || []).some((sub) => sub.metadata?.product === 'rekone' && ['active', 'trialing', 'past_due'].includes(sub.status));
+      if (paid) break;
+    }
+    if (!paid) return res.status(402).json({ error: 'Aucun abonnement Rekone payé pour cet email' });
+    const result = await rekoneAccounts.register(rekoneAccountStore(), {
+      email,
+      password: req.body?.password,
+      name: req.body?.name,
+      venue: req.body?.venue,
+      stripeSessionId: 'reprise:' + email,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error, code: result.code });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Création impossible' });
+  }
+});
+
+app.patch('/arcade/api/compte', async (req, res) => {
+  if (!req.session?.rekoneId) return res.status(401).json({ error: 'Connexion requise' });
+  try {
+    await ensureReady();
+    const result = await rekoneAccounts.updateAccount(rekoneAccountStore(), req.session.rekoneId, req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Mise à jour impossible' });
+  }
+});
+
+app.post('/arcade/api/connexion', async (req, res) => {
+  try {
+    await ensureReady();
+    const result = await rekoneAccounts.authenticate(rekoneAccountStore(), req.body || {});
+    if (result.error) return res.status(result.status || 401).json({ error: result.error });
+    rememberRekone(req, result.account);
+    res.json({ ok: true, account: result.account, next: rekoneAccounts.safeNext(req.body?.next) });
+  } catch (error) {
+    console.error('[rekone-compte]', error.message);
+    res.status(500).json({ error: 'Connexion impossible' });
+  }
+});
+
+app.post('/arcade/api/deconnexion', (req, res) => {
+  if (req.session) {
+    delete req.session.rekoneId;
+    delete req.session.rekoneEmail;
+    delete req.session.rekoneName;
+    delete req.session.rekoneVenue;
+  }
+  res.json({ ok: true });
+});
+
+app.get('/arcade/api/compte/moi', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (!req.session?.rekoneId) return res.json({ loggedIn: false });
+  res.json({
+    loggedIn: true,
+    email: req.session.rekoneEmail || '',
+    name: req.session.rekoneName || '',
+    venue: req.session.rekoneVenue || '',
+  });
+});
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 function requireRestaurant(req, res, next) {
@@ -207,7 +458,7 @@ async function jsonDemoSpin(resto, res) {
 
 // Tirage de la roue
 app.post('/api/spin', async (req, res) => {
-  const { email, first_name, last_name, phone, restaurant_id, device_id } = req.body;
+  const { email, first_name, last_name, phone, restaurant_id, device_id, privacy_consent } = req.body;
   const resto = await findRestaurantByRef(restaurant_id);
   if (!resto) return res.status(404).json({ error: 'Restaurant introuvable' });
   if (String(resto.public_code || '').toLowerCase() === 'demo') {
@@ -217,6 +468,9 @@ app.post('/api/spin', async (req, res) => {
 
   if (!email || !first_name || !last_name || !phone) {
     return res.status(400).json({ error: 'Tous les champs sont requis (dont le téléphone)' });
+  }
+  if (!(privacy_consent === true || privacy_consent === 1 || privacy_consent === 'true' || privacy_consent === '1' || privacy_consent === 'on')) {
+    return res.status(400).json({ error: 'Le consentement RGPD est requis pour participer', code: 'privacy_consent_required' });
   }
   const phoneNorm = normalizePhone(phone);
   if (!phoneNorm) {
@@ -281,12 +535,15 @@ app.post('/api/spin', async (req, res) => {
   // Créer ou retrouver le client pour CE restaurant
   let customer = await db.prepare('SELECT * FROM customers WHERE lower(email)=lower(?) AND restaurant_id=? ').get(emailNorm, rid);
   if (!customer) {
-    const r = await db.prepare('INSERT INTO customers (restaurant_id, email, first_name, last_name, phone) VALUES (?,?,?,?,?)')
-      .run(rid, emailNorm, first_name.trim(), last_name.trim(), phoneNorm);
+    const r = await db.prepare(
+      'INSERT INTO customers (restaurant_id, email, first_name, last_name, phone, privacy_consent_at) VALUES (?,?,?,?,?,NOW())'
+    ).run(rid, emailNorm, first_name.trim(), last_name.trim(), phoneNorm);
     customer = await db.prepare('SELECT * FROM customers WHERE id=?').get(r.lastInsertRowid);
-  } else if (!customer.phone || customer.phone !== phoneNorm) {
-    await db.prepare('UPDATE customers SET phone=? WHERE id=?').run(phoneNorm, customer.id);
-    customer = { ...customer, phone: phoneNorm };
+  } else {
+    await db.prepare(
+      'UPDATE customers SET phone=COALESCE(?, phone), first_name=COALESCE(?, first_name), last_name=COALESCE(?, last_name), privacy_consent_at=NOW() WHERE id=?'
+    ).run(phoneNorm, first_name.trim(), last_name.trim(), customer.id);
+    customer = await db.prepare('SELECT * FROM customers WHERE id=?').get(customer.id);
   }
 
   // Tirage pondéré
@@ -478,6 +735,38 @@ app.get('/api/admin/stats', requireRestaurant, async (req, res) => {
   res.json({ totalSpins, totalWins, usedWins, expiredWins, pendingWins });
 });
 
+/** Série des tirages : semaine civile en cours (lun→dim) et 12 mois de l'année, fuseau Europe/Paris. */
+app.get('/api/admin/stats/series', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const weekRows = await db.prepare(`
+    SELECT EXTRACT(ISODOW FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          >= date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          < (date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date + 7)
+    GROUP BY 1
+  `).all(rid);
+  const monthRows = await db.prepare(`
+    SELECT EXTRACT(MONTH FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND EXTRACT(YEAR FROM (s.won_at AT TIME ZONE 'Europe/Paris'))
+          = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Europe/Paris'))
+    GROUP BY 1
+  `).all(rid);
+  res.json({
+    week: seriesFromRows(weekRows, 7),
+    month: seriesFromRows(monthRows, 12),
+    timezone: 'Europe/Paris',
+  });
+});
+
 app.get('/api/admin/search', requireRestaurant, async (req, res) => {
   const q = String(req.query.q || '').trim();
   const rid = req.session.restaurantId;
@@ -529,6 +818,79 @@ app.get('/api/admin/search', requireRestaurant, async (req, res) => {
     });
   }
   res.json(result);
+});
+
+/** Export CSV (compatible Excel) de la base clients du restaurant */
+app.get('/api/admin/customers/export', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const q = String(req.query.q || '').trim();
+
+  const selectWithConsent = `
+      SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
+      FROM customers`;
+  const selectBasic = `
+      SELECT id, first_name, last_name, email, phone, created_at
+      FROM customers`;
+
+  async function load(selectSql) {
+    if (q.length >= 2) {
+      const term = `%${q}%`;
+      return db.prepare(`
+      ${selectSql}
+      WHERE restaurant_id=? AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR IFNULL(phone,'') LIKE ?)
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid, term, term, term, term);
+    }
+    return db.prepare(`
+      ${selectSql}
+      WHERE restaurant_id=?
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid);
+  }
+
+  let customers;
+  try {
+    customers = await load(selectWithConsent);
+  } catch {
+    customers = await load(selectBasic);
+  }
+
+  const escapeCsv = (v) => {
+    const s = v == null ? '' : String(v);
+    if (/[",\n\r;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try {
+      return new Date(d).toISOString();
+    } catch {
+      return String(d);
+    }
+  };
+
+  const header = ['prenom', 'nom', 'email', 'telephone', 'inscrit_le', 'consentement_rgpd_le'];
+  const lines = [header.join(';')];
+  for (const c of customers || []) {
+    lines.push([
+      escapeCsv(c.first_name),
+      escapeCsv(c.last_name),
+      escapeCsv(c.email),
+      escapeCsv(c.phone),
+      escapeCsv(fmtDate(c.created_at)),
+      escapeCsv(fmtDate(c.privacy_consent_at)),
+    ].join(';'));
+  }
+
+  // BOM UTF-8 + séparateur ; → s’ouvre correctement dans Excel FR
+  const csv = `\uFEFF${lines.join('\r\n')}\r\n`;
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="clients-restauwheel-${stamp}.csv"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(csv);
 });
 
 app.put('/api/admin/spins/:id/use', requireRestaurant, async (req, res) => {
@@ -820,6 +1182,514 @@ app.get('/api/superadmin/customers', requireSuperAdmin, async (req, res) => {
   }
 });
 
+app.get('/api/superadmin/crm', requireSuperAdmin, async (req, res) => {
+  const rawId = String(req.query.restaurant_id || '').trim();
+  let restaurant = null;
+  const params = [];
+  let where = '';
+  if (rawId) {
+    const rid = parseInt(rawId, 10);
+    if (!rid || rid < 1) return res.status(400).json({ error: 'Restaurant invalide' });
+    restaurant = await db.prepare('SELECT id, name FROM restaurants WHERE id=?').get(rid);
+    if (!restaurant) return res.status(404).json({ error: 'Restaurant introuvable' });
+    where = 'WHERE c.restaurant_id=?';
+    params.push(rid);
+  }
+  try {
+    const customers = await db.prepare(`
+      SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at, c.restaurant_id,
+             r.name AS restaurant_name,
+             COUNT(s.id)::int AS spin_count,
+             COUNT(s.id) FILTER (WHERE s.prize_id IS NOT NULL)::int AS win_count,
+             COUNT(s.id) FILTER (WHERE s.used = 1 AND s.prize_id IS NOT NULL)::int AS redeemed_count,
+             COUNT(s.id) FILTER (
+               WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+                 AND (s.deadline IS NULL OR s.deadline > NOW())
+             )::int AS pending_count,
+             MAX(s.won_at) AS last_spin_at
+      FROM customers c
+      JOIN restaurants r ON r.id = c.restaurant_id
+      LEFT JOIN spins s ON s.customer_id = c.id
+      ${where}
+      GROUP BY c.id, r.name
+      ORDER BY c.created_at DESC
+      LIMIT 5001
+    `).all(...params);
+    const weekly = await db.prepare(`
+      SELECT to_char(date_trunc('week', c.created_at AT TIME ZONE 'Europe/Paris'), 'YYYY-MM-DD') AS week,
+             COUNT(*)::int AS customers
+      FROM customers c
+      WHERE c.created_at >= NOW() - INTERVAL '70 days'
+      ${rawId ? 'AND c.restaurant_id=?' : ''}
+      GROUP BY 1
+      ORDER BY 1
+    `).all(...params);
+    const prizes = await db.prepare(`
+      SELECT p.name,
+             COUNT(*)::int AS wins,
+             COUNT(*) FILTER (WHERE s.used = 1)::int AS redeemed
+      FROM spins s
+      JOIN prizes p ON p.id = s.prize_id
+      JOIN customers c ON c.id = s.customer_id
+      WHERE s.prize_id IS NOT NULL
+      ${rawId ? 'AND c.restaurant_id=?' : ''}
+      GROUP BY p.name
+      ORDER BY wins DESC, p.name
+      LIMIT 5
+    `).all(...params);
+    const truncated = customers.length > 5000;
+    res.json(buildCrmSnapshot({
+      customers: truncated ? customers.slice(0, 5000) : customers,
+      weekly,
+      prizes,
+      restaurant,
+      truncated,
+    }));
+  } catch (e) {
+    console.error('[sa-crm]', e.message);
+    res.status(500).json({ error: 'Impossible de charger le CRM' });
+  }
+});
+
+const CRM_PERSON_FROM = `
+  FROM customers c
+  JOIN restaurants r ON r.id = c.restaurant_id
+  LEFT JOIN spins s ON s.customer_id = c.id
+`;
+
+function crmPersonFilters(query) {
+  const clauses = [];
+  const params = [];
+  const rid = parseInt(query.restaurant_id, 10);
+  if (rid > 0) {
+    clauses.push('c.restaurant_id=?');
+    params.push(rid);
+  }
+  const q = String(query.q || '').trim();
+  if (q.length >= 2) {
+    const term = `%${q}%`;
+    clauses.push("(c.first_name ILIKE ? OR c.last_name ILIKE ? OR c.email ILIKE ? OR COALESCE(c.phone,'') ILIKE ? OR r.name ILIKE ?)");
+    params.push(term, term, term, term, term);
+  }
+  const stage = STAGES.includes(query.stage) ? query.stage : '';
+  return { clauses, params, stage };
+}
+
+async function loadCrmPerson(id) {
+  return db.prepare(`
+    SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at,
+           c.restaurant_id, c.crm_stage,
+           r.name AS restaurant_name,
+           COUNT(s.id)::int AS spin_count,
+           COUNT(s.id) FILTER (WHERE s.prize_id IS NOT NULL)::int AS win_count,
+           COUNT(s.id) FILTER (WHERE s.used = 1 AND s.prize_id IS NOT NULL)::int AS redeemed_count,
+           COUNT(s.id) FILTER (
+             WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+               AND (s.deadline IS NULL OR s.deadline > NOW())
+           )::int AS pending_count,
+           MAX(s.won_at) AS last_spin_at,
+           (SELECT COUNT(*)::int FROM crm_notes n WHERE n.customer_id = c.id) AS note_count,
+           (SELECT COUNT(*)::int FROM crm_tasks t WHERE t.customer_id = c.id AND COALESCE(t.done, 0) = 0) AS open_tasks
+    ${CRM_PERSON_FROM}
+    WHERE c.id=?
+    GROUP BY c.id, r.name
+  `).get(id);
+}
+
+async function loadCrmFile(id) {
+  const customer = await loadCrmPerson(id);
+  if (!customer) return null;
+  const notes = await db.prepare(
+    'SELECT id, body, created_at FROM crm_notes WHERE customer_id=? ORDER BY created_at DESC, id DESC'
+  ).all(id);
+  const tasks = await db.prepare(
+    'SELECT id, title, done, created_at FROM crm_tasks WHERE customer_id=? ORDER BY done ASC, created_at DESC, id DESC'
+  ).all(id);
+  const spins = await db.prepare(`
+    SELECT s.id, s.won_at, s.used, s.deadline, p.name AS prize_name
+    FROM spins s
+    LEFT JOIN prizes p ON p.id = s.prize_id
+    WHERE s.customer_id=?
+    ORDER BY s.won_at DESC
+    LIMIT 12
+  `).all(id);
+  return buildPersonFile({ customer, notes, tasks, spins });
+}
+
+async function assertRestaurant(id) {
+  return db.prepare('SELECT id FROM restaurants WHERE id=?').get(id);
+}
+
+app.get('/api/superadmin/crm/people', requireSuperAdmin, async (req, res) => {
+  const { clauses, params, stage } = crmPersonFilters(req.query);
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  try {
+    const rows = await db.prepare(`
+      SELECT c.id, c.first_name, c.last_name, c.email, c.phone, c.created_at,
+             c.restaurant_id, c.crm_stage,
+             r.name AS restaurant_name,
+             COUNT(s.id)::int AS spin_count,
+             COUNT(s.id) FILTER (
+               WHERE s.prize_id IS NOT NULL AND COALESCE(s.used, 0) = 0
+                 AND (s.deadline IS NULL OR s.deadline > NOW())
+             )::int AS pending_count,
+             MAX(s.won_at) AS last_spin_at,
+             (SELECT COUNT(*)::int FROM crm_notes n WHERE n.customer_id = c.id) AS note_count,
+             (SELECT COUNT(*)::int FROM crm_tasks t WHERE t.customer_id = c.id AND COALESCE(t.done, 0) = 0) AS open_tasks
+      ${CRM_PERSON_FROM}
+      ${where}
+      GROUP BY c.id, r.name
+      ORDER BY MAX(s.won_at) DESC NULLS LAST, c.created_at DESC
+      LIMIT 500
+    `).all(...params);
+    let people = rows.map((row) => personCard(row));
+    if (stage) people = people.filter((person) => person.stage === stage);
+    res.json({ people, truncated: rows.length >= 500 });
+  } catch (e) {
+    console.error('[sa-crm-people]', e.message);
+    res.status(500).json({ error: 'Impossible de charger les fiches' });
+  }
+});
+
+app.get('/api/superadmin/crm/people/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  try {
+    const file = await loadCrmFile(id);
+    if (!file) return res.status(404).json({ error: 'Fiche introuvable' });
+    res.json(file);
+  } catch (e) {
+    console.error('[sa-crm-file]', e.message);
+    res.status(500).json({ error: 'Impossible de charger la fiche' });
+  }
+});
+
+app.post('/api/superadmin/crm/people', requireSuperAdmin, async (req, res) => {
+  const parsed = parsePersonInput(req.body, { creating: true });
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const value = parsed.value;
+  try {
+    if (!await assertRestaurant(value.restaurant_id)) {
+      return res.status(400).json({ error: 'Restaurant introuvable' });
+    }
+    const dup = await db.prepare(
+      'SELECT id FROM customers WHERE restaurant_id=? AND lower(email)=lower(?)'
+    ).get(value.restaurant_id, value.email);
+    if (dup) return res.status(409).json({ error: 'Cette fiche existe déjà pour ce restaurant.' });
+    const created = await db.prepare(
+      'INSERT INTO customers (restaurant_id, email, first_name, last_name, phone, crm_stage) VALUES (?,?,?,?,?,?)'
+    ).run(value.restaurant_id, value.email, value.first_name, value.last_name, value.phone || null, value.crm_stage || null);
+    const file = await loadCrmFile(created.lastInsertRowid);
+    res.status(201).json(file);
+  } catch (e) {
+    console.error('[sa-crm-create]', e.message);
+    res.status(500).json({ error: 'Impossible de créer la fiche' });
+  }
+});
+
+app.patch('/api/superadmin/crm/people/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  const parsed = parsePersonInput(req.body, { creating: false });
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const value = parsed.value;
+  if (!Object.keys(value).length) return res.status(400).json({ error: 'Rien à enregistrer' });
+  try {
+    const current = await db.prepare('SELECT id, email, restaurant_id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    if (value.restaurant_id && !await assertRestaurant(value.restaurant_id)) {
+      return res.status(400).json({ error: 'Restaurant introuvable' });
+    }
+    const email = value.email || current.email;
+    const restaurantId = value.restaurant_id || current.restaurant_id;
+    if (value.email || value.restaurant_id) {
+      const dup = await db.prepare(
+        'SELECT id FROM customers WHERE restaurant_id=? AND lower(email)=lower(?) AND id<>?'
+      ).get(restaurantId, email, id);
+      if (dup) return res.status(409).json({ error: 'Cette fiche existe déjà pour ce restaurant.' });
+    }
+    const sets = [];
+    const params = [];
+    for (const key of ['first_name', 'last_name', 'email', 'phone', 'restaurant_id', 'crm_stage']) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+      sets.push(`${key}=?`);
+      params.push(value[key]);
+    }
+    params.push(id);
+    await db.prepare(`UPDATE customers SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    res.json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-patch]', e.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la fiche' });
+  }
+});
+
+app.post('/api/superadmin/crm/people/:id/notes', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const body = cleanNote(req.body?.body);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  if (!body) return res.status(400).json({ error: 'La note est vide.' });
+  try {
+    const current = await db.prepare('SELECT id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    await db.prepare('INSERT INTO crm_notes (customer_id, body) VALUES (?,?)').run(id, body);
+    res.status(201).json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-note]', e.message);
+    res.status(500).json({ error: 'Impossible d’ajouter la note' });
+  }
+});
+
+app.delete('/api/superadmin/crm/notes/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Note invalide' });
+  try {
+    const note = await db.prepare('SELECT customer_id FROM crm_notes WHERE id=?').get(id);
+    if (!note) return res.status(404).json({ error: 'Note introuvable' });
+    await db.prepare('DELETE FROM crm_notes WHERE id=?').run(id);
+    res.json(await loadCrmFile(note.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-note-del]', e.message);
+    res.status(500).json({ error: 'Impossible de supprimer la note' });
+  }
+});
+
+app.post('/api/superadmin/crm/people/:id/tasks', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const title = cleanTaskTitle(req.body?.title);
+  if (!id) return res.status(400).json({ error: 'Fiche invalide' });
+  if (!title) return res.status(400).json({ error: 'La tâche est vide.' });
+  try {
+    const current = await db.prepare('SELECT id FROM customers WHERE id=?').get(id);
+    if (!current) return res.status(404).json({ error: 'Fiche introuvable' });
+    await db.prepare('INSERT INTO crm_tasks (customer_id, title) VALUES (?,?)').run(id, title);
+    res.status(201).json(await loadCrmFile(id));
+  } catch (e) {
+    console.error('[sa-crm-task]', e.message);
+    res.status(500).json({ error: 'Impossible d’ajouter la tâche' });
+  }
+});
+
+app.patch('/api/superadmin/crm/tasks/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Tâche invalide' });
+  try {
+    const task = await db.prepare('SELECT id, customer_id, title FROM crm_tasks WHERE id=?').get(id);
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    const sets = [];
+    const params = [];
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'title')) {
+      const title = cleanTaskTitle(req.body.title);
+      if (!title) return res.status(400).json({ error: 'La tâche est vide.' });
+      sets.push('title=?');
+      params.push(title);
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'done')) {
+      sets.push('done=?');
+      params.push(req.body.done ? 1 : 0);
+    }
+    if (!sets.length) return res.status(400).json({ error: 'Rien à enregistrer' });
+    params.push(id);
+    await db.prepare(`UPDATE crm_tasks SET ${sets.join(', ')} WHERE id=?`).run(...params);
+    res.json(await loadCrmFile(task.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-task-patch]', e.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la tâche' });
+  }
+});
+
+app.delete('/api/superadmin/crm/tasks/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id) return res.status(400).json({ error: 'Tâche invalide' });
+  try {
+    const task = await db.prepare('SELECT customer_id FROM crm_tasks WHERE id=?').get(id);
+    if (!task) return res.status(404).json({ error: 'Tâche introuvable' });
+    await db.prepare('DELETE FROM crm_tasks WHERE id=?').run(id);
+    res.json(await loadCrmFile(task.customer_id));
+  } catch (e) {
+    console.error('[sa-crm-task-del]', e.message);
+    res.status(500).json({ error: 'Impossible de supprimer la tâche' });
+  }
+});
+
+function twentyHint(value) {
+  const s = String(value || '');
+  if (s.length < 8) return s ? '••••' : '';
+  return `••••${s.slice(-4)}`;
+}
+
+async function twentyConfig() {
+  const read = async (key) => {
+    const row = await db.prepare('SELECT value FROM settings WHERE key=?').get(key);
+    return String(row?.value || '').trim();
+  };
+  const envApp = cleanBaseUrl(process.env.TWENTY_APP_URL || '');
+  const envApi = cleanBaseUrl(process.env.TWENTY_API_URL || '');
+  const envKey = String(process.env.TWENTY_API_KEY || '').trim();
+  const storedApp = cleanBaseUrl(await read('twenty_app_url')) || '';
+  const storedApi = cleanBaseUrl(await read('twenty_api_url')) || '';
+  const storedKey = await read('twenty_api_key');
+  const appUrl = envApp || storedApp || '';
+  const apiUrl = envApi || storedApi || appUrl;
+  const apiKey = envKey || storedKey;
+  return {
+    app_url: appUrl,
+    api_url: apiUrl,
+    api_key: apiKey,
+    api_key_hint: twentyHint(apiKey),
+    from_env: {
+      app: !!envApp,
+      api: !!envApi,
+      key: !!envKey,
+    },
+  };
+}
+
+async function twentyFetch(config, path, { method = 'GET', body } = {}) {
+  const response = await fetch(`${config.api_url}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${config.api_key}`,
+      'Content-Type': 'application/json',
+    },
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!response.ok) {
+    const message = data?.messages?.[0]?.message
+      || data?.messages?.[0]
+      || data?.message
+      || data?.error
+      || `Twenty a répondu ${response.status}`;
+    const error = new Error(typeof message === 'string' ? message : 'Twenty a refusé la requête');
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+app.get('/api/superadmin/twenty', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    res.json({
+      app_url: config.app_url,
+      api_url: config.api_url === config.app_url ? '' : config.api_url,
+      api_key_set: !!config.api_key,
+      api_key_hint: config.api_key_hint,
+      from_env: config.from_env,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Configuration Twenty illisible' });
+  }
+});
+
+app.put('/api/superadmin/twenty', requireSuperAdmin, async (req, res) => {
+  try {
+    const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)');
+    const appUrl = cleanBaseUrl(req.body?.app_url);
+    const apiUrl = cleanBaseUrl(req.body?.api_url);
+    if (appUrl == null || apiUrl == null) {
+      return res.status(400).json({ error: 'Adresse Twenty invalide' });
+    }
+    if (!process.env.TWENTY_APP_URL) await set.run('twenty_app_url', appUrl);
+    if (!process.env.TWENTY_API_URL) await set.run('twenty_api_url', apiUrl);
+    const key = String(req.body?.api_key || '').trim();
+    if (!process.env.TWENTY_API_KEY && key && !isSecretPlaceholder(key)) {
+      await set.run('twenty_api_key', key);
+    }
+    const config = await twentyConfig();
+    res.json({
+      success: true,
+      app_url: config.app_url,
+      api_url: config.api_url === config.app_url ? '' : config.api_url,
+      api_key_set: !!config.api_key,
+    });
+  } catch (e) {
+    res.status(400).json({ error: e.message || 'Enregistrement impossible' });
+  }
+});
+
+app.post('/api/superadmin/twenty/test', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    if (!config.api_url || !config.api_key) {
+      return res.status(400).json({ error: 'Adresse API et clé Twenty requises' });
+    }
+    await twentyFetch(config, '/rest/people?limit=1&fields=id');
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(502).json({ error: e.message || 'Twenty injoignable' });
+  }
+});
+
+app.post('/api/superadmin/twenty/sync', requireSuperAdmin, async (req, res) => {
+  try {
+    const config = await twentyConfig();
+    if (!config.api_url || !config.api_key) {
+      return res.status(400).json({ error: 'Adresse API et clé Twenty requises' });
+    }
+    const restaurants = await db.prepare(
+      'SELECT id, name, twenty_company_id FROM restaurants ORDER BY id'
+    ).all();
+    const missing = restaurants.filter((restaurant) => !restaurant.twenty_company_id);
+    let companiesCreated = 0;
+    for (const group of chunk(missing)) {
+      const created = createdRecords(
+        await twentyFetch(config, '/rest/batch/companies?fields=id', {
+          method: 'POST',
+          body: group.map(companyPayload),
+        }),
+        'companies',
+      );
+      for (let i = 0; i < created.length; i += 1) {
+        const id = created[i]?.id;
+        if (!id || !group[i]) continue;
+        group[i].twenty_company_id = id;
+        await db.prepare('UPDATE restaurants SET twenty_company_id=? WHERE id=?').run(id, group[i].id);
+        companiesCreated += 1;
+      }
+    }
+    const companyByRestaurant = new Map(restaurants.map((restaurant) => [restaurant.id, restaurant.twenty_company_id]));
+    const customers = await db.prepare(`
+      SELECT id, first_name, last_name, email, phone, restaurant_id
+      FROM customers
+      ORDER BY id
+      LIMIT 5000
+    `).all();
+    const { unique, skipped } = dedupeCustomers(customers);
+    let peopleUpserted = 0;
+    for (const group of chunk(unique)) {
+      const created = createdRecords(
+        await twentyFetch(config, '/rest/batch/people?upsert=true&fields=id,emails', {
+          method: 'POST',
+          body: group.map((customer) => personPayload(customer, companyByRestaurant.get(customer.restaurant_id))),
+        }),
+        'people',
+      );
+      const byEmail = new Map(created.map((row) => [
+        String(row?.emails?.primaryEmail || '').toLowerCase(),
+        row?.id,
+      ]));
+      for (let i = 0; i < group.length; i += 1) {
+        const id = byEmail.get(String(group[i].email || '').trim().toLowerCase()) || created[i]?.id;
+        if (!id) continue;
+        await db.prepare('UPDATE customers SET twenty_person_id=? WHERE id=?').run(id, group[i].id);
+        peopleUpserted += 1;
+      }
+    }
+    res.json({
+      companies_created: companiesCreated,
+      people_upserted: peopleUpserted,
+      skipped_duplicates: skipped,
+    });
+  } catch (e) {
+    console.error('[sa-twenty]', e.message);
+    res.status(502).json({ error: e.message || 'Synchronisation impossible' });
+  }
+});
+
 app.get('/api/superadmin/demo-traffic', requireSuperAdmin, async (req, res) => {
   try {
     const todayStart = `(date_trunc('day', NOW() AT TIME ZONE 'Europe/Paris') AT TIME ZONE 'Europe/Paris')`;
@@ -1092,7 +1962,7 @@ async function listBillingSubs(email) {
   return { demo: false, items };
 }
 
-async function cancelSubscriptionByEmail(email, via) {
+async function cancelSubscriptionByEmail(email, via, options = {}) {
   if (!stripe) return { ok: false, status: 503, error: 'Paiements non configurés' };
   const { items } = await listBillingSubs(email);
   if (!items.length) return { ok: false, status: 404, error: 'Aucun abonnement', code: 'none' };
@@ -1102,6 +1972,9 @@ async function cancelSubscriptionByEmail(email, via) {
   let periodEnd = null;
 
   for (const sub of items) {
+    const rekone = sub.metadata?.product === 'rekone';
+    if (options.product === 'restau' && rekone) continue;
+    if (options.product === 'rekone' && !rekone) continue;
     if (sub.cancel_at_period_end) {
       already++;
       periodEnd = sub.current_period_end;
@@ -1137,7 +2010,7 @@ app.post('/api/subscription/cancel', async (req, res) => {
     return res.status(400).json({ error: 'Email invalide' });
   }
   try {
-    const result = await cancelSubscriptionByEmail(email, 'restau-wheel-cancel-page');
+    const result = await cancelSubscriptionByEmail(email, 'restau-wheel-cancel-page', { product: 'restau' });
     if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
     res.json({
       success: true,
@@ -1178,7 +2051,7 @@ app.post('/api/admin/subscription/cancel', requireRestaurant, async (req, res) =
   const r = await db.prepare('SELECT email FROM restaurants WHERE id=?').get(req.session.restaurantId);
   const email = r?.email || '';
   try {
-    const result = await cancelSubscriptionByEmail(email, 'admin-settings');
+    const result = await cancelSubscriptionByEmail(email, 'admin-settings', { product: 'restau' });
     if (!result.ok) return res.status(result.status).json({ error: result.error, code: result.code });
     res.json({
       success: true,
@@ -1207,7 +2080,7 @@ app.post('/api/checkout', async (req, res) => {
         line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
         success_url: `${origin}/admin?paid=1`,
         cancel_url: `${origin}/checkout?canceled=1`,
-        metadata: { customer_name: name },
+        metadata: { customer_name: name, ...metaSales.checkoutMetadata(req.body?.ads) },
       });
       return res.json({ checkoutUrl: session.url });
     } catch (e) {
@@ -1253,6 +2126,11 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
+app.get('/video',       async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public', 'video', 'index.html'));
+});
 app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────

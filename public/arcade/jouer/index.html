@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekone</title>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=qr">
+  <style>
+    body { background: #fff8f1; }
+    .play-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px 22px 0;
+      font-family: "General Sans", sans-serif;
+    }
+    .play-bar .mark {
+      width: 36px; height: 36px; border-radius: 11px;
+      background: #e8ff95; color: #1e1e1e;
+      display: grid; place-items: center;
+    }
+    .play-bar .mark svg { width: 18px; height: 18px; }
+    .play-bar strong { font-size: 22px; font-weight: 500; letter-spacing: -0.03em; }
+    .play-wrap { width: min(1100px, calc(100% - 32px)); margin: 18px auto 16px; }
+    .play-miss { color: #8d8d8d; padding: 24px 0; }
+    .result {
+      display: none;
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto 40px;
+      padding: 22px 24px;
+      border-radius: 22px;
+      background: #fff;
+      border: 1px solid #e8e2d9;
+      font-family: "General Sans", sans-serif;
+    }
+    .result.show { display: block; }
+    .result.win { background: #e8ff95; border-color: transparent; }
+    .result p { color: #5c5c5c; font-size: 15px; }
+    .result h2 {
+      font-size: 32px; font-weight: 500; letter-spacing: -0.03em;
+      margin: 4px 0 6px; color: #1e1e1e;
+    }
+    .gate {
+      width: min(560px, calc(100% - 32px));
+      margin: 22px auto 48px;
+      font-family: "General Sans", sans-serif;
+    }
+    .gate form {
+      background: #fff;
+      border: 1px solid #e8e2d9;
+      border-radius: 22px;
+      padding: 22px 22px 18px;
+    }
+    .gate h1 {
+      font-size: 32px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
+    }
+    .gate .lead { color: #5c5c5c; font-size: 15px; margin: 0 0 18px; }
+    .gate label { display: block; font-size: 13px; color: #5c5c5c; margin: 12px 0 0; }
+    .gate input[type="text"],
+    .gate input[type="email"],
+    .gate input[type="tel"] {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      border: 1px solid #e8e2d9;
+      background: #fff8f1;
+      border-radius: 12px;
+      padding: 12px 12px;
+      font: inherit;
+      font-size: 16px;
+      color: #1e1e1e;
+    }
+    .gate input:focus { outline: 2px solid #e8ff95; border-color: transparent; }
+    .consent {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 16px;
+      color: #1e1e1e;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .consent input { width: 18px; height: 18px; margin-top: 2px; flex: none; }
+    .gate .fine { color: #8d8d8d; font-size: 13px; margin: 10px 0 0; }
+    .gate .error { color: #c43648; font-size: 14px; min-height: 1.2em; margin: 10px 0 0; }
+    .gate button {
+      margin-top: 8px;
+      height: 46px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      background: #1e1e1e;
+      color: #fff8f1;
+      font: inherit;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .gate button:disabled { opacity: 0.55; cursor: default; }
+    #stage[hidden], .gate[hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <header class="play-bar">
+    <a class="mark" href="/arcade/" aria-label="Rekone">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
+    </a>
+    <strong id="play-title">Rekone</strong>
+  </header>
+  <section class="gate" id="gate">
+    <form id="gate-form">
+      <h1>Avant de jouer</h1>
+      <p class="lead">Indiquez vos coordonnées. La salle les utilise pour votre partie et vos lots.</p>
+      <label>Prénom
+        <input name="first" type="text" autocomplete="given-name" required maxlength="60">
+      </label>
+      <label>Nom
+        <input name="last" type="text" autocomplete="family-name" required maxlength="60">
+      </label>
+      <label>E-mail
+        <input name="email" type="email" autocomplete="email" required maxlength="120">
+      </label>
+      <label>Téléphone
+        <input name="phone" type="tel" autocomplete="tel" required maxlength="24">
+      </label>
+      <label class="consent">
+        <input id="privacy_consent" name="consent" type="checkbox" required>
+        <span>J’accepte que la salle utilise mon nom, mon prénom, mon e-mail et mon téléphone pour le suivi de ma partie et de mes lots, conformément au RGPD.</span>
+      </label>
+      <p class="fine">Vous pouvez demander l’accès ou la suppression de ces données auprès de la salle.</p>
+      <p class="error" id="gate-error" role="alert"></p>
+      <button type="submit" id="gate-go">Commencer la partie</button>
+    </form>
+  </section>
+  <main class="play-wrap" id="stage" hidden><p class="play-miss" id="play-status">Chargement du jeu…</p></main>
+  <section class="result" id="result" aria-live="polite">
+    <p id="result-kicker"></p>
+    <h2 id="result-title"></h2>
+    <p id="result-detail"></p>
+  </section>
+  <script>
+    const GAMES = {
+      bowling: ['game-bowl', 'Bowling'],
+      laser: ['game-laser', 'Laser game'],
+      pince: ['game-claw', 'La pince'],
+      butin: ['game-loot', 'Dix butins'],
+    };
+    const params = new URLSearchParams(location.search);
+    const key = params.get('jeu');
+    const picked = GAMES[key] || GAMES.bowling;
+    const gameId = GAMES[key] ? key : 'bowling';
+    document.getElementById('play-title').textContent = picked[1];
+    document.title = 'Rekone — ' + picked[1];
+
+    function readLots() {
+      const raw = params.get('lots');
+      if (!raw) return [];
+      try {
+        const pad = (4 - (raw.length % 4)) % 4;
+        const padded = raw.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+        const slim = JSON.parse(new TextDecoder().decode(bytes));
+        return slim.map((lot) => ({ name: lot[0], percent: Number(lot[1]) || 0, win: !!lot[2], days: lot[3] }));
+      } catch (error) {
+        return [];
+      }
+    }
+
+    const lots = readLots();
+
+    function drawLot() {
+      const roll = Math.random() * 100;
+      let cursor = 0;
+      for (const lot of lots) {
+        cursor += lot.percent;
+        if (roll < cursor) return lot;
+      }
+      return null;
+    }
+
+    let identity = null;
+    let playerId = '';
+    let settled = false;
+    let gameReady = false;
+
+    function outcome() {
+      const lot = lots.length ? drawLot() : null;
+      const won = !!(lot && lot.win);
+      if (!lots.length) {
+        return { won: false, kicker: 'Résultat', title: 'Aucun lot configuré', detail: 'Ce jeu n’a pas encore de lots à gagner.', prize: 'Aucun lot', record: false };
+      }
+      return {
+        won,
+        kicker: won ? 'Gagné' : 'Perdu',
+        title: won ? lot.name : 'Pas de lot cette fois',
+        detail: won ? 'À utiliser sous ' + lot.days + ' jours.' : 'Retentez une partie.',
+        prize: won ? lot.name : 'Pas de lot cette fois',
+        record: true,
+      };
+    }
+
+    function showResult(result) {
+      const box = document.getElementById('result');
+      box.classList.toggle('win', result.won);
+      box.classList.add('show');
+      document.getElementById('result-kicker').textContent = result.kicker;
+      document.getElementById('result-title').textContent = result.title;
+      document.getElementById('result-detail').textContent = result.detail;
+    }
+
+    async function remember(result) {
+      if (!identity || !result.record) return;
+      const payload = { prize: result.prize, win: result.won };
+      if (!settled && playerId) {
+        settled = true;
+        await fetch('/arcade/api/joueurs/' + encodeURIComponent(playerId), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        return;
+      }
+      const response = await fetch('/arcade/api/joueurs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...identity, game: gameId, consent: true, ...payload }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        playerId = data.player.id;
+        settled = true;
+      }
+    }
+
+    window.addEventListener('arcade-round', (event) => {
+      if (!event.detail || event.detail.phase === 'start') {
+        document.getElementById('result').classList.remove('show', 'win');
+        settled = false;
+        return;
+      }
+      const result = outcome();
+      showResult(result);
+      remember(result);
+    });
+
+    function openGame() {
+      document.getElementById('gate').hidden = true;
+      const stage = document.getElementById('stage');
+      stage.hidden = false;
+      if (gameReady) return;
+      gameReady = true;
+      fetch('/arcade/index.html')
+        .then((response) => response.text())
+        .then((html) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const defs = doc.querySelector('svg.ios-defs');
+          const article = doc.getElementById(picked[0]);
+          const status = document.getElementById('play-status');
+          if (!article) {
+            status.textContent = 'Ce jeu est introuvable.';
+            return;
+          }
+          status.remove();
+          if (defs) stage.append(defs);
+          stage.append(article);
+          const script = document.createElement('script');
+          script.src = '/arcade/fid/js/games.js?v=result';
+          document.body.append(script);
+        })
+        .catch(() => {
+          document.getElementById('play-status').textContent = 'Le jeu ne s’est pas ouvert.';
+        });
+    }
+
+    document.getElementById('gate-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const error = document.getElementById('gate-error');
+      const button = document.getElementById('gate-go');
+      if (!form.consent.checked) {
+        error.textContent = 'Cochez la case pour accepter l’utilisation de vos données.';
+        return;
+      }
+      identity = {
+        first: form.first.value.trim(),
+        last: form.last.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+      };
+      error.textContent = '';
+      button.disabled = true;
+      try {
+        const response = await fetch('/arcade/api/joueurs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...identity, game: gameId, consent: true }),
+        });
+        if (!response.ok) throw new Error('save');
+        const data = await response.json();
+        playerId = data.player.id;
+        openGame();
+      } catch (saveError) {
+        error.textContent = 'L’enregistrement n’a pas abouti. Réessayez.';
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 node_modules/
+data/
 restau.db
 restau.db-shm
 restau.db-wal

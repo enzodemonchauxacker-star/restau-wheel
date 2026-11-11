@@ -130,6 +130,18 @@ async function initSchema() {
     await backfillPublicCodes();
 
     await sql`
+      CREATE TABLE IF NOT EXISTS rekone_accounts (
+        id                TEXT PRIMARY KEY,
+        email             TEXT NOT NULL UNIQUE,
+        password_hash     TEXT NOT NULL,
+        name              TEXT NOT NULL,
+        venue             TEXT NOT NULL,
+        stripe_session_id TEXT UNIQUE,
+        created_at        TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+
+    await sql`
       CREATE TABLE IF NOT EXISTS prizes (
         id            SERIAL PRIMARY KEY,
         restaurant_id INTEGER NOT NULL,
@@ -171,6 +183,29 @@ async function initSchema() {
     `;
     await sql`ALTER TABLE spins ADD COLUMN IF NOT EXISTS device_id TEXT`;
     await sql`CREATE INDEX IF NOT EXISTS spins_device_id_idx ON spins (device_id)`;
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS privacy_consent_at TIMESTAMPTZ`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS twenty_company_id TEXT`;
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS twenty_person_id TEXT`;
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS crm_stage TEXT`;
+    await sql`
+      CREATE TABLE IF NOT EXISTS crm_notes (
+        id          SERIAL PRIMARY KEY,
+        customer_id INTEGER NOT NULL,
+        body        TEXT NOT NULL,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS crm_notes_customer_idx ON crm_notes (customer_id)`;
+    await sql`
+      CREATE TABLE IF NOT EXISTS crm_tasks (
+        id          SERIAL PRIMARY KEY,
+        customer_id INTEGER NOT NULL,
+        title       TEXT NOT NULL,
+        done        INTEGER NOT NULL DEFAULT 0,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS crm_tasks_customer_idx ON crm_tasks (customer_id)`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS settings (

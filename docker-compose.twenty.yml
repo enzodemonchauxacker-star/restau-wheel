@@ -1,0 +1,81 @@
+# Twenty à côté de Restau Wheel, pour le super-admin.
+# La clé de chiffrement est obligatoire : openssl rand -base64 32
+# Puis : docker compose -f docker-compose.twenty.yml up -d
+# Interface : http://localhost:3020
+
+name: restauwheel-twenty
+
+services:
+  server:
+    image: twentycrm/twenty:${TAG:-latest}
+    ports:
+      - "3020:3000"
+    environment:
+      NODE_PORT: "3000"
+      PG_DATABASE_URL: postgres://postgres:${PG_DATABASE_PASSWORD:-restauwheel_twenty}@db:5432/default
+      SERVER_URL: ${SERVER_URL:-http://localhost:3020}
+      REDIS_URL: redis://redis:6379
+      STORAGE_TYPE: local
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Définis ENCRYPTION_KEY}
+    volumes:
+      - twenty-files:/app/packages/twenty-server/.local-storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  worker:
+    image: twentycrm/twenty:${TAG:-latest}
+    command: ["yarn", "worker:prod"]
+    environment:
+      PG_DATABASE_URL: postgres://postgres:${PG_DATABASE_PASSWORD:-restauwheel_twenty}@db:5432/default
+      SERVER_URL: ${SERVER_URL:-http://localhost:3020}
+      REDIS_URL: redis://redis:6379
+      STORAGE_TYPE: local
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Définis ENCRYPTION_KEY}
+      DISABLE_DB_MIGRATIONS: "true"
+      DISABLE_CRON_JOBS_REGISTRATION: "true"
+    volumes:
+      - twenty-files:/app/packages/twenty-server/.local-storage
+    depends_on:
+      db:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PG_DATABASE_PASSWORD:-restauwheel_twenty}
+      POSTGRES_DB: default
+    volumes:
+      - twenty-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d default"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  twenty-db:
+  twenty-files:

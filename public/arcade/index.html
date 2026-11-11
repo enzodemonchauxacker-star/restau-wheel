@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekone — La solution des salles de jeux</title>
+  <link rel="canonical" href="https://rekone.si/">
+  <meta name="description" content="Rekone est la solution des salles de jeux. La salle choisit le bowling, le laser game, la pince ou le butin, puis règle les lots, les pourcentages, les espérances et le suivi des joueurs.">
+  <meta name="theme-color" content="#FFF8F1">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@600&display=swap">
+  <link rel="stylesheet" href="/arcade/fid/vendor/lenis/lenis.css">
+  <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=login">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23FFF8F1'/%3E%3Crect x='6' y='6' width='20' height='20' rx='6' fill='%23E8FF95'/%3E%3C/svg%3E">
+</head>
+<body>
+  <svg class="ios-defs" aria-hidden="true" focusable="false">
+    <clipPath id="iphone-screen" clipPathUnits="objectBoundingBox">
+      <path d="M 0.7532 0 c 0.0864 0 0.1296 0 0.1626 0.0077 a 0.1542 0.0709 0 0 1 0.0674 0.031 c 0.0168 0.0152 0.0168 0.035 0.0168 0.0748 L 1 0.8865 c 0 0.0397 0 0.0596 -0.0168 0.0748 a 0.1542 0.0709 0 0 1 -0.0674 0.031 c -0.033 0.0077 -0.0762 0.0077 -0.1626 0.0077 L 0.2468 1 c -0.0864 0 -0.1296 0 -0.1626 -0.0077 a 0.1542 0.0709 0 0 1 -0.0674 -0.031 c -0.0168 -0.0152 -0.0168 -0.035 -0.0168 -0.0748 L 0 0.1135 c 0 -0.0397 0 -0.0596 0.0168 -0.0748 a 0.1542 0.0709 0 0 1 0.0674 -0.031 c 0.033 -0.0077 0.0762 -0.0077 0.1626 -0.0077 Z"/>
+    </clipPath>
+    <symbol id="pin-glyph" viewBox="0 0 160 340">
+      <ellipse cx="80" cy="326" rx="42" ry="8" fill="#3b3b3b" opacity="0.14"/>
+      <path fill="#fff8f1" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+      <path fill="#e24b4b" d="M54 104C70 118 90 118 106 104C94 112 66 112 54 104Z"/>
+      <path fill="#e24b4b" d="M50 124C70 142 90 142 110 124C94 136 66 136 50 124Z"/>
+      <ellipse cx="80" cy="236" rx="32" ry="38" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M64 40C74 26 92 24 102 36" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <path fill="none" stroke="#3b3b3b" stroke-width="3.5" stroke-linejoin="round" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+    </symbol>
+    <symbol id="sack-glyph" viewBox="0 0 80 100">
+      <ellipse cx="40" cy="94" rx="26" ry="4.5" fill="#6b5130" opacity="0.28"/>
+      <path fill="#c9a56a" d="M16 58c-2 14 2 30 10 36 6 4 22 6 28 4 10-4 14-20 12-36-2-10-8-16-14-18-8 4-32 4-36 14z"/>
+      <path fill="#a98450" d="M48 46c10 6 16 20 14 38-1 8-8 12-8 12 8-2 16-14 16-30 0-14-8-24-16-28-2 2-4 5-6 8z"/>
+      <path fill="none" stroke="#8a643c" stroke-width="1.7" stroke-linecap="round" opacity="0.55" d="M27 54c2 12-1 24-4 36M35 50c-1 14 2 26 0 38"/>
+      <path fill="#d2b27a" d="M22 52c6-16 12-22 18-24 8 2 16 10 20 24-8-6-28-6-38 0z"/>
+      <path fill="#b58b52" d="M30 38c2-8 6-12 10-14 5 2 9 8 11 14-6-3-16-3-21 0z"/>
+      <ellipse cx="40" cy="27" rx="7" ry="4.5" fill="#9a7344"/>
+      <path d="M24 31h22" stroke="#6d5334" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M46 31c8-1 14 4 12 10" fill="none" stroke="#6d5334" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M33 25c-2-6 2-10 6-8" fill="none" stroke="#6d5334" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="dollar-glyph" viewBox="0 0 32 44">
+      <path d="M21 8c-7 0-11 2.5-11 7s4.5 6 11 7 11 3 11 8-5 8-12 8c-5 0-9-1.5-11-4" fill="none" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+      <path d="M16 3v38" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="gift-glyph" viewBox="0 0 64 64">
+      <rect x="10" y="28" width="44" height="26" rx="5" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28v26M10 40h44" fill="none" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28c-8-14-22-8-16 0M32 28c8-14 22-8 16 0" fill="none" stroke="#3b3b3b" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="bone-glyph" viewBox="0 0 88 44">
+      <g fill="#d9c4a2">
+        <circle cx="20" cy="16" r="10"/>
+        <circle cx="20" cy="30" r="10"/>
+        <circle cx="68" cy="16" r="10"/>
+        <circle cx="68" cy="30" r="10"/>
+        <rect x="18" y="16" width="52" height="14" rx="7"/>
+      </g>
+      <g fill="#f7f3ea">
+        <circle cx="18" cy="13" r="9"/>
+        <circle cx="18" cy="27" r="9"/>
+        <circle cx="70" cy="13" r="9"/>
+        <circle cx="70" cy="27" r="9"/>
+        <rect x="16" y="14" width="56" height="12" rx="6"/>
+      </g>
+    </symbol>
+  </svg>
+  <header class="nav" id="nav">
+    <a class="logo" href="#hero">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.15c1.35 0 2.28 1.12 2.28 2.4 0 .98-.54 1.52-.84 2.2-.28.68-.2 1.12.04 1.86.38 1.12 1.32 1.86 1.66 3.08.42 1.66-.24 3.08-1.12 3.48H5.98c-.88-.4-1.54-1.82-1.12-3.48.34-1.22 1.28-1.96 1.66-3.08.24-.74.32-1.18.04-1.86-.3-.68-.84-1.22-.84-2.2 0-1.28.93-2.4 2.28-2.4z"/></svg>
+      </span>
+      Rekone
+    </a>
+    <nav class="nav-links" aria-label="Navigation">
+      <a href="#gateway">Le but</a>
+      <a href="#works">Les jeux</a>
+      <a href="#works">La solution</a>
+      <a href="#abonnement">L'abonnement</a>
+      <a href="/arcade/dashboard">Le suivi</a>
+    </nav>
+    <a class="btn nav-login" href="/arcade/connexion/">Se connecter</a>
+    <a class="btn btn-dark" href="/arcade/abonnement/">S'abonner</a>
+  </header>
+
+  <main id="fid">
+    <section class="hero" id="hero" data-theme="light">
+      <div class="hero-stage">
+        <p class="badge"><span class="badge-ico" aria-hidden="true"></span>Solution pour salles de jeux</p>
+        <h1 class="hero-title">
+          <span class="line" data-reveal>Rekone.</span>
+          <span class="line" data-reveal>Vos Jeux.</span>
+          <span class="line" data-reveal>Vos Règles.</span>
+        </h1>
+        <a class="btn btn-dark hero-cta" href="#works">Voir la solution</a>
+        <div class="orbit" id="orbit" aria-hidden="true"></div>
+        <div class="phone hero-phone" aria-hidden="true"><div class="phone-frame"><div class="pin-hold" style="--yaw:8deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
+      </div>
+    </section>
+
+    <section class="band" id="gateway" data-theme="light">
+      <div class="gateway-grid">
+        <h2 class="reveal-title">
+          <span class="line" data-reveal>Le But :</span>
+          <span class="line" data-reveal>Les Faire</span>
+          <span class="line" data-reveal>Revenir.</span>
+        </h2>
+        <div class="gateway-phone">
+          <div class="phone" id="gate-phone"><div class="phone-frame"><div class="pin-hold" style="--yaw:4deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div><div class="screen-slots" id="screen-slots" aria-hidden="true"></div></div></div>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Clair ou sombre">
+            <span class="sun" aria-hidden="true"></span>
+            <span class="moon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="gateway-copy">Rekone est la solution de la salle. Vous activez le bowling, le laser game, la pince ou le butin, puis vous fixez les lots, les pourcentages et les espérances.</p>
+        <div class="flies" id="flies" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="band" id="works" data-theme="dark">
+      <div class="works-view">
+        <h2 class="center-title"><span class="line" data-reveal>Choisissez</span><span class="line" data-reveal>Les Jeux</span></h2>
+        <div class="bento-clip">
+        <div class="bento">
+          <article class="card card-steps game-card" id="game-bowl">
+            <div class="game-head">
+              <h3 data-scramble>Bowling</h3>
+              <p class="game-score" id="bowl-score">Vise, puis lance.</p>
+            </div>
+            <div class="lane alley" id="bowl-lane">
+              <svg class="alley-art" viewBox="0 0 563 258" role="img" aria-label="Piste de bowling">
+<defs>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffd0be"/>
+    <stop offset="0.16" stop-color="#ffb4d2"/>
+    <stop offset="0.38" stop-color="#ee78c4"/>
+    <stop offset="1" stop-color="#e45cb8"/>
+  </linearGradient>
+  <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8eb4f6"/>
+    <stop offset="0.5" stop-color="#6d6cee"/>
+    <stop offset="1" stop-color="#5b3ad4"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="50%" cy="78%" r="62%">
+    <stop offset="0" stop-color="#f08bff" stop-opacity=".9"/>
+    <stop offset=".5" stop-color="#a040e0" stop-opacity=".45"/>
+    <stop offset="1" stop-color="#2a0860" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f3feff"/>
+    <stop offset="1" stop-color="#9ae8ff"/>
+  </linearGradient>
+  <linearGradient id="frame" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9a5cf2"/>
+    <stop offset="1" stop-color="#4c16b0"/>
+  </linearGradient>
+  <radialGradient id="ball-pink" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#ffd4ee"/><stop offset=".38" stop-color="#ff4b98"/><stop offset="1" stop-color="#d20f68"/>
+  </radialGradient>
+  <radialGradient id="ball-blue" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#e4f8ff"/><stop offset=".4" stop-color="#2f96f4"/><stop offset="1" stop-color="#0a46c8"/>
+  </radialGradient>
+  <radialGradient id="ball-orange" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#ffe1b4"/><stop offset=".42" stop-color="#ff7418"/><stop offset="1" stop-color="#e04000"/>
+  </radialGradient>
+  <radialGradient id="ball-gold" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#fff6bc"/><stop offset=".4" stop-color="#ffd000"/><stop offset="1" stop-color="#e09a00"/>
+  </radialGradient>
+  <radialGradient id="ball-play" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#ffd6da"/><stop offset=".4" stop-color="#ef2d40"/><stop offset="1" stop-color="#a80e24"/>
+  </radialGradient>
+  <linearGradient id="ramp" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f7fcff"/><stop offset="1" stop-color="#b7d9ff"/>
+  </linearGradient>
+  <linearGradient id="housing" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a45cf6"/><stop offset=".5" stop-color="#7a2ad8"/><stop offset="1" stop-color="#5414aa"/>
+  </linearGradient>
+</defs>
+<rect width="563" height="258" fill="url(#wall)"/>
+
+<circle cx="48" cy="22" r="22" fill="#fff" opacity="0.2"/>
+<circle cx="130" cy="14" r="14" fill="#fff" opacity="0.16"/>
+<circle cx="230" cy="20" r="18" fill="#fff" opacity="0.12"/>
+<circle cx="400" cy="16" r="16" fill="#fff" opacity="0.14"/>
+<circle cx="500" cy="26" r="24" fill="#fff" opacity="0.16"/>
+<circle cx="80" cy="70" r="18" fill="#fff" opacity="0.14"/>
+<circle cx="500" cy="78" r="20" fill="#fff" opacity="0.14"/>
+<circle cx="300" cy="36" r="12" fill="#fff" opacity="0.1"/>
+<rect x="78" y="54" width="408" height="50" fill="url(#panel)"/>
+<circle cx="100" cy="78" r="14" fill="#fff" opacity="0.16"/>
+<circle cx="190" cy="68" r="11" fill="#fff" opacity="0.14"/>
+<circle cx="370" cy="72" r="13" fill="#fff" opacity="0.15"/>
+<circle cx="450" cy="80" r="16" fill="#fff" opacity="0.13"/>
+<circle cx="280" cy="100" r="20" fill="#fff" opacity="0.1"/>
+<rect x="78.7" y="0" width="2.6" height="7" rx="1" fill="#5c2cb8"/>
+<rect x="38" y="5" width="84" height="48" rx="5" fill="url(#frame)"/>
+<rect x="39.2" y="6.2" width="81.6" height="6" rx="4" fill="#c9a6ff" opacity=".35"/>
+<rect x="43" y="11" width="74" height="36" rx="2" fill="url(#screen)"/>
+<g stroke="#6eb8e4" stroke-width="0.7">
+<line x1="68.7" y1="14" x2="68.7" y2="44"/>
+<line x1="91.3" y1="14" x2="91.3" y2="44"/>
+</g>
+<g stroke="#fff" stroke-width="1.15" opacity=".9">
+<line x1="46" y1="20.0" x2="114" y2="20.0"/>
+<line x1="46" y1="26.0" x2="114" y2="26.0"/>
+<line x1="46" y1="32.0" x2="114" y2="32.0"/>
+<line x1="46" y1="38.0" x2="114" y2="38.0"/>
+</g>
+<rect x="165.7" y="0" width="2.6" height="7" rx="1" fill="#5c2cb8"/>
+<rect x="124" y="5" width="86" height="48" rx="5" fill="url(#frame)"/>
+<rect x="125.2" y="6.2" width="83.6" height="6" rx="4" fill="#c9a6ff" opacity=".35"/>
+<rect x="129" y="11" width="76" height="36" rx="2" fill="url(#screen)"/>
+<g stroke="#6eb8e4" stroke-width="0.7">
+<line x1="155.3" y1="14" x2="155.3" y2="44"/>
+<line x1="178.7" y1="14" x2="178.7" y2="44"/>
+</g>
+<g stroke="#fff" stroke-width="1.15" opacity=".9">
+<line x1="132" y1="20.0" x2="202" y2="20.0"/>
+<line x1="132" y1="26.0" x2="202" y2="26.0"/>
+<line x1="132" y1="32.0" x2="202" y2="32.0"/>
+<line x1="132" y1="38.0" x2="202" y2="38.0"/>
+</g>
+<rect x="395.7" y="0" width="2.6" height="7" rx="1" fill="#5c2cb8"/>
+<rect x="354" y="5" width="86" height="48" rx="5" fill="url(#frame)"/>
+<rect x="355.2" y="6.2" width="83.6" height="6" rx="4" fill="#c9a6ff" opacity=".35"/>
+<rect x="359" y="11" width="76" height="36" rx="2" fill="url(#screen)"/>
+<g stroke="#6eb8e4" stroke-width="0.7">
+<line x1="385.3" y1="14" x2="385.3" y2="44"/>
+<line x1="408.7" y1="14" x2="408.7" y2="44"/>
+</g>
+<g stroke="#fff" stroke-width="1.15" opacity=".9">
+<line x1="362" y1="20.0" x2="432" y2="20.0"/>
+<line x1="362" y1="26.0" x2="432" y2="26.0"/>
+<line x1="362" y1="32.0" x2="432" y2="32.0"/>
+<line x1="362" y1="38.0" x2="432" y2="38.0"/>
+</g>
+<rect x="482.7" y="0" width="2.6" height="7" rx="1" fill="#5c2cb8"/>
+<rect x="442" y="5" width="84" height="48" rx="5" fill="url(#frame)"/>
+<rect x="443.2" y="6.2" width="81.6" height="6" rx="4" fill="#c9a6ff" opacity=".35"/>
+<rect x="447" y="11" width="74" height="36" rx="2" fill="url(#screen)"/>
+<g stroke="#6eb8e4" stroke-width="0.7">
+<line x1="472.7" y1="14" x2="472.7" y2="44"/>
+<line x1="495.3" y1="14" x2="495.3" y2="44"/>
+</g>
+<g stroke="#fff" stroke-width="1.15" opacity=".9">
+<line x1="450" y1="20.0" x2="518" y2="20.0"/>
+<line x1="450" y1="26.0" x2="518" y2="26.0"/>
+<line x1="450" y1="32.0" x2="518" y2="32.0"/>
+<line x1="450" y1="38.0" x2="518" y2="38.0"/>
+</g>
+<polygon points="152.0,70.5 153.8,76.2 159.5,78.0 153.8,79.8 152.0,85.5 150.2,79.8 144.5,78.0 150.2,76.2" fill="#fff"/>
+<polygon points="178.0,60.6 179.3,64.7 183.4,66.0 179.3,67.3 178.0,71.4 176.7,67.3 172.6,66.0 176.7,64.7" fill="#1a1028"/>
+<polygon points="206.0,51.8 207.5,56.5 212.2,58.0 207.5,59.5 206.0,64.2 204.5,59.5 199.8,58.0 204.5,56.5" fill="#ffd34a"/>
+<polygon points="356.0,51.8 357.5,56.5 362.2,58.0 357.5,59.5 356.0,64.2 354.5,59.5 349.8,58.0 354.5,56.5" fill="#ffd34a"/>
+<polygon points="384.0,62.8 385.3,66.7 389.2,68.0 385.3,69.3 384.0,73.2 382.7,69.3 378.8,68.0 382.7,66.7" fill="#1a1028"/>
+<polygon points="412.0,68.5 413.8,74.2 419.5,76.0 413.8,77.8 412.0,83.5 410.2,77.8 404.5,76.0 410.2,74.2" fill="#fff"/>
+<text x="281" y="84" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="23" letter-spacing="1.6" stroke="#fff" stroke-width="2.6" paint-order="stroke fill" stroke-linejoin="round">BOWLING</text>
+<rect x="91.20" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="111.22" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">1</text>
+<rect x="91.20" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="111.22" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="133.64" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="153.66" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">2</text>
+<rect x="133.64" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="153.66" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="176.08" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="196.10" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">3</text>
+<rect x="176.08" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="196.10" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="218.52" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="238.54" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">4</text>
+<rect x="218.52" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="238.54" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="260.96" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="280.98" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">5</text>
+<rect x="260.96" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="280.98" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="303.40" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="323.42" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">6</text>
+<rect x="303.40" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="323.42" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="345.84" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="365.86" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">7</text>
+<rect x="345.84" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="365.86" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="388.28" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="408.30" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">8</text>
+<rect x="388.28" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="408.30" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<rect x="430.72" y="90" width="40.04" height="14" rx="1.2" fill="#ffe9a6"/>
+<text x="450.74" y="100.5" text-anchor="middle" fill="#ff3b98" font-family="Inter, sans-serif" font-weight="700" font-size="10">9</text>
+<rect x="430.72" y="104" width="40.04" height="32" fill="#1c073f"/>
+<ellipse cx="450.74" cy="130" rx="16.8" ry="10" fill="url(#glow)" opacity=".85"/>
+<polygon points="-669.4,258.0 90.0,136.0 100.6,136.0 -616.5,258.0" fill="#ffd45c" />
+<polygon points="-616.5,258.0 100.6,136.0 111.2,136.0 -563.7,258.0" fill="#f0b02a" />
+<polygon points="-563.7,258.0 111.2,136.0 121.8,136.0 -510.9,258.0" fill="#ffd45c" />
+<polygon points="-510.9,258.0 121.8,136.0 132.4,136.0 -458.0,258.0" fill="#f0b02a" />
+<polygon points="-458.0,258.0 132.4,136.0 143.1,136.0 -405.2,258.0" fill="#f6bc34" />
+<polygon points="-405.2,258.0 143.1,136.0 153.7,136.0 -352.4,258.0" fill="#ffe07a" />
+<polygon points="-352.4,258.0 153.7,136.0 164.3,136.0 -299.5,258.0" fill="#f6bc34" />
+<polygon points="-299.5,258.0 164.3,136.0 174.9,136.0 -246.7,258.0" fill="#ffe07a" />
+<polygon points="-246.7,258.0 174.9,136.0 185.5,136.0 -193.8,258.0" fill="#ffe07a" />
+<polygon points="-193.8,258.0 185.5,136.0 196.1,136.0 -141.0,258.0" fill="#e8aa28" />
+<polygon points="-141.0,258.0 196.1,136.0 206.7,136.0 -88.2,258.0" fill="#ffe07a" />
+<polygon points="-88.2,258.0 206.7,136.0 217.3,136.0 -35.3,258.0" fill="#e8aa28" />
+<polygon points="-35.3,258.0 217.3,136.0 227.9,136.0 17.5,258.0" fill="#f3b82c" />
+<polygon points="17.5,258.0 227.9,136.0 238.5,136.0 70.3,258.0" fill="#fff0a8" />
+<polygon points="70.3,258.0 238.5,136.0 249.1,136.0 123.2,258.0" fill="#f3b82c" />
+<polygon points="123.2,258.0 249.1,136.0 259.8,136.0 176.0,258.0" fill="#fff0a8" />
+<polygon points="176.0,258.0 259.8,136.0 265.1,136.0 202.4,258.0" fill="#fff3b0" />
+<polygon points="202.4,258.0 265.1,136.0 270.4,136.0 228.9,258.0" fill="#f5c044" />
+<polygon points="228.9,258.0 270.4,136.0 275.7,136.0 255.3,258.0" fill="#fff3b0" />
+<polygon points="255.3,258.0 275.7,136.0 281.0,136.0 281.7,258.0" fill="#f5c044" />
+<polygon points="281.7,258.0 281.0,136.0 286.3,136.0 308.1,258.0" fill="#fff3b0" />
+<polygon points="308.1,258.0 286.3,136.0 291.6,136.0 334.5,258.0" fill="#f5c044" />
+<polygon points="334.5,258.0 291.6,136.0 296.9,136.0 361.0,258.0" fill="#fff3b0" />
+<polygon points="361.0,258.0 296.9,136.0 302.2,136.0 387.4,258.0" fill="#f5c044" />
+<polygon points="387.4,258.0 302.2,136.0 312.8,136.0 440.2,258.0" fill="#f3b82c" />
+<polygon points="440.2,258.0 312.8,136.0 323.4,136.0 493.0,258.0" fill="#fff0a8" />
+<polygon points="493.0,258.0 323.4,136.0 334.0,136.0 545.9,258.0" fill="#f3b82c" />
+<polygon points="545.9,258.0 334.0,136.0 344.6,136.0 598.7,258.0" fill="#fff0a8" />
+<polygon points="598.7,258.0 344.6,136.0 355.2,136.0 651.6,258.0" fill="#ffe07a" />
+<polygon points="651.6,258.0 355.2,136.0 365.9,136.0 704.4,258.0" fill="#e8aa28" />
+<polygon points="704.4,258.0 365.9,136.0 376.5,136.0 757.2,258.0" fill="#ffe07a" />
+<polygon points="757.2,258.0 376.5,136.0 387.1,136.0 810.1,258.0" fill="#e8aa28" />
+<polygon points="810.1,258.0 387.1,136.0 397.7,136.0 862.9,258.0" fill="#f6bc34" />
+<polygon points="862.9,258.0 397.7,136.0 408.3,136.0 915.8,258.0" fill="#ffe07a" />
+<polygon points="915.8,258.0 408.3,136.0 418.9,136.0 968.6,258.0" fill="#f6bc34" />
+<polygon points="968.6,258.0 418.9,136.0 429.5,136.0 1021.4,258.0" fill="#ffe07a" />
+<polygon points="1021.4,258.0 429.5,136.0 440.1,136.0 1074.3,258.0" fill="#ffd45c" />
+<polygon points="1074.3,258.0 440.1,136.0 450.7,136.0 1127.1,258.0" fill="#f0b02a" />
+<polygon points="1127.1,258.0 450.7,136.0 461.3,136.0 1179.9,258.0" fill="#ffd45c" />
+<polygon points="1179.9,258.0 461.3,136.0 472.0,136.0 1232.8,258.0" fill="#f0b02a" />
+<polygon points="130.9,136.0 133.9,136.0 -451.8,258.0 -464.2,258.0" fill="#5a12ae" />
+<polygon points="132.4,136.0 130.9,136.0 -464.2,258.0 -459.6,258.0" fill="#8d3ad8" />
+<polygon points="173.4,136.0 176.4,136.0 -240.5,258.0 -252.9,258.0" fill="#5a12ae" />
+<polygon points="174.8,136.0 173.4,136.0 -252.9,258.0 -248.2,258.0" fill="#8d3ad8" />
+<polygon points="215.8,136.0 218.8,136.0 -29.1,258.0 -41.5,258.0" fill="#5a12ae" />
+<polygon points="217.2,136.0 215.8,136.0 -41.5,258.0 -36.9,258.0" fill="#8d3ad8" />
+<polygon points="258.0,136.0 261.6,136.0 184.2,258.0 167.8,258.0" fill="#5a12ae" />
+<polygon points="259.7,136.0 258.0,136.0 167.8,258.0 174.0,258.0" fill="#8d3ad8" />
+<polygon points="300.4,136.0 304.0,136.0 395.6,258.0 379.2,258.0" fill="#5a12ae" />
+<polygon points="302.3,136.0 304.0,136.0 395.6,258.0 389.4,258.0" fill="#8d3ad8" />
+<polygon points="343.1,136.0 346.1,136.0 604.9,258.0 592.5,258.0" fill="#5a12ae" />
+<polygon points="344.7,136.0 346.1,136.0 604.9,258.0 600.3,258.0" fill="#8d3ad8" />
+<polygon points="385.6,136.0 388.6,136.0 816.3,258.0 803.9,258.0" fill="#5a12ae" />
+<polygon points="387.2,136.0 388.6,136.0 816.3,258.0 811.6,258.0" fill="#8d3ad8" />
+<polygon points="428.0,136.0 431.0,136.0 1027.6,258.0 1015.2,258.0" fill="#5a12ae" />
+<polygon points="429.6,136.0 431.0,136.0 1027.6,258.0 1023.0,258.0" fill="#8d3ad8" />
+<g class="side-pins">
+<g transform="translate(106.22 128.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(116.22 128.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(111.22 133.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(146.66 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(153.66 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(160.66 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(150.16 132.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(157.16 132.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(188.10 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(193.60 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(199.10 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(204.60 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(191.10 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(196.60 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(202.10 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(231.54 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(237.54 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(243.54 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(234.54 131.00) scale(0.520)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(240.54 131.00) scale(0.520)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(237.54 136.00) scale(0.560)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(316.42 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(322.42 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(328.42 125.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(319.42 131.00) scale(0.520)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(325.42 131.00) scale(0.520)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(322.42 136.00) scale(0.560)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(357.86 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(363.36 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(368.86 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(374.36 126.00) scale(0.420)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(360.86 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(366.36 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(371.86 132.00) scale(0.480)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(401.30 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(408.30 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(415.30 127.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(404.80 132.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(411.80 132.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(445.74 128.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(455.74 128.00) scale(0.400)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g transform="translate(450.74 133.00) scale(0.460)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+</g>
+<ellipse cx="111.2" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="153.7" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="196.1" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="238.5" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="323.4" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="365.9" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="408.3" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="450.7" cy="142" rx="9" ry="3.2" fill="#fff" opacity="0.22"/>
+<ellipse cx="281.0" cy="142" rx="16" ry="3.2" fill="#fff" opacity="0.42"/>
+<ellipse cx="280.8" cy="126" rx="22" ry="16" fill="#d060ff" opacity=".7"/>
+<g id="bowl-pins">
+<g class="bowl-pin" data-row="0" data-x="268.80" data-y="124.00" data-s="0.500" transform="translate(268.80 124.00) scale(0.500)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="0" data-x="276.80" data-y="124.00" data-s="0.500" transform="translate(276.80 124.00) scale(0.500)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="0" data-x="284.80" data-y="124.00" data-s="0.500" transform="translate(284.80 124.00) scale(0.500)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="0" data-x="292.80" data-y="124.00" data-s="0.500" transform="translate(292.80 124.00) scale(0.500)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="1" data-x="272.80" data-y="129.00" data-s="0.560" transform="translate(272.80 129.00) scale(0.560)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="1" data-x="280.80" data-y="129.00" data-s="0.560" transform="translate(280.80 129.00) scale(0.560)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="1" data-x="288.80" data-y="129.00" data-s="0.560" transform="translate(288.80 129.00) scale(0.560)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="2" data-x="276.80" data-y="134.00" data-s="0.620" transform="translate(276.80 134.00) scale(0.620)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="2" data-x="284.80" data-y="134.00" data-s="0.620" transform="translate(284.80 134.00) scale(0.620)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+<g class="bowl-pin" data-row="3" data-x="280.80" data-y="139.00" data-s="0.700" transform="translate(280.80 139.00) scale(0.700)"><g>
+  <path fill="#fff" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#e4273f" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#fff" stroke-width="0.7" stroke-linecap="round"/>
+</g></g>
+</g>
+<ellipse cx="280.8" cy="146" rx="16" ry="4.5" fill="#fff" opacity=".34"/>
+<g id="return-left">
+<polygon points="0.0,232.0 118.0,196.0 146.0,210.0 36.0,256.0" fill="url(#ramp)" />
+<polygon points="36.0,248.0 146.0,210.0 156.0,220.0 48.0,258.0" fill="#6c28c8" />
+<path d="M122,166 h46 a16 16 0 0 1 16 16 v30 H122 Z" fill="url(#housing)"/>
+<rect x="122" y="204" width="62" height="8" fill="#6320be"/>
+<polygon points="118,206 122,206 114,236 100,244" fill="#5414aa"/>
+<ellipse cx="150" cy="190" rx="14" ry="12" fill="#120614"/>
+<ellipse cx="150" cy="190" rx="14" ry="12" fill="none" stroke="#c48bff" stroke-width="1.6"/>
+<circle cx="133" cy="207" r="15.5" fill="url(#ball-blue)"/><ellipse cx="128.3" cy="201.7" rx="5.3" ry="3.4" fill="#fff" opacity=".55"/><circle cx="130.5" cy="206.7" r="1.4" fill="#241418"/><circle cx="134.2" cy="204.2" r="1.4" fill="#241418"/><circle cx="135.5" cy="208.9" r="1.4" fill="#241418"/>
+<circle cx="109" cy="229" r="17.5" fill="url(#ball-pink)"/><ellipse cx="103.8" cy="223.1" rx="6.0" ry="3.9" fill="#fff" opacity=".55"/><circle cx="106.2" cy="228.7" r="1.6" fill="#241418"/><circle cx="110.4" cy="225.8" r="1.6" fill="#241418"/><circle cx="111.8" cy="231.1" r="1.6" fill="#241418"/>
+</g>
+<g id="return-right">
+<polygon points="563.0,232.0 445.0,196.0 417.0,210.0 527.0,256.0" fill="url(#ramp)" />
+<polygon points="527.0,248.0 417.0,210.0 407.0,220.0 515.0,258.0" fill="#6c28c8" />
+<path d="M395,166 h46 a16 16 0 0 1 16 16 v30 H395 Z" fill="url(#housing)"/>
+<rect x="379" y="204" width="62" height="8" fill="#6320be"/>
+<polygon points="445,206 441,206 449,236 463,244" fill="#5414aa"/>
+<ellipse cx="413" cy="190" rx="14" ry="12" fill="#120614"/>
+<ellipse cx="413" cy="190" rx="14" ry="12" fill="none" stroke="#c48bff" stroke-width="1.6"/>
+<circle cx="430" cy="210" r="15" fill="url(#ball-orange)"/><ellipse cx="425.5" cy="204.9" rx="5.1" ry="3.3" fill="#fff" opacity=".55"/><circle cx="427.6" cy="209.7" r="1.3" fill="#241418"/><circle cx="431.2" cy="207.3" r="1.3" fill="#241418"/><circle cx="432.4" cy="211.8" r="1.3" fill="#241418"/>
+<circle cx="452" cy="224" r="14.5" fill="url(#ball-gold)"/><ellipse cx="447.6" cy="219.1" rx="4.9" ry="3.2" fill="#fff" opacity=".55"/><circle cx="449.7" cy="223.7" r="1.3" fill="#241418"/><circle cx="453.2" cy="221.4" r="1.3" fill="#241418"/><circle cx="454.3" cy="225.7" r="1.3" fill="#241418"/>
+<circle cx="476" cy="240" r="16" fill="url(#ball-blue)"/><ellipse cx="471.2" cy="234.6" rx="5.4" ry="3.5" fill="#fff" opacity=".55"/><circle cx="473.4" cy="239.7" r="1.4" fill="#241418"/><circle cx="477.3" cy="237.1" r="1.4" fill="#241418"/><circle cx="478.6" cy="241.9" r="1.4" fill="#241418"/>
+</g>
+<g transform="translate(280.8 230)">
+  <g id="bowl-ball-wrap">
+    <g id="bowl-ball">
+      <circle r="14" fill="url(#ball-play)"/>
+      <ellipse cx="-4" cy="-4.4" rx="4.6" ry="3.1" fill="#fff" opacity=".55"/>
+      <circle cx="-2" cy="0" r="1.25" fill="#2a1218"/>
+      <circle cx="1.1" cy="-2" r="1.25" fill="#2a1218"/>
+      <circle cx="2" cy="1.7" r="1.25" fill="#2a1218"/>
+    </g>
+  </g>
+</g>
+</svg>
+            </div>
+            <button class="btn btn-dark game-btn" type="button" id="bowl-throw">Lancer</button>
+          </article>
+          <article class="card card-people game-card" id="game-laser">
+            <div class="game-head">
+              <h3 data-scramble>Laser Game</h3>
+              <p class="game-score" id="laser-score">Touche les cibles.</p>
+            </div>
+            <div class="arena" id="laser-arena"></div>
+            <button class="btn btn-dark game-btn" type="button" id="laser-start">Jouer</button>
+          </article>
+          <article class="card card-tools game-card" id="game-claw">
+            <div class="game-head">
+              <h3 data-scramble>La Pince</h3>
+              <p class="game-score" id="claw-msg">Attrape le cadeau.</p>
+            </div>
+            <div class="cab-glass" id="claw-cab">
+              <div class="cab-rail" aria-hidden="true"></div>
+              <div class="claw-track" id="claw-track">
+                <div class="claw" id="claw">
+                  <span class="cable"></span>
+                  <svg class="claw-mech" viewBox="0 0 120 150" aria-hidden="true">
+                    <g class="arm arm-l">
+                      <path fill="#8b95a1" d="M52 46 L46 78 Q40 110 36 128 Q34 138 44 136 Q50 120 54 90 L64 46 Z"/>
+                      <path fill="#6e7884" d="M36 124 Q32 136 44 134 Q48 128 44 122 Z"/>
+                    </g>
+                    <g class="arm arm-r">
+                      <path fill="#9aa3ae" d="M68 46 L74 78 Q80 110 84 128 Q86 138 76 136 Q70 120 66 90 L56 46 Z"/>
+                      <path fill="#7d8794" d="M84 124 Q88 136 76 134 Q72 128 76 122 Z"/>
+                    </g>
+                    <path fill="#7d8794" d="M54 64 L60 138 L66 64 Z"/>
+                    <path fill="#aeb6c0" d="M60 64 L66 64 L60 138 Z"/>
+                    <rect x="38" y="0" width="44" height="16" rx="3" fill="#e23d3d"/>
+                    <rect x="48" y="14" width="24" height="12" rx="2" fill="#8b949e"/>
+                    <rect x="26" y="34" width="68" height="12" rx="5" fill="#e23d3d"/>
+                    <path fill="#e7edf2" d="M60 40 L48 56 L60 68 L72 56 Z"/>
+                    <circle cx="60" cy="54" r="5" fill="#5c6772"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="prize-row">
+                <span class="gift sack-prize" id="claw-gift">
+                  <svg viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>
+                  <svg class="sack-dollar" viewBox="0 0 32 44" aria-hidden="true"><use href="#dollar-glyph"/></svg>
+                </span>
+              </div>
+            </div>
+            <button class="btn btn-dark game-btn" type="button" id="claw-go">Attraper</button>
+          </article>
+          <article class="card card-keep game-card" id="game-loot">
+            <div class="game-head">
+              <h3 data-scramble>Dix Butins</h3>
+              <p class="game-score" id="loot-msg">Un cadeau, neuf os.</p>
+            </div>
+            <div class="loot-grid" id="loot-grid"></div>
+            <button class="btn btn-dark game-btn" type="button" id="loot-reset">Mélanger</button>
+          </article>
+          <article class="card card-app" id="reglages">
+            <h3 data-scramble>Vous Réglez</h3>
+            <p>Lots, pourcentages, espérances. Vous les fixez.</p>
+            <div class="app-phone" aria-hidden="true">
+              <div class="phone mini"><div class="phone-frame"><div class="pin-hold" style="--yaw:-6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
+            </div>
+          </article>
+          <article class="card card-topics" id="suivi">
+            <h3 data-scramble>Le Suivi</h3>
+            <p>Dashboard, joueurs, export RGPD. <a href="/arcade/dashboard">Ouvrir le tableau</a></p>
+            <div class="hmarquee" aria-hidden="true">
+              <div class="hrow"><div class="htrack"><span>Lots</span><span>Pourcentages</span><span>Espérances</span><span>Cadeaux</span><span>Retours</span><span>Lots</span><span>Pourcentages</span><span>Espérances</span><span>Cadeaux</span><span>Retours</span></div></div>
+              <div class="hrow reverse"><div class="htrack"><span>Dashboard</span><span>Joueurs</span><span>Export</span><span>RGPD</span><span>Parties</span><span>Dashboard</span><span>Joueurs</span><span>Export</span><span>RGPD</span><span>Parties</span></div></div>
+              <div class="hrow"><div class="htrack"><span>Bowling</span><span>Laser</span><span>Pince</span><span>Butin</span><span>Revanche</span><span>Bowling</span><span>Laser</span><span>Pince</span><span>Butin</span><span>Revanche</span></div></div>
+            </div>
+          </article>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="community" data-theme="light">
+      <div class="community-stage">
+        <div class="avatars" id="avatars">
+          <img src="/arcade/fid/img/a1.jpg" alt="" style="--x:6%;--y:22%;--s:52px">
+          <img src="/arcade/fid/img/a2.jpg" alt="" style="--x:12%;--y:74%;--s:44px">
+          <img src="/arcade/fid/img/a3.jpg" alt="" style="--x:18%;--y:42%;--s:40px">
+          <img class="front" src="/arcade/fid/img/a4.jpg" alt="" style="--x:76%;--y:10%;--s:56px">
+          <img src="/arcade/fid/img/a5.jpg" alt="" style="--x:88%;--y:38%;--s:46px">
+          <img src="/arcade/fid/img/a6.jpg" alt="" style="--x:80%;--y:72%;--s:50px">
+          <img src="/arcade/fid/img/a7.jpg" alt="" style="--x:64%;--y:84%;--s:42px">
+          <img class="front" src="/arcade/fid/img/a8.jpg" alt="" style="--x:24%;--y:10%;--s:48px">
+          <img src="/arcade/fid/img/a9.jpg" alt="" style="--x:48%;--y:86%;--s:40px">
+          <img src="/arcade/fid/img/a10.jpg" alt="" style="--x:34%;--y:70%;--s:54px">
+        </div>
+        <div class="community-copy">
+          <h2 class="center-title">
+            <span class="line" data-reveal>Ils</span>
+            <span class="line" data-reveal>Reviennent.</span>
+          </h2>
+          <p>Revenir, c'est prendre une partie de bowling, une partie de laser game. Si un seul joueur gagne, il devra revenir avec ses amis, qui eux paieront.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="events" data-theme="dark">
+      <h2 class="center-title light" data-reveal>La Solution</h2>
+      <div class="events-stage">
+        <a class="pill pill-now pill-l" style="--t:12%" href="#hero"><span class="pill-dot"></span>Rekone<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:38%" href="#gateway"><span class="pill-dot"></span>Salles de jeux<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-l" style="--t:64%" href="#game-laser"><span class="pill-dot"></span>Laser game<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:16%" href="#game-bowl"><span class="pill-dot"></span>Bowling<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:42%" href="#game-loot"><span class="pill-dot"></span>Un cadeau<span class="pill-go">↗</span></a>
+        <a class="pill pill-now pill-r" style="--t:68%" href="#community"><span class="pill-dot"></span>La revanche<span class="pill-go">↗</span></a>
+        <div class="phone events-phone" aria-hidden="true"><div class="phone-frame"><div class="pin-hold" style="--yaw:6deg"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div></div>
+        <span class="shot shot-wheel" hidden></span>
+      </div>
+      <p class="events-note">Rekone, la solution que la salle règle.</p>
+    </section>
+
+    <section class="band" id="stories" data-theme="light">
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Les Jeux</span><span class="line" data-reveal>Au Choix</span></h2>
+          <div class="stores"><a class="store" href="#game-bowl">Bowling</a><a class="store" href="#game-laser">Laser game</a></div>
+        </div>
+        <div class="story-photo"><div class="story-poster is-lime" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
+      </article>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Vous Réglez</span><span class="line" data-reveal>Les Lots</span></h2>
+          <div class="stores"><a class="store" href="#reglages">Pourcentages</a><a class="store" href="#reglages">Espérances</a></div>
+        </div>
+        <div class="story-photo"><div class="story-poster is-cream" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
+      </article>
+      <article class="story" data-side="right">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Le Tableau</span><span class="line" data-reveal>De Bord</span></h2>
+          <div class="stores"><a class="store" href="/arcade/dashboard">Dashboard</a><a class="store" href="/arcade/dashboard#joueurs">Export RGPD</a></div>
+        </div>
+        <div class="story-photo"><div class="story-poster is-ink" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
+      </article>
+      <article class="story" data-side="left">
+        <div class="story-copy">
+          <h2><span class="line" data-reveal>Une Solution,</span><span class="line" data-reveal>Rekone</span></h2>
+          <div class="stores"><a class="store" href="#works">Les jeux</a><a class="store" href="#footer">Nous écrire</a></div>
+        </div>
+        <div class="story-photo"><div class="story-poster is-pink" aria-hidden="true"><svg class="pin-draw" viewBox="0 0 160 340"><use href="#pin-glyph"/></svg></div></div>
+      </article>
+    </section>
+
+    <section class="band" id="abonnement" data-theme="light">
+      <div class="offer">
+        <p class="offer-kicker">Abonnement</p>
+        <h2><span id="offer-price">20 €</span> <span id="offer-period">par mois</span></h2>
+        <p class="offer-product" id="offer-product">Rekone</p>
+        <ul>
+          <li>Bowling, laser game, pince et butin</li>
+          <li>Lots, pourcentages et espérances</li>
+          <li>Tableau de bord et export RGPD</li>
+          <li>Prélèvement mensuel par Stripe</li>
+        </ul>
+        <a class="btn btn-dark" href="/arcade/abonnement/">S'abonner</a>
+        <p class="offer-legal">QuoteSaas · Enzo Demonchaux-Acker · SIRET 106 921 182 00015 · 33 C Avenue des Messeguières, 84360 Lauris · paiement Stripe · <a href="/arcade/resiliation/">Résilier</a></p>
+      </div>
+    </section>
+  </main>
+
+  <div class="veil" aria-hidden="true"></div>
+
+  <footer class="band" id="footer" data-theme="dark">
+    <svg class="ribbon" viewBox="0 0 1200 640" aria-hidden="true">
+      <path id="ribbon-path" d="M-30 150 C 80 20, 180 280, 320 140 S 520 20, 640 210 S 820 360, 980 160 S 1140 40, 1260 220 M -20 430 C 140 560, 260 300, 430 470 S 680 600, 860 390 S 1080 240, 1280 420" fill="none" stroke="#E8FF95" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="footer-grid">
+      <form class="fcard" id="news-form">
+        <h3>Restez Informés</h3>
+        <input type="email" name="email" required placeholder="vous@exemple.fr" aria-label="Email">
+        <button class="btn btn-dark" type="submit">S'inscrire</button>
+        <p class="fine">Rekone · © 2026</p>
+      </form>
+      <div class="fcard">
+        <h3>Contacts</h3>
+        <p>Rekone</p>
+        <p><a href="https://rekone.si">rekone.si</a></p>
+        <p><a href="/arcade/abonnement/">S'abonner</a></p>
+        <p><a href="/arcade/resiliation/">Résilier</a></p>
+        <a class="fcard slim" href="/mentions">Mentions légales</a>
+      </div>
+      <div class="fcard socials">
+        <a href="#hero" aria-label="Rekone">R</a>
+        <a href="#works" aria-label="Les jeux">J</a>
+        <a href="/mentions" aria-label="Mentions">M</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    fetch('/arcade/api/abonnement').then((res) => res.json()).then((offer) => {
+      const format = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: (offer.currency || 'eur').toUpperCase() });
+      const periods = { month: 'par mois', year: 'par an', week: 'par semaine', day: 'par jour' };
+      const price = document.getElementById('offer-price');
+      const period = document.getElementById('offer-period');
+      const product = document.getElementById('offer-product');
+      if (price) price.textContent = format.format((offer.amount || 2000) / 100);
+      if (period) period.textContent = periods[offer.interval] || 'par mois';
+      if (product) product.textContent = offer.productName && offer.productName !== 'Rekone' ? 'Offre Stripe : ' + offer.productName : 'Rekone';
+    }).catch(() => {});
+  </script>
+  <script src="/arcade/fid/vendor/gsap/gsap.min.js"></script>
+  <script src="/arcade/fid/vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>
+  <script src="/arcade/fid/js/solutions.js?v=rekone"></script>
+  <script src="/arcade/fid/js/fidelize.js?v=nav"></script>
+  <script src="/arcade/fid/js/games.js?v=result"></script>
+</body>
+</html>
