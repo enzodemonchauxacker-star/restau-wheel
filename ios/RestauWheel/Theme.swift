@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// Couleurs reprises de `public/css/theme.css` pour que le chrome natif
-/// (safe areas, écran de chargement, écran d'erreur) colle au site.
+/// Couleurs reprises de l'app restaurateur pour que le chrome natif
+/// (safe areas, écran de chargement, écran d'erreur) colle au fond clair.
 enum Theme {
-    /// --felt / --ink : #0a0a0a
-    static let background = Color(hex: 0x0A0A0A)
+    /// --bg clair : #e6e5e1
+    static let background = Color(hex: 0xE6E5E1)
+    /// --ink : #0a0a0a
+    static let ink = Color(hex: 0x0A0A0A)
     /// --brass : #ffd60a
     static let gold = Color(hex: 0xFFD60A)
     /// --wine : #ff2d6a

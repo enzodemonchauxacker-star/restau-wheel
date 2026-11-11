@@ -5,9 +5,8 @@ struct RootView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Le site est sombre partout (--felt) : on peint les safe areas de la
-            // même couleur plutôt que de lire le fond de la page, qui n'est pas
-            // fiable (/admin peint son canvas sur #login-screen, pas sur body).
+            // L'admin mobile est clair (#e6e5e1). On peint les safe areas de la
+            // même couleur : le WKWebView ne couvre pas le notch ni l'indicateur.
             Theme.background
                 .ignoresSafeArea()
 
@@ -25,7 +24,7 @@ struct RootView: View {
                 BackButton { model.goBack() }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                     .padding(.leading, 16)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 108)
                     .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
 
@@ -36,7 +35,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: model.loadError == nil)
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: model.canGoBack)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 }
 
@@ -47,12 +46,12 @@ private struct BackButton: View {
         Button(action: action) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(Theme.gold)
+                .foregroundStyle(Theme.ink)
                 .frame(width: 44, height: 44)
-                .background(Theme.background.opacity(0.82))
-                .overlay(Circle().stroke(Theme.gold.opacity(0.5), lineWidth: 1.5))
+                .background(Color.white.opacity(0.92))
+                .overlay(Circle().stroke(Color.black.opacity(0.08), lineWidth: 1))
                 .clipShape(Circle())
-                .shadow(color: .black.opacity(0.45), radius: 10, y: 3)
+                .shadow(color: .black.opacity(0.12), radius: 10, y: 3)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Retour")
@@ -90,11 +89,11 @@ private struct ConnectionErrorView: View {
                 VStack(spacing: 10) {
                     Text("Pas de connexion")
                         .font(.system(size: 26, weight: .heavy))
-                        .foregroundStyle(Theme.ivory)
+                        .foregroundStyle(Theme.ink)
 
                     Text(message)
                         .font(.system(size: 15))
-                        .foregroundStyle(Theme.ivory.opacity(0.6))
+                        .foregroundStyle(Theme.ink.opacity(0.55))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 36)
                 }
@@ -102,7 +101,7 @@ private struct ConnectionErrorView: View {
                 Button(action: retry) {
                     Text("Réessayer")
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Theme.background)
+                        .foregroundStyle(Theme.ink)
                         .padding(.vertical, 14)
                         .padding(.horizontal, 34)
                         .background(Theme.gold)
@@ -160,7 +159,7 @@ private struct WheelMark: View {
                 }
 
                 Circle()
-                    .fill(Theme.background)
+                    .fill(Theme.ink)
                     .frame(width: size * 0.22, height: size * 0.22)
             }
             .frame(width: size, height: size)

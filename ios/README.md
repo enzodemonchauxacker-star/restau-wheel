@@ -16,7 +16,7 @@ Puis ⌘R. Aucune dépendance externe, aucun `pod install`.
 
 | | |
 |---|---|
-| Icône + écran de lancement | roue pop art aux couleurs de `public/css/theme.css` |
+| Icône + écran de lancement | roue pop art, fond clair `#e6e5e1` (même toile que l’admin mobile) |
 | Session persistante | `WKWebsiteDataStore.default()` — la connexion admin survit à la fermeture |
 | Bouton retour | pastille dorée en bas à gauche, visible seulement s'il y a un historique |
 | Tirer pour rafraîchir | sur toutes les pages |
