@@ -20,8 +20,25 @@ final class WebViewModel: ObservableObject {
     @Published var progress: Double = 0
     @Published var loadError: Error?
     @Published var canGoBack = false
+    /// Le tableau de bord (ou la porte de connexion) est peint. L’animation native peut partir.
+    @Published var contentReady = false
 
     weak var webView: WKWebView?
+    private var probing = false
+
+    func probeContentReady() {
+        guard !contentReady, !probing, let webView else { return }
+        probing = true
+        webView.evaluateJavaScript("document.documentElement.dataset.rwReady || ''") { [weak self] value, _ in
+            onMainActor {
+                guard let self else { return }
+                self.probing = false
+                if (value as? String) == "1" {
+                    self.contentReady = true
+                }
+            }
+        }
+    }
 
     func goBack() {
         loadError = nil
@@ -56,6 +73,14 @@ struct WebView: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         // Store persistant : la session admin survit à la fermeture de l'app.
         configuration.websiteDataStore = .default()
+        // L’animation de la roue est native : la page ne rejoue pas la sienne.
+        configuration.userContentController.addUserScript(
+            WKUserScript(
+                source: "document.documentElement.dataset.native='1';",
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true
+            )
+        )
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
