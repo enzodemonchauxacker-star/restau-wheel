@@ -13,6 +13,7 @@
       'nav.start': 'Commencer',
       'nav.home': 'Accueil',
       'nav.how': 'Comment ça marche',
+      'nav.video': 'Vidéo',
       'nav.cancel': 'Résilier',
       'lang.fr': 'FR',
       'lang.en': 'EN',
@@ -58,6 +59,12 @@
       'land.sub': 'Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.',
       'land.cta': 'Lancer mon restaurant →',
       'land.demo': 'Essayer la démo',
+      'land.watch': '▶ Voir la vidéo',
+      'land.video.eyebrow': 'LA DÉMO',
+      'land.video.h2': 'Voyez la roue tourner.',
+      'land.video.p': 'Scan, tirage, gain, relance. Le parcours complet, côté client et côté restaurant.',
+      'land.video.label': 'Vidéo explicative Restau Wheel',
+      'land.video.play': 'Lire la vidéo',
       'land.how': 'Voir comment',
       'land.ticket.hint': 'Glissez le ticket · Tournez la roue',
       'land.ticket.top': 'BON DE CHANCE',
@@ -562,6 +569,7 @@
       'nav.start': 'Get started',
       'nav.home': 'Home',
       'nav.how': 'How it works',
+      'nav.video': 'Video',
       'nav.cancel': 'Cancel plan',
       'lang.fr': 'FR',
       'lang.en': 'EN',
@@ -606,6 +614,12 @@
       'land.sub': 'A wheel on every table. Guests scan, play, come back. You stay in control of prizes and odds.',
       'land.cta': 'Launch my restaurant →',
       'land.demo': 'Try the demo',
+      'land.watch': '▶ Watch the video',
+      'land.video.eyebrow': 'THE DEMO',
+      'land.video.h2': 'Watch the wheel spin.',
+      'land.video.p': 'Scan, spin, prize, follow-up. The full journey, for the guest and the restaurant.',
+      'land.video.label': 'Restau Wheel explainer video',
+      'land.video.play': 'Play the video',
       'land.how': 'See how',
       'land.ticket.hint': 'Drag the ticket · Spin the wheel',
       'land.ticket.top': 'LUCKY TICKET',
@@ -1138,6 +1152,9 @@
     });
     scope.querySelectorAll('[data-i18n-title]').forEach((el) => {
       document.title = t(el.getAttribute('data-i18n-title'));
+    });
+    scope.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
     });
     document.documentElement.lang = getLang();
     document.querySelectorAll('[data-lang-btn]').forEach((btn) => {

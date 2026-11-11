@@ -266,6 +266,66 @@
     }
     .ticket-hint.is-gone { opacity: 0; }
 
+    /* EXPLAINER */
+    .explainer {
+      background: var(--felt);
+      color: var(--ivory);
+      padding: clamp(1rem, 3vw, 2rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 5.5rem);
+    }
+    .explainer-inner { max-width: 1200px; margin: 0 auto; }
+    .explainer .eyebrow { color: var(--brass); }
+    .explainer h2 { margin-bottom: 0.85rem; max-width: 16ch; }
+    .explainer-lead {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: rgba(255,248,231,0.72);
+      max-width: 42ch;
+      margin-bottom: 1.75rem;
+    }
+    .explainer-frame {
+      position: relative;
+      max-width: 1040px;
+      border: 3px solid var(--ivory);
+      background: #000;
+      box-shadow: 10px 10px 0 #ff2d6a;
+    }
+    .explainer-frame video {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .explainer-play {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      padding: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.28), transparent 42%);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .explainer-play[hidden] { display: none; }
+    .explainer-play-icon {
+      width: 4.75rem;
+      height: 4.75rem;
+      display: grid;
+      place-items: center;
+      background: var(--wine);
+      color: #fff;
+      border: 3px solid var(--ink);
+      box-shadow: 5px 5px 0 var(--ink);
+      transition: transform 100ms ease-out, background 0.2s;
+    }
+    .explainer-play-icon svg { display: block; margin-left: 3px; }
+    .explainer-play:hover .explainer-play-icon { background: #ff4d85; transform: translateY(-1px); }
+    .explainer-play:active .explainer-play-icon { transform: scale(0.97); }
+    .explainer-play:focus-visible .explainer-play-icon {
+      outline: 3px solid var(--brass);
+      outline-offset: 4px;
+    }
+
     /* HOW */
     .how {
       background: var(--ivory);
@@ -281,6 +341,7 @@
       font-weight: 500;
       margin-bottom: 0.75rem;
     }
+    .explainer h2,
     .how h2,
     .features h2,
     .cta-band h2 {
@@ -380,6 +441,7 @@
       line-height: 1.5;
     }
 
+    #video,
     #comment,
     .features,
     .cta-band {
@@ -437,6 +499,8 @@
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; min-height: auto; text-align: left; }
       .hero h1 { max-width: none; }
+      .explainer h2 { max-width: none; }
+      .explainer-frame { box-shadow: 6px 6px 0 #ff2d6a; }
       .steps, .feat-grid { grid-template-columns: 1fr; }
       .nav-how { display: none; }
       .reveal.from-left,
@@ -461,6 +525,8 @@
       .wheel-mini { cursor: default; }
       .stamp { animation: none; }
       .feat.reveal.is-in .feat-bar { animation: none; }
+      .explainer-play:hover .explainer-play-icon,
+      .explainer-play:active .explainer-play-icon { transform: none; }
       .step.is-in:hover,
       .step.is-in:active,
       .feat:active,
@@ -487,6 +553,7 @@
       .feat { border-color: var(--brass); background: #000; }
       .nav-link { color: var(--ivory); }
       .hero-sub { color: var(--ivory); }
+      .explainer-lead { color: var(--ivory); }
       .feat p { color: var(--ivory); }
     }
   </style>
@@ -500,7 +567,7 @@
       <a href="/" class="brand">RESTAU WHEEL</a>
       <div class="nav-actions">
         <a class="nav-link nav-how" href="#comment" data-i18n="nav.how">Comment ça marche</a>
-        <a class="nav-link" href="/video">Vidéo</a>
+        <a class="nav-link" href="#video" data-i18n="nav.video">Vidéo</a>
         <div class="lang-switch" role="group" aria-label="Language">
           <button type="button" data-lang-btn="fr">FR</button>
           <button type="button" data-lang-btn="en">EN</button>
@@ -519,7 +586,7 @@
       <div class="cta-row reveal is-in" style="--d:280ms">
         <a class="btn btn-wine" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
         <a class="btn btn-brass" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
-        <a class="btn btn-ivory" href="/video" style="border:1px solid rgba(255,248,231,0.3)">▶ Voir la vidéo</a>
+        <a class="btn btn-ivory" href="#video" style="border:1px solid rgba(255,248,231,0.3)" data-i18n="land.watch">▶ Voir la vidéo</a>
       </div>
     </div>
 
@@ -538,6 +605,32 @@
         </div>
       </div>
       <p class="ticket-hint" id="ticket-hint" data-i18n="land.ticket.hint">Glissez le ticket · Tournez la roue</p>
+    </div>
+  </section>
+
+  <section class="explainer" id="video">
+    <div class="explainer-inner">
+      <p class="eyebrow reveal" data-i18n="land.video.eyebrow">LA DÉMO</p>
+      <h2 class="reveal" style="--d:60ms" data-i18n="land.video.h2">Voyez la roue tourner.</h2>
+      <p class="explainer-lead reveal" style="--d:120ms" data-i18n="land.video.p">Scan, tirage, gain, relance. Le parcours complet, côté client et côté restaurant.</p>
+      <div class="explainer-frame reveal scale-up" style="--d:180ms">
+        <video
+          id="explainer"
+          poster="/video/restau_wheel_explainer.jpg"
+          preload="metadata"
+          playsinline
+          controls
+          data-i18n-aria="land.video.label"
+          aria-label="Vidéo explicative Restau Wheel"
+        >
+          <source src="/video/restau_wheel_explainer.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="explainer-play" id="explainer-play" hidden data-i18n-aria="land.video.play" aria-label="Lire la vidéo">
+          <span class="explainer-play-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>
+          </span>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -643,6 +736,25 @@
   };
   onChromeScroll();
   window.addEventListener('scroll', onChromeScroll, { passive: true });
+
+  const explainer = document.getElementById('explainer');
+  const explainerPlay = document.getElementById('explainer-play');
+  if (explainer && explainerPlay) {
+    explainer.controls = false;
+    explainerPlay.hidden = false;
+    explainerPlay.addEventListener('click', async () => {
+      explainer.controls = true;
+      explainerPlay.hidden = true;
+      try {
+        await explainer.play();
+      } catch (err) {
+        explainerPlay.hidden = false;
+      }
+    });
+    explainer.addEventListener('ended', () => {
+      explainerPlay.hidden = false;
+    });
+  }
 
   // Smooth scroll for in-page anchors
   document.querySelectorAll('a[href^="#"]').forEach(a => {
