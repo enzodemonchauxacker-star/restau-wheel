@@ -9,6 +9,7 @@ const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./datab
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
+const { seriesFromRows } = require('./lib/admin-series');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -478,6 +479,38 @@ app.get('/api/admin/stats', requireRestaurant, async (req, res) => {
   res.json({ totalSpins, totalWins, usedWins, expiredWins, pendingWins });
 });
 
+/** Série des tirages : semaine civile en cours (lun→dim) et 12 mois de l'année, fuseau Europe/Paris. */
+app.get('/api/admin/stats/series', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const weekRows = await db.prepare(`
+    SELECT EXTRACT(ISODOW FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          >= date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          < (date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date + 7)
+    GROUP BY 1
+  `).all(rid);
+  const monthRows = await db.prepare(`
+    SELECT EXTRACT(MONTH FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND EXTRACT(YEAR FROM (s.won_at AT TIME ZONE 'Europe/Paris'))
+          = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Europe/Paris'))
+    GROUP BY 1
+  `).all(rid);
+  res.json({
+    week: seriesFromRows(weekRows, 7),
+    month: seriesFromRows(monthRows, 12),
+    timezone: 'Europe/Paris',
+  });
+});
+
 app.get('/api/admin/search', requireRestaurant, async (req, res) => {
   const q = String(req.query.q || '').trim();
   const rid = req.session.restaurantId;
@@ -529,6 +562,78 @@ app.get('/api/admin/search', requireRestaurant, async (req, res) => {
     });
   }
   res.json(result);
+});
+
+/** Export CSV (compatible Excel) de la base clients du restaurant */
+app.get('/api/admin/customers/export', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const q = String(req.query.q || '').trim();
+
+  const selectWithConsent = `
+      SELECT id, first_name, last_name, email, phone, created_at, privacy_consent_at
+      FROM customers`;
+  const selectBasic = `
+      SELECT id, first_name, last_name, email, phone, created_at
+      FROM customers`;
+
+  async function load(selectSql) {
+    if (q.length >= 2) {
+      const term = `%${q}%`;
+      return db.prepare(`
+      ${selectSql}
+      WHERE restaurant_id=? AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR IFNULL(phone,'') LIKE ?)
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid, term, term, term, term);
+    }
+    return db.prepare(`
+      ${selectSql}
+      WHERE restaurant_id=?
+      ORDER BY created_at DESC
+      LIMIT 10000
+    `).all(rid);
+  }
+
+  let customers;
+  try {
+    customers = await load(selectWithConsent);
+  } catch {
+    customers = await load(selectBasic);
+  }
+
+  const escapeCsv = (v) => {
+    const s = v == null ? '' : String(v);
+    if (/[",\n\r;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try {
+      return new Date(d).toISOString();
+    } catch {
+      return String(d);
+    }
+  };
+
+  const header = ['prenom', 'nom', 'email', 'telephone', 'inscrit_le', 'consentement_rgpd_le'];
+  const lines = [header.join(';')];
+  for (const c of customers || []) {
+    lines.push([
+      escapeCsv(c.first_name),
+      escapeCsv(c.last_name),
+      escapeCsv(c.email),
+      escapeCsv(c.phone),
+      escapeCsv(fmtDate(c.created_at)),
+      escapeCsv(fmtDate(c.privacy_consent_at)),
+    ].join(';'));
+  }
+
+  const csv = `\uFEFF${lines.join('\r\n')}\r\n`;
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="clients-restauwheel-${stamp}.csv"`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(csv);
 });
 
 app.put('/api/admin/spins/:id/use', requireRestaurant, async (req, res) => {
