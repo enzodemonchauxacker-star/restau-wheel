@@ -745,6 +745,9 @@
     explainer.addEventListener('ended', () => {
       explainerPlay.hidden = false;
     });
+    explainer.addEventListener('error', () => {
+      explainerPlay.hidden = false;
+    });
   }
 
   // Smooth scroll for in-page anchors

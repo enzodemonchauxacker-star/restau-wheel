@@ -93,6 +93,64 @@ app.use((req, res, next) => {
   const nextUrl = encodeURIComponent(req.originalUrl.split('#')[0] || '/arcade/dashboard/');
   return res.redirect(302, '/arcade/connexion/?next=' + nextUrl);
 });
+
+// Vercel refuse un corps de réponse au-delà de 4,5 Mo. La vidéo fait ~8,5 Mo :
+// on ne renvoie jamais plus d’un morceau, et le lecteur enchaîne les Range.
+const EXPLAINER_VIDEO = path.join(__dirname, 'public', 'video', 'restau_wheel_explainer.mp4');
+const EXPLAINER_CHUNK = 2 * 1024 * 1024;
+
+app.get('/video/restau_wheel_explainer.mp4', (req, res) => {
+  let size;
+  try {
+    size = fs.statSync(EXPLAINER_VIDEO).size;
+  } catch {
+    return res.status(404).end();
+  }
+
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+
+  const header = String(req.headers.range || '');
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header);
+  let start = 0;
+  let end = size - 1;
+
+  if (header && !match) {
+    res.status(416);
+    res.setHeader('Content-Range', `bytes */${size}`);
+    return res.end();
+  }
+  if (match) {
+    if (match[1] === '') {
+      const suffix = parseInt(match[2], 10);
+      if (!Number.isFinite(suffix) || suffix <= 0) {
+        res.status(416);
+        res.setHeader('Content-Range', `bytes */${size}`);
+        return res.end();
+      }
+      start = Math.max(0, size - suffix);
+    } else {
+      start = parseInt(match[1], 10);
+      end = match[2] ? parseInt(match[2], 10) : size - 1;
+    }
+  }
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start >= size || end < start) {
+    res.status(416);
+    res.setHeader('Content-Range', `bytes */${size}`);
+    return res.end();
+  }
+  end = Math.min(end, size - 1, start + EXPLAINER_CHUNK - 1);
+
+  // Sans Content-Range, un 200 tronqué ferait croire que la vidéo s’arrête là.
+  const partial = Boolean(header) || end < size - 1;
+  res.status(partial ? 206 : 200);
+  if (partial) res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+  res.setHeader('Content-Length', String(end - start + 1));
+  if (req.method === 'HEAD') return res.end();
+  fs.createReadStream(EXPLAINER_VIDEO, { start, end }).pipe(res);
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 mountArcadePlayers(app);
 rekoneBilling.mount(app, { getStripe: () => stripe });
