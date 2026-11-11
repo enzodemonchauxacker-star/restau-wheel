@@ -46,18 +46,22 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.2), value: model.loadError == nil)
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: model.canGoBack)
         .preferredColorScheme(.light)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.linear(duration: 1.05).repeatForever(autoreverses: false)) {
-                spinning = true
+        .task {
+            await Task.yield()
+            if !reduceMotion {
+                withAnimation(.linear(duration: 1.05).repeatForever(autoreverses: false)) {
+                    spinning = true
+                }
             }
-        }
-        .onReceive(Timer.publish(every: 0.15, on: .main, in: .common).autoconnect()) { _ in
-            guard !exitScheduled else { return }
-            model.probeContentReady()
-            let timedOut = Date().timeIntervalSince(launchedAt) > 8
-            if model.contentReady || model.loadError != nil || timedOut {
-                scheduleExit()
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(150))
+                if Task.isCancelled || exitScheduled { return }
+                model.probeContentReady()
+                let timedOut = Date().timeIntervalSince(launchedAt) > 8
+                if model.contentReady || model.loadError != nil || timedOut {
+                    scheduleExit()
+                    return
+                }
             }
         }
     }

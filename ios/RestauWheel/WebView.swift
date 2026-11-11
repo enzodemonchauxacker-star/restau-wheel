@@ -2,13 +2,12 @@ import SwiftUI
 import WebKit
 import PassKit
 
-/// Les callbacks WebKit (KVO, evaluateJavaScript) arrivent sur le main thread mais
-/// sans isolation d'acteur. Ce sas les ramène proprement sur le MainActor.
+/// Les callbacks WebKit arrivent souvent au milieu d’une mise à jour SwiftUI.
+/// On reporte toujours au tour suivant : publier un @Published dans le tour
+/// en cours déclenche « Publishing changes from within view updates ».
 private func onMainActor(_ work: @escaping @MainActor () -> Void) {
-    if Thread.isMainThread {
+    DispatchQueue.main.async {
         MainActor.assumeIsolated { work() }
-    } else {
-        DispatchQueue.main.async { MainActor.assumeIsolated { work() } }
     }
 }
 
