@@ -30,8 +30,7 @@ Puis ⌘R. Aucune dépendance externe, aucun `pod install`.
 Tout est dans [`RestauWheel/AppConfig.swift`](RestauWheel/AppConfig.swift) :
 
 - `baseURL` — le serveur visé. Actuellement `https://restauwheel.com`.
-- `startURL` — la page d'accueil de l'app. Pour démarrer sur le dashboard :
-  `static let startURL = baseURL.appending(path: "admin")`
+- `startURL` — `baseURL/admin`. L’app s’ouvre sur l’espace restaurateur.
 - `internalDomains` — les domaines qui s'affichent dans l'app plutôt que dans Safari.
 
 ### Tester contre un serveur local
@@ -44,6 +43,11 @@ npx localtunnel --port 3000
 ```
 
 puis reporter l'URL HTTPS obtenue dans `baseURL`.
+
+Tant que cette version n’est pas sur `restauwheel.com`, le simulateur montre
+l’admin déjà en production. Pour voir cette branche, remplace temporairement
+`baseURL` par l’URL d’aperçu Vercel de la pull request (les hôtes
+`restau-wheel…vercel.app` restent dans l’app).
 
 ## Régénérer l'icône
 
@@ -75,8 +79,8 @@ la règle 3.1.1 (achats intégrés obligatoires pour les biens numériques) et l
 dérogation « service d'entreprise » de la 3.1.3(e) n'est pas automatique. Deux
 options si la revue bloque :
 
-- masquer le tunnel d'achat dans l'app et laisser les restaurateurs s'abonner sur
-  le web (`startURL` pointant directement sur `/admin`) ;
+- masquer le tunnel d'achat dans l'app : elle s'ouvre déjà sur `/admin`, les
+  restaurateurs s'abonnent sur le web ;
 - ou passer l'abonnement en achat intégré StoreKit.
 
 Rien à faire tant que l'app reste distribuée en interne ou via TestFlight.
