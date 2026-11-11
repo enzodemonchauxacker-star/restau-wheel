@@ -266,28 +266,24 @@
     }
     .ticket-hint.is-gone { opacity: 0; }
 
-    /* EXPLAINER */
-    .explainer {
-      background: var(--felt);
-      color: var(--ivory);
-      padding: clamp(1rem, 3vw, 2rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 5.5rem);
-    }
-    .explainer-inner { max-width: 1200px; margin: 0 auto; }
-    .explainer .eyebrow { color: var(--brass); }
-    .explainer h2 { margin-bottom: 0.85rem; max-width: 16ch; }
-    .explainer-lead {
-      font-size: 1.05rem;
-      line-height: 1.55;
-      color: rgba(255,248,231,0.72);
-      max-width: 42ch;
-      margin-bottom: 1.75rem;
+    /* VIDEO — premier écran */
+    .premiere {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0.85rem clamp(1.25rem, 4vw, 4rem) 1.35rem;
     }
     .explainer-frame {
       position: relative;
-      max-width: 1040px;
+      width: min(100%, calc((100vh - 7.25rem) * 16 / 9));
+      max-width: 100%;
       border: 3px solid var(--ivory);
       background: #000;
       box-shadow: 10px 10px 0 #ff2d6a;
+    }
+    @supports (height: 100svh) {
+      .explainer-frame {
+        width: min(100%, calc((100svh - 7.25rem) * 16 / 9));
+      }
     }
     .explainer-frame video {
       display: block;
@@ -341,7 +337,6 @@
       font-weight: 500;
       margin-bottom: 0.75rem;
     }
-    .explainer h2,
     .how h2,
     .features h2,
     .cta-band h2 {
@@ -499,8 +494,10 @@
     @media (max-width: 900px) {
       .hero { grid-template-columns: 1fr; min-height: auto; text-align: left; }
       .hero h1 { max-width: none; }
-      .explainer h2 { max-width: none; }
-      .explainer-frame { box-shadow: 6px 6px 0 #ff2d6a; }
+      .explainer-frame {
+        width: 100%;
+        box-shadow: 6px 6px 0 #ff2d6a;
+      }
       .steps, .feat-grid { grid-template-columns: 1fr; }
       .nav-how { display: none; }
       .reveal.from-left,
@@ -510,6 +507,7 @@
       .brand { font-size: 0.95rem; }
       .nav { padding: 0.7rem 1rem; gap: 0.5rem; }
       .nav-actions { gap: 0.55rem; }
+      .nav-video { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -553,7 +551,6 @@
       .feat { border-color: var(--brass); background: #000; }
       .nav-link { color: var(--ivory); }
       .hero-sub { color: var(--ivory); }
-      .explainer-lead { color: var(--ivory); }
       .feat p { color: var(--ivory); }
     }
   </style>
@@ -567,7 +564,7 @@
       <a href="/" class="brand">RESTAU WHEEL</a>
       <div class="nav-actions">
         <a class="nav-link nav-how" href="#comment" data-i18n="nav.how">Comment ça marche</a>
-        <a class="nav-link" href="#video" data-i18n="nav.video">Vidéo</a>
+        <a class="nav-link nav-video" href="#video" data-i18n="nav.video">Vidéo</a>
         <div class="lang-switch" role="group" aria-label="Language">
           <button type="button" data-lang-btn="fr">FR</button>
           <button type="button" data-lang-btn="en">EN</button>
@@ -578,6 +575,27 @@
     </nav>
   </header>
 
+  <section class="premiere" id="video">
+    <div class="explainer-frame">
+      <video
+        id="explainer"
+        poster="/video/restau_wheel_explainer.jpg"
+        preload="metadata"
+        playsinline
+        controls
+        data-i18n-aria="land.video.label"
+        aria-label="Vidéo explicative Restau Wheel"
+      >
+        <source src="/video/restau_wheel_explainer.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="explainer-play" id="explainer-play" hidden data-i18n-aria="land.video.play" aria-label="Lire la vidéo">
+        <span class="explainer-play-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>
+        </span>
+      </button>
+    </div>
+  </section>
+
   <section class="hero">
     <div class="hero-copy">
       <div class="tag reveal is-in" style="--d:0ms" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
@@ -586,7 +604,6 @@
       <div class="cta-row reveal is-in" style="--d:280ms">
         <a class="btn btn-wine" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
         <a class="btn btn-brass" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
-        <a class="btn btn-ivory" href="#video" style="border:1px solid rgba(255,248,231,0.3)" data-i18n="land.watch">▶ Voir la vidéo</a>
       </div>
     </div>
 
@@ -605,32 +622,6 @@
         </div>
       </div>
       <p class="ticket-hint" id="ticket-hint" data-i18n="land.ticket.hint">Glissez le ticket · Tournez la roue</p>
-    </div>
-  </section>
-
-  <section class="explainer" id="video">
-    <div class="explainer-inner">
-      <p class="eyebrow reveal" data-i18n="land.video.eyebrow">LA DÉMO</p>
-      <h2 class="reveal" style="--d:60ms" data-i18n="land.video.h2">Voyez la roue tourner.</h2>
-      <p class="explainer-lead reveal" style="--d:120ms" data-i18n="land.video.p">Scan, tirage, gain, relance. Le parcours complet, côté client et côté restaurant.</p>
-      <div class="explainer-frame reveal scale-up" style="--d:180ms">
-        <video
-          id="explainer"
-          poster="/video/restau_wheel_explainer.jpg"
-          preload="metadata"
-          playsinline
-          controls
-          data-i18n-aria="land.video.label"
-          aria-label="Vidéo explicative Restau Wheel"
-        >
-          <source src="/video/restau_wheel_explainer.mp4" type="video/mp4">
-        </video>
-        <button type="button" class="explainer-play" id="explainer-play" hidden data-i18n-aria="land.video.play" aria-label="Lire la vidéo">
-          <span class="explainer-play-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>
-          </span>
-        </button>
-      </div>
     </div>
   </section>
 
