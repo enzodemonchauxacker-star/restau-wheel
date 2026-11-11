@@ -1,1484 +1,268 @@
 <!DOCTYPE html>
-<html lang="fr" data-i18n-title="admin.title">
+<html lang="fr" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – Restau Wheel</title>
-  <link rel="stylesheet" href="/css/theme.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e6e5e1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Restau Wheel</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <style>
-    :root {
-      --bg: #f5f0e6;
-      --surface: #fffdf8;
-      --surface2: #f0e9dc;
-      --border: #0a0a0a;
-      --text: #0a0a0a;
-      --muted: #5c5c5c;
-      --accent: #ff2d6a;
-      --brass: #ffd60a;
-      --felt: #0a0a0a;
-      --green: #00a890;
-      --yellow: #c9a000;
-      --red: #e01140;
-      --cyan: #00a8d8;
-    }
-
-    ::selection {
-      background: var(--brass);
-      color: var(--ink);
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      min-height: 100vh;
-    }
-
-    input, button, select, textarea, a {
-      -webkit-tap-highlight-color: transparent;
-    }
-    input:focus, select:focus, textarea:focus, button:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-    button:focus:not(:focus-visible) { outline: none; }
-
-    /* Login */
-    #login-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: var(--felt);
-      position: relative;
-    }
-    .sidebar-lang { padding: 0.15rem 1.2rem 0.85rem; }
-    .sidebar-lang .lang-switch { width: 100%; }
-    .sidebar-lang .lang-switch button { flex: 1; }
-    .login-box {
-      background: var(--surface);
-      border: 3px solid var(--border);
-      box-shadow: 8px 8px 0 var(--accent);
-      padding: 2rem 1.6rem;
-      width: 100%;
-      max-width: 380px;
-      text-align: left;
-    }
-    .login-box .icon {
-      font-family: var(--font-display);
-      font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
-    }
-    .login-box h2 {
-      font-family: var(--font-display);
-      font-size: 1.7rem;
-      margin-bottom: 0.25rem;
-      color: var(--text);
-    }
-    .login-box > p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .login-box input {
-      width: 100%;
-      background: #fff;
-      border: 2px solid var(--border);
-      border-radius: 0;
-      padding: 12px 14px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-    .login-box input:focus {
-      border-color: var(--accent);
-      outline: none;
-      box-shadow: 3px 3px 0 var(--accent);
-    }
-    .btn-primary {
-      width: 100%;
-      margin-top: 6px;
-      padding: 12px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      border-radius: 0;
-      color: #fff;
-      font-family: var(--font-body);
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 3px 3px 0 var(--border);
-    }
-    .btn-primary:hover { background: #ff4d85; }
-    #login-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; display: none; }
-
-    #app { display: none; flex-direction: column; min-height: 100vh; }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: var(--felt);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 100;
-      border-right: 3px solid var(--brass);
-    }
-    .sidebar-brand {
-      padding: 1.4rem 1.2rem 0.5rem;
-      font-family: var(--font-display);
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      color: var(--brass);
-    }
-    .sidebar-resto {
-      font-size: 0.78rem;
-      color: rgba(255,248,231,0.55);
-      padding: 0 1.2rem 1.1rem;
-      border-bottom: 1px solid rgba(255,214,10,0.2);
-      font-weight: 500;
-    }
-    .nav-item {
-      padding: 0.7rem 1.2rem;
-      margin: 0;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: rgba(255,248,231,0.6);
-      border-left: 3px solid transparent;
-      transition: color .15s, background .15s, border-color .15s;
-      font-weight: 500;
-      user-select: none;
-    }
-    .nav-item:hover { color: var(--ivory); background: rgba(255,255,255,0.04); }
-    .nav-item.active {
-      color: var(--brass);
-      background: transparent;
-      border-left-color: var(--brass);
-      font-weight: 700;
-      border: none;
-      border-left: 3px solid var(--brass);
-      border-radius: 0;
-    }
-    .sidebar-bottom {
-      margin-top: auto;
-      padding: 1rem 1.2rem;
-      border-top: 1px solid rgba(255,214,10,0.15);
-    }
-    .btn-logout {
-      width: 100%;
-      padding: 9px;
-      background: transparent;
-      border: 1px solid rgba(255,248,231,0.25);
-      border-radius: 0;
-      color: rgba(255,248,231,0.55);
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-family: var(--font-body);
-    }
-    .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
-
-    .main { margin-left: 220px; padding: 2rem 2rem 3rem; flex: 1; max-width: 1100px; }
-    .page { display: none; }
-    .page.active { display: block; animation: fadeUp .3s var(--ease); }
-
-    h2.page-title {
-      font-family: var(--font-display);
-      font-size: 1.65rem;
-      font-weight: 700;
-      margin-bottom: 0.3rem;
-      letter-spacing: -0.02em;
-    }
-    .page-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 1.5rem;
-    }
-    .stat-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 1rem 0.9rem;
-      box-shadow: 3px 3px 0 var(--border);
-    }
-    .stat-label {
-      font-size: 0.65rem;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      font-family: var(--font-mono);
-    }
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 1.85rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .stat-value.green { color: var(--green); }
-    .stat-value.yellow { color: var(--yellow); }
-    .stat-value.red { color: var(--red); }
-
-    .search-bar { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
-    .search-bar input {
-      flex: 1;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 0;
-      padding: 11px 14px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-    }
-    .search-bar input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 3px 3px 0 var(--accent);
-    }
-    .btn-search {
-      padding: 11px 18px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      border-radius: 0;
-      color: #fff;
-      font-weight: 700;
-      font-family: var(--font-body);
-      cursor: pointer;
-      box-shadow: 3px 3px 0 var(--border);
-    }
-    .btn-search:hover { background: #ff4d85; }
-
-    .customer-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 16px 18px;
-      margin-bottom: 12px;
-    }
-    .customer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .customer-name { font-size: 1.05rem; font-weight: 700; font-family: var(--font-display); }
-    .customer-email { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
-    .customer-date { font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); }
-
-    .spin-list { display: flex; flex-direction: column; gap: 8px; }
-    .spin-item {
-      background: var(--surface2);
-      padding: 11px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      border: 1px solid var(--border);
-    }
-    .spin-prize { font-weight: 600; font-size: 0.92rem; }
-    .spin-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-    .badge {
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      white-space: nowrap;
-      font-family: var(--font-mono);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      border: 1px solid currentColor;
-      background: transparent;
-    }
-    .badge-pending { color: var(--yellow); }
-    .badge-used { color: var(--green); }
-    .badge-expired { color: var(--red); }
-    .badge-cooldown { color: #dd6b20; }
-    .badge-ok { color: var(--green); }
-    .badge-lose { color: var(--muted); }
-    .customer-stats {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      margin: 8px 0 12px;
-      font-size: 0.78rem;
-      font-family: var(--font-mono);
-    }
-    .customer-stats span {
-      border: 1px solid var(--border);
-      padding: 4px 8px;
-      background: var(--surface2);
-    }
-    .btn-use {
-      padding: 6px 12px;
-      background: var(--green);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.8rem;
-      font-family: var(--font-body);
-      cursor: pointer;
-    }
-    .no-results { color: var(--muted); text-align: center; padding: 40px 0; font-size: 0.95rem; }
-
-    .prizes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .prize-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 16px;
-      position: relative;
-      box-shadow: 4px 4px 0 var(--prize-color, var(--brass));
-    }
-    .prize-card::before { display: none; }
-    .prize-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; font-family: var(--font-display); }
-    .prize-card-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; min-height: 20px; }
-    .prize-meta {
-      display: flex; gap: 12px;
-      font-size: 0.78rem; color: var(--muted); margin-bottom: 12px;
-      font-family: var(--font-mono);
-    }
-    .prize-actions { display: flex; gap: 8px; }
-    .btn-edit, .btn-del {
-      padding: 6px 12px;
-      border: 2px solid var(--border);
-      border-radius: 0;
-      font-size: 0.8rem;
-      font-family: var(--font-body);
-      cursor: pointer;
-      background: var(--surface2);
-      color: var(--text);
-    }
-    .btn-del { background: transparent; color: var(--red); border-color: var(--red); }
-    .btn-edit:hover { background: var(--brass); }
-    .btn-del:hover { background: var(--red); color: #fff; }
-
-    .btn-add {
-      display: inline-flex;
-      align-items: center;
-      padding: 10px 18px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.9rem;
-      font-family: var(--font-body);
-      cursor: pointer;
-      margin-bottom: 18px;
-      box-shadow: 3px 3px 0 var(--border);
-    }
-    .btn-add:hover { background: #ff4d85; }
-
-    .calc-box {
-      background: var(--surface);
-      border: 3px solid var(--border);
-      box-shadow: 5px 5px 0 var(--brass);
-      padding: 18px 18px 16px;
-      margin-bottom: 22px;
-      max-width: 640px;
-    }
-    .calc-box h3 {
-      font-family: var(--font-display);
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-    }
-    .calc-box .hint {
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.45;
-      margin-bottom: 14px;
-    }
-    .calc-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 12px;
-      align-items: end;
-    }
-    .calc-result {
-      margin-top: 14px;
-      padding: 12px 14px;
-      background: #fff8e7;
-      border: 2px solid var(--border);
-      font-size: 0.9rem;
-      line-height: 1.45;
-      display: none;
-    }
-    .calc-result.show { display: block; }
-    .calc-result strong { font-family: var(--font-display); }
-    .btn-calc {
-      padding: 11px 16px;
-      background: var(--brass);
-      border: 2px solid var(--border);
-      color: var(--ink);
-      font-weight: 700;
-      font-family: var(--font-body);
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 3px 3px 0 var(--border);
-    }
-    .btn-calc:hover { background: #ffe566; }
-    @media (max-width: 640px) {
-      .calc-row { grid-template-columns: 1fr; }
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      z-index: 500;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 3px solid var(--border);
-      box-shadow: 8px 8px 0 var(--accent);
-      padding: 24px;
-      width: 100%;
-      max-width: 440px;
-    }
-    .modal h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 18px; }
-    .field { margin-bottom: 12px; }
-    .field label {
-      display: block;
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 600;
-    }
-    .field input, .field select, .field textarea {
-      width: 100%;
-      background: #fff;
-      border: 2px solid var(--border);
-      border-radius: 0;
-      padding: 10px 12px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 0.95rem;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 3px 3px 0 var(--accent);
-    }
-
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
-    .btn-cancel {
-      flex: 1;
-      padding: 11px;
-      background: var(--surface2);
-      border: 2px solid var(--border);
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-family: var(--font-body);
-    }
-    .btn-save {
-      flex: 2;
-      padding: 11px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-family: var(--font-body);
-      box-shadow: 3px 3px 0 var(--border);
-    }
-
-    .qr-section {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      box-shadow: 6px 6px 0 var(--cyan);
-      padding: 24px;
-      max-width: 420px;
-    }
-    .qr-section img {
-      width: 240px; height: 240px;
-      margin: 14px auto;
-      display: block;
-      background: #fff;
-      padding: 8px;
-      border: 2px solid var(--border);
-    }
-    .qr-url {
-      font-size: 0.78rem;
-      color: var(--muted);
-      word-break: break-all;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      margin: 12px 0 16px;
-      font-family: var(--font-mono);
-    }
-    .qr-resto {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 6px;
-    }
-    .qr-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-    .btn-dl {
-      display: inline-block;
-      padding: 10px 18px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.9rem;
-      text-decoration: none;
-      box-shadow: 3px 3px 0 var(--border);
-      font-family: var(--font-body);
-    }
-
-    .settings-card {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 20px;
-      max-width: 520px;
-      margin-bottom: 16px;
-    }
-    .settings-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-      font-family: var(--font-display);
-    }
-    .color-preset {
-      width: 32px; height: 32px;
-      border: 2px solid var(--border);
-      cursor: pointer;
-      padding: 0;
-    }
-    .color-preset:hover { transform: scale(1.08); }
-    .color-preset.is-on { outline: 3px solid var(--ink); outline-offset: 2px; }
-    .color-preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .settings-card .field input { margin-bottom: 0; }
-    .settings-card .field { margin-bottom: 12px; }
-    .btn-save-settings {
-      padding: 10px 18px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-family: var(--font-body);
-      box-shadow: 3px 3px 0 var(--border);
-      margin-top: 4px;
-    }
-    .save-notice { color: var(--green); font-size: 0.85rem; margin-top: 10px; display: none; font-weight: 600; }
-    .save-notice.bad { color: var(--red); }
-    .btn-cancel-sub {
-      padding: 10px 18px;
-      background: var(--accent);
-      border: 2px solid var(--border);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-family: var(--font-body);
-      box-shadow: 3px 3px 0 var(--border);
-      margin-top: 4px;
-    }
-    .btn-cancel-sub:disabled { opacity: 0.5; cursor: not-allowed; }
-    #cancel-status { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
-
-    .color-row { display: flex; align-items: center; gap: 12px; }
-    .color-row input[type="color"] {
-      width: 44px; height: 38px;
-      padding: 2px;
-      border: 2px solid var(--border);
-      cursor: pointer;
-      background: #fff;
-    }
-    .color-row input[type="text"] { flex: 1; }
-
-    @media (max-width: 640px) {
-      .sidebar {
-        width: 100%; height: auto; min-height: 0;
-        flex-direction: row; flex-wrap: wrap; align-items: center;
-        bottom: auto; border-right: none; border-bottom: 3px solid var(--brass);
-        padding: 8px 10px; gap: 4px;
-      }
-      .sidebar-brand { padding: 0 8px; font-size: 0.7rem; }
-      .sidebar-resto { display: none; }
-      .sidebar-lang { padding: 0 4px; }
-      .sidebar-lang .lang-switch { min-width: 72px; }
-      .nav-item { padding: 6px 8px; font-size: 0.72rem; border-left: none; border-bottom: 2px solid transparent; }
-      .nav-item.active { border-left: none; border-bottom-color: var(--brass); }
-      .sidebar-bottom { display: none; }
-      .main { margin-left: 0; margin-top: 72px; padding: 18px 14px; }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/app.css?v=2">
+  <script>
+    try {
+      if (localStorage.getItem('rw-theme') === 'Sombre') document.documentElement.dataset.theme = 'dark';
+      var accent = localStorage.getItem('rw-accent');
+      if (accent) document.documentElement.style.setProperty('--accent', accent);
+    } catch (e) {}
+  </script>
 </head>
 <body>
+  <div class="shell">
+    <div class="halo a"></div>
+    <div class="halo b"></div>
+    <div class="halo c"></div>
 
-<!-- Login -->
-<div id="login-screen">
-  <div class="lang-float lang-switch" role="group" aria-label="Language">
-    <button type="button" data-lang-btn="fr">FR</button>
-    <button type="button" data-lang-btn="en">EN</button>
-  </div>
-  <div class="login-box">
-    <div class="icon">RESTAU WHEEL</div>
-    <h2 data-i18n="admin.login.h2">Connexion</h2>
-    <p data-i18n="admin.login.sub">Espace restaurateur</p>
-    <input type="email"    id="login-email" data-i18n-placeholder="admin.login.ph.email" placeholder="Votre email" autocomplete="email" style="margin-bottom:10px;">
-    <input type="password" id="login-pwd"   data-i18n-placeholder="admin.login.ph.password" placeholder="Mot de passe" autocomplete="current-password">
-    <button class="btn-primary" onclick="doLogin()" data-i18n="admin.login.submit">Se connecter</button>
-    <p id="login-error" data-i18n="admin.login.error">Email ou mot de passe incorrect.</p>
-    <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);"><span data-i18n="admin.login.noaccount">Pas encore de compte ?</span> <a href="/register" style="color:var(--accent);text-decoration:none;font-weight:600;" data-i18n="admin.login.register">S'inscrire</a></p>
-  </div>
-</div>
-
-<!-- App -->
-<div id="app">
-  <nav class="sidebar">
-    <div class="sidebar-brand">RESTAU WHEEL</div>
-    <div class="sidebar-resto" id="resto-name">Mon Restaurant</div>
-    <div class="sidebar-lang">
-      <div class="lang-switch" role="group" aria-label="Language">
-        <button type="button" data-lang-btn="fr">FR</button>
-        <button type="button" data-lang-btn="en">EN</button>
+    <section id="view-ob" class="view on" data-screen-label="Onboarding">
+      <div class="ob-wheel" id="ob-wheel"></div>
+      <div class="ob-pointer"></div>
+      <div class="ob-top">
+        <div class="brand">RESTAU WHEEL</div>
+        <button type="button" class="btn-skip" data-act="skip-ob">Passer</button>
       </div>
-    </div>
-    <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard" data-i18n="admin.nav.dash">Tableau de bord</div>
-    <div class="nav-item" onclick="showPage('search')" data-page="search" data-i18n="admin.nav.clients">Clients</div>
-    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes" data-i18n="admin.nav.prizes">Lots</div>
-    <div class="nav-item" onclick="showPage('qrcode')" data-page="qrcode" data-i18n="admin.nav.qr">QR Code</div>
-    <div class="nav-item" onclick="showPage('settings')" data-page="settings" data-i18n="admin.nav.settings">Paramètres</div>
-    <div class="sidebar-bottom">
-      <button class="btn-logout" onclick="doLogout()" data-i18n="admin.nav.logout">Se déconnecter</button>
-    </div>
+      <div class="ob-bottom">
+        <div id="ob-0" class="fade">
+          <div class="kicker">01 — LE QR CODE</div>
+          <h1 class="ob-title">Un QR code sur chaque table.</h1>
+          <p class="lede">Vos clients le scannent, laissent leur nom, email et téléphone, puis tournent la roue.</p>
+        </div>
+        <div id="ob-1" class="fade" hidden>
+          <div class="kicker">02 — LES LOTS</div>
+          <h1 class="ob-title">Vous réglez les lots et les chances.</h1>
+          <p class="lede">Café, dessert, réduction. Chaque gain est valable à la prochaine visite, avec une date limite.</p>
+        </div>
+        <div id="ob-2" class="fade" hidden>
+          <div class="kicker">03 — VOTRE RESTAURANT</div>
+          <h1 class="ob-title">Comment s'appelle-t-il ?</h1>
+          <input id="ob-name" class="field" placeholder="Le Bistrot du Coin" autocomplete="organization" enterkeyhint="done">
+          <div id="ob-error" class="err" hidden>Indiquez le nom du restaurant pour continuer.</div>
+        </div>
+        <div class="ob-foot">
+          <div class="dots" id="ob-dots"><i class="on"></i><i></i><i></i></div>
+          <button type="button" class="btn-accent" id="ob-cta" data-act="next-ob">Continuer</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-login" class="view" data-screen-label="Connexion">
+      <div class="ob-wheel" id="login-wheel"></div>
+      <div class="ob-pointer"></div>
+      <div class="ob-top">
+        <div class="brand">RESTAU WHEEL</div>
+      </div>
+      <form id="login-form" class="ob-bottom login-form">
+        <div class="kicker">ESPACE RESTAURATEUR</div>
+        <h1 class="ob-title">Connexion</h1>
+        <input id="login-email" class="field" type="email" placeholder="Votre email" autocomplete="username" required>
+        <input id="login-pwd" class="field" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+        <div id="login-error" class="err" hidden>Email ou mot de passe incorrect.</div>
+        <button type="submit" class="btn-accent">Se connecter</button>
+        <p class="fine">Pas encore de compte ? <a href="/register">S'inscrire</a></p>
+      </form>
+    </section>
+
+    <section id="view-app" class="view">
+      <div class="scroll" id="scroll">
+        <div class="screen" data-tab="home" data-screen-label="Accueil">
+          <div class="hello">
+            <div class="logo">logo</div>
+            <div class="who"><div class="hi">Bonjour,</div><div class="name" id="hello-name"></div></div>
+            <div class="pro">PRO</div>
+          </div>
+          <div class="hero">
+            <div class="hero-top">
+              <div class="hero-kicker">TIRAGES · <span id="stat-kicker">TOTAL</span></div>
+              <div class="period" id="periods">
+                <button type="button" data-act="period" data-period="week" class="on">Semaine</button>
+                <button type="button" data-act="period" data-period="month">Mois</button>
+              </div>
+            </div>
+            <div class="num big" id="stat-spins">0</div>
+            <div class="bars" id="bars"></div>
+          </div>
+          <div class="grid2">
+            <div class="stat glass">
+              <div class="lbl mute">GAINS</div>
+              <div class="num mid" id="stat-wins">0</div>
+            </div>
+            <div class="stat mint">
+              <div class="lbl">UTILISÉS</div>
+              <div class="num mid" id="stat-used">0</div>
+            </div>
+            <button type="button" class="stat glass" data-act="go-pending">
+              <div class="lbl mute">EN ATTENTE</div>
+              <div class="num mid" id="stat-pending">0</div>
+              <div class="go">Valider un gain →</div>
+            </button>
+            <div class="stat pink">
+              <div class="lbl">EXPIRÉS</div>
+              <div class="num mid" id="stat-expired">0</div>
+            </div>
+          </div>
+          <button type="button" class="test-card glass" data-act="go-lots">
+            <div class="mini-wheel" id="mini-wheel"></div>
+            <div style="flex:1"><strong>Tester ma roue</strong><span id="win-line">0 cases · 0 % de chances de gagner</span></div>
+            <div class="go-round">→</div>
+          </button>
+        </div>
+
+        <div class="screen" data-tab="clients" data-screen-label="Clients">
+          <div class="screen-head">
+            <h2 class="screen-title">Clients</h2>
+            <button type="button" class="export" data-i18n="admin.clients.export" onclick="exportClientsCsv()">Exporter</button>
+          </div>
+          <input id="q" class="search glass" placeholder="Nom, email, téléphone…" enterkeyhint="search" autocomplete="off">
+          <div class="chips" id="filters">
+            <button type="button" class="chip on" data-act="filter" data-filter="all">Tous</button>
+            <button type="button" class="chip" data-act="filter" data-filter="pending">En attente</button>
+            <button type="button" class="chip" data-act="filter" data-filter="used">Utilisés</button>
+            <button type="button" class="chip" data-act="filter" data-filter="expired">Expirés</button>
+          </div>
+          <div class="rows" id="client-list"></div>
+          <div class="empty" id="client-empty" hidden>Aucun client trouvé.</div>
+        </div>
+
+        <div class="screen" data-tab="lots" data-screen-label="Lots">
+          <h2 class="screen-title">Ma roue</h2>
+          <div class="wheel-card glass">
+            <div class="wheel-wrap">
+              <div class="wheel" id="wheel"><div id="wheel-labels"></div></div>
+              <div class="hub">RW</div>
+              <div class="pointer"></div>
+            </div>
+            <button type="button" class="btn-accent spin-btn" id="spin-btn" data-act="spin">Tourner la roue</button>
+          </div>
+          <div class="calc glass">
+            <h3>Calculateur cadeaux / jour</h3>
+            <div class="step-grid">
+              <div class="step-box">
+                <div class="lbl">COUVERTS</div>
+                <div class="stepper">
+                  <button type="button" class="round" data-act="covers-down">−</button>
+                  <b id="covers-val">100</b>
+                  <button type="button" class="round" data-act="covers-up">+</button>
+                </div>
+              </div>
+              <div class="step-box">
+                <div class="lbl">CADEAUX MAX</div>
+                <div class="stepper">
+                  <button type="button" class="round" data-act="gifts-down">−</button>
+                  <b id="gifts-val">15</b>
+                  <button type="button" class="round" data-act="gifts-up">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="calc-foot">
+              <p>Cible : <strong id="calc-target">15</strong> % de gagnants<br>Actuel : <span id="calc-now">0</span> %</p>
+              <button type="button" class="btn-ink" data-act="apply-calc">Appliquer</button>
+            </div>
+          </div>
+          <div class="list-head">
+            <div class="block-title">Cases de la roue</div>
+            <button type="button" class="btn-pink" data-act="open-add">+ Ajouter un lot</button>
+          </div>
+          <div class="rows" id="prize-list"></div>
+        </div>
+
+        <div class="screen" data-tab="qr" data-screen-label="QR Code">
+          <h2 class="screen-title">QR Code</h2>
+          <div class="qr-card">
+            <div class="eye">SCANNEZ · TOURNEZ · GAGNEZ</div>
+            <h3 id="qr-name"></h3>
+            <div class="qr-ph" id="qr-ph">QR code du restaurant</div>
+            <img id="qr-img" alt="QR code du restaurant" hidden>
+            <div class="qr-url" id="qr-url"></div>
+          </div>
+          <div class="pair">
+            <button type="button" class="btn-glass glass" id="copy-btn" data-act="copy">Copier le lien</button>
+            <button type="button" class="btn-accent" data-act="download">Télécharger</button>
+          </div>
+          <p class="note">Imprimez ce QR code et placez-le sur vos tables ou menus. Chaque restaurant a son propre lien.</p>
+        </div>
+
+        <div class="screen" data-tab="profil" data-screen-label="Profil">
+          <h2 class="screen-title">Profil</h2>
+          <div class="card glass">
+            <div class="lbl">NOM DU RESTAURANT</div>
+            <input id="resto-input" type="text" autocomplete="organization">
+          </div>
+          <div class="card glass inline">
+            <div class="grow">
+              <h3>Délai entre 2 tirages</h3>
+              <p>Anti-abus, par email et téléphone</p>
+            </div>
+            <button type="button" class="round flat" data-act="cd-down">−</button>
+            <div class="cd" id="cd-val">24 h</div>
+            <button type="button" class="round flat" data-act="cd-up">+</button>
+          </div>
+          <div class="card glass">
+            <h3 style="margin:0 0 12px;font-size:16px">Couleur du thème</h3>
+            <div class="swatches" id="swatches">
+              <button type="button" data-act="accent" data-color="#ffd60a" style="background:#ffd60a" aria-label="Couleur"></button>
+              <button type="button" data-act="accent" data-color="#ff2d6a" style="background:#ff2d6a" aria-label="Couleur"></button>
+              <button type="button" data-act="accent" data-color="#00c2ff" style="background:#00c2ff" aria-label="Couleur"></button>
+              <button type="button" data-act="accent" data-color="#00e5c8" style="background:#00e5c8" aria-label="Couleur"></button>
+              <button type="button" data-act="accent" data-color="#ff8a3d" style="background:#ff8a3d" aria-label="Couleur"></button>
+              <button type="button" data-act="accent" data-color="#b79cff" style="background:#b79cff" aria-label="Couleur"></button>
+            </div>
+            <div class="themes" id="themes">
+              <button type="button" data-act="theme" data-theme="Sombre">Sombre</button>
+              <button type="button" data-act="theme" data-theme="Clair" class="on">Clair</button>
+            </div>
+          </div>
+          <div class="card glass toggles">
+            <button type="button" class="toggle" data-act="mail-win">
+              <div style="flex:1">Email quand le client gagne</div>
+              <div class="switch on" id="toggle-win" aria-hidden="true"><i></i></div>
+            </button>
+            <button type="button" class="toggle" data-act="mail-lose">
+              <div style="flex:1">Email quand le client ne gagne pas</div>
+              <div class="switch" id="toggle-lose" aria-hidden="true"><i></i></div>
+            </button>
+          </div>
+          <div class="plan">
+            <div><div class="lbl">ABONNEMENT</div><strong>Restau Wheel Pro</strong></div>
+            <div class="price">20 €<span> /mois</span></div>
+          </div>
+          <button type="button" class="btn-line" data-act="logout">Se déconnecter</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="dock" id="dock" hidden>
+    <div class="dock-ind" id="dock-ind"></div>
+    <button type="button" data-act="tab" data-tab="home" class="on">Accueil</button>
+    <button type="button" data-act="tab" data-tab="clients">Clients</button>
+    <button type="button" data-act="tab" data-tab="lots">Roue</button>
+    <button type="button" data-act="tab" data-tab="qr">QR</button>
+    <button type="button" data-act="tab" data-tab="profil">Profil</button>
   </nav>
 
-  <div class="main">
+  <div class="toast" id="toast" hidden role="status"></div>
 
-    <!-- Dashboard -->
-    <div class="page active" id="page-dashboard">
-      <h2 class="page-title" data-i18n="admin.dash.title">Tableau de bord</h2>
-      <p class="page-desc" data-i18n="admin.dash.desc">Vue d'ensemble de votre programme de fidélité</p>
-      <div class="stats-grid" id="stats-grid"></div>
-    </div>
-
-    <!-- Clients -->
-    <div class="page" id="page-search">
-      <h2 class="page-title" data-i18n="admin.clients.title">Clients</h2>
-      <p class="page-desc" data-i18n="admin.clients.desc">Base de contacts constituée via la roue — filtrez par nom, email ou téléphone</p>
-      <div class="search-bar">
-        <input type="text" id="search-input" data-i18n-placeholder="admin.clients.ph" placeholder="Filtrer : nom, prénom, email, téléphone…" oninput="doSearch()" onkeydown="if(event.key==='Enter') doSearch()">
-        <button class="btn-search" onclick="doSearch()" data-i18n="admin.clients.filter">Filtrer</button>
-        <button type="button" class="btn-dl" onclick="exportClientsCsv()" data-i18n="admin.clients.export">Exporter CSV / Excel</button>
-      </div>
-      <div id="search-results"></div>
-    </div>
-
-    <!-- Lots -->
-    <div class="page" id="page-prizes">
-      <h2 class="page-title" data-i18n="admin.prizes.title">Gérer les lots</h2>
-      <p class="page-desc" data-i18n="admin.prizes.desc">Configurez les cases de la roue de fortune</p>
-
-      <div class="calc-box">
-        <h3 data-i18n="admin.prizes.calc.h">Calculateur cadeaux / jour</h3>
-        <p class="hint" data-i18n="admin.prizes.calc.hint">Exemple : 100 couverts prévus, mais seulement 15 cadeaux à distribuer. On règle automatiquement les chances de la roue.</p>
-        <div class="calc-row">
-          <div class="field" style="margin:0">
-            <label data-i18n="admin.prizes.calc.covers">Couverts / jour (spins estimés)</label>
-            <input type="number" id="calc-covers" min="1" value="100">
-          </div>
-          <div class="field" style="margin:0">
-            <label data-i18n="admin.prizes.calc.gifts">Cadeaux / jour (max)</label>
-            <input type="number" id="calc-gifts" min="0" value="15">
-          </div>
-          <button type="button" class="btn-calc" onclick="applyPrizeCalculator()" data-i18n="admin.prizes.calc.apply">Appliquer →</button>
-        </div>
-        <div class="calc-result" id="calc-result"></div>
-      </div>
-
-      <button class="btn-add" onclick="openPrizeModal()" data-i18n="admin.prizes.add">Ajouter un lot</button>
-      <div class="prizes-grid" id="prizes-grid"></div>
-    </div>
-
-    <!-- QR Code -->
-    <div class="page" id="page-qrcode">
-      <h2 class="page-title" data-i18n="admin.qr.title">QR Code</h2>
-      <p class="page-desc" data-i18n="admin.qr.desc">Imprimez ce QR code et placez-le sur vos tables ou menus</p>
-      <div class="qr-section">
-        <div class="qr-resto" id="qr-resto-name"></div>
-        <p data-i18n="admin.qr.scan">Scannez pour accéder à la page client de CE restaurant :</p>
-        <img id="qr-img" src="" alt="QR Code">
-        <div class="qr-url" id="qr-url"></div>
-        <div class="qr-actions">
-          <a id="qr-open" class="btn-dl" href="#" target="_blank" rel="noopener" data-i18n="admin.qr.open">Ouvrir ma roue</a>
-          <a id="qr-dl" class="btn-dl" download="qrcode-restaurant.png" data-i18n="admin.qr.dl">Télécharger</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Paramètres -->
-    <div class="page" id="page-settings">
-      <h2 class="page-title" data-i18n="admin.set.title">Paramètres</h2>
-      <p class="page-desc" data-i18n="admin.set.desc">Configurez votre restaurant</p>
-
-      <div class="settings-card">
-        <h3 data-i18n="admin.set.info.h">Informations du restaurant</h3>
-        <div class="field">
-          <label data-i18n="admin.set.info.name">Nom du restaurant</label>
-          <input type="text" id="s-name" data-i18n-placeholder="admin.ph.resto" placeholder="Mon Restaurant">
-        </div>
-        <div class="field">
-          <label data-i18n="admin.set.info.wheel">Lien unique de votre roue</label>
-          <input type="text" id="s-wheel-url" readonly placeholder="https://restauwheel.com/client?r=…">
-          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px" data-i18n="admin.set.info.wheel.hint">Chaque restaurant a son propre lien et son propre QR. Les clients scannent celui-ci, pas celui d’un autre resto.</small>
-        </div>
-        <div class="field">
-          <label data-i18n="admin.set.info.cooldown">Délai entre 2 tirages (heures)</label>
-          <input type="number" id="s-cooldown" min="1" max="720" value="24" placeholder="24">
-          <small style="color:var(--muted);font-size:0.75rem;display:block;margin-top:4px" data-i18n="admin.set.info.cooldown.hint">Anti-abus : un même email ou téléphone ne peut rejouer qu’après ce délai (défaut 24h).</small>
-        </div>
-        <button class="btn-save-settings" onclick="saveSettings()" data-i18n="admin.set.save">Enregistrer</button>
-        <p class="save-notice" id="save-notice" data-i18n="admin.set.saved">Enregistré</p>
-      </div>
-
-      <div class="settings-card">
-        <h3 data-i18n="admin.set.theme.h">Couleur du thème</h3>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;" data-i18n="admin.set.theme.p">Choisissez la couleur principale qui s'affiche sur la page client (boutons, titres, anneau de la roue).</p>
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-          <input type="color" id="s-accent" value="#FFD700"
-            style="width:56px;height:48px;border:none;border-radius:10px;cursor:pointer;background:none;padding:0;">
-          <div>
-            <div style="font-weight:700;font-size:0.95rem;" id="accent-preview-label" data-i18n="admin.set.theme.selected">Couleur sélectionnée</div>
-            <div style="color:var(--muted);font-size:0.82rem;" id="accent-hex-display">#FFD700</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-          <button type="button" class="color-preset" data-hex="#FFD700" style="background:#FFD700" onclick="pickAccent('#FFD700')" title="Or (défaut)"></button>
-          <button type="button" class="color-preset" data-hex="#E53E3E" style="background:#E53E3E" onclick="pickAccent('#E53E3E')" title="Rouge"></button>
-          <button type="button" class="color-preset" data-hex="#38A169" style="background:#38A169" onclick="pickAccent('#38A169')" title="Vert"></button>
-          <button type="button" class="color-preset" data-hex="#3182CE" style="background:#3182CE" onclick="pickAccent('#3182CE')" title="Bleu"></button>
-          <button type="button" class="color-preset" data-hex="#805AD5" style="background:#805AD5" onclick="pickAccent('#805AD5')" title="Violet"></button>
-          <button type="button" class="color-preset" data-hex="#DD6B20" style="background:#DD6B20" onclick="pickAccent('#DD6B20')" title="Orange"></button>
-          <button type="button" class="color-preset" data-hex="#00B5D8" style="background:#00B5D8" onclick="pickAccent('#00B5D8')" title="Cyan"></button>
-          <button type="button" class="color-preset" data-hex="#F687B3" style="background:#F687B3" onclick="pickAccent('#F687B3')" title="Rose"></button>
-        </div>
-        <button class="btn-save-settings" onclick="saveAccent()" data-i18n="admin.set.theme.apply">Appliquer la couleur</button>
-        <p class="save-notice" id="accent-notice" data-i18n="admin.set.theme.applied">Couleur appliquée</p>
-      </div>
-
-      <div class="settings-card">
-        <h3 data-i18n="admin.set.email.h">Notifications email</h3>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;" data-i18n="admin.set.email.p">Configurez les emails automatiques envoyés à vos clients après chaque tirage. La configuration SMTP doit être renseignée par l'opérateur.</p>
-        <div class="field">
-          <label data-i18n="admin.set.email.from">Nom expéditeur (affiché dans l'email)</label>
-          <input type="text" id="s-email-name" placeholder="Ex : Le Bistrot du Coin">
-        </div>
-        <div class="field">
-          <label data-i18n="admin.set.email.reply">Email de réponse (reply-to)</label>
-          <input type="email" id="s-email-replyto" placeholder="contact@monrestaurant.fr">
-        </div>
-        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <input type="checkbox" id="s-send-win" style="width:auto;margin:0;">
-          <label for="s-send-win" style="margin:0;cursor:pointer;" data-i18n="admin.set.email.win" data-i18n-html>Envoyer un email quand le client <strong>gagne</strong></label>
-        </div>
-        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <input type="checkbox" id="s-send-lose" style="width:auto;margin:0;">
-          <label for="s-send-lose" style="margin:0;cursor:pointer;" data-i18n="admin.set.email.lose" data-i18n-html>Envoyer un email quand le client <strong>ne gagne pas</strong></label>
-        </div>
-        <div class="field">
-          <label data-i18n="admin.set.email.remind">Rappels email périodiques (1 = actif, 0 = off)</label>
-          <input type="number" id="s-reminder-days" min="0" max="1" placeholder="1">
-        </div>
-        <button class="btn-save-settings" onclick="saveEmailSettings()" data-i18n="admin.set.save">Enregistrer</button>
-        <p class="save-notice" id="email-notice" data-i18n="admin.set.saved">Enregistré</p>
-      </div>
-
-      <div class="settings-card">
-        <h3 data-i18n="admin.set.pwd.h">Changer le mot de passe admin</h3>
-        <div class="field">
-          <label data-i18n="admin.set.pwd.label">Nouveau mot de passe (min. 4 caractères)</label>
-          <input type="password" id="s-pwd" data-i18n-placeholder="admin.set.pwd.ph" placeholder="Nouveau mot de passe">
-        </div>
-        <button class="btn-save-settings" onclick="savePwd()" data-i18n="admin.set.pwd.btn">Changer le mot de passe</button>
-        <p class="save-notice" id="pwd-notice" data-i18n="admin.set.pwd.ok">Mot de passe mis à jour</p>
-      </div>
-
-      <div class="settings-card">
-        <h3 data-i18n="admin.set.cancel.h">Résilier mon abonnement</h3>
-        <p style="color:var(--muted);font-size:0.88rem;margin-bottom:12px;" data-i18n="admin.set.cancel.p">L’abonnement Restau Wheel Pro (20 €/mois) reste actif jusqu’à la fin de la période déjà payée, puis s’arrête. Aucun frais de résiliation.</p>
-        <p id="cancel-status">—</p>
-        <div class="field" style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <input type="checkbox" id="s-cancel-confirm" style="width:auto;margin:0;">
-          <label for="s-cancel-confirm" style="margin:0;cursor:pointer;" data-i18n="admin.set.cancel.confirm">Je confirme vouloir résilier mon abonnement Restau Wheel Pro.</label>
-        </div>
-        <button class="btn-cancel-sub" id="btn-cancel-sub" onclick="cancelSubscription()" data-i18n="admin.set.cancel.btn">Résilier l’abonnement</button>
-        <p class="save-notice" id="cancel-notice"></p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Modal lot -->
-<div class="modal-overlay" id="prize-modal">
-  <div class="modal">
-    <h3 id="modal-title" data-i18n="admin.prizes.modal.new">Nouveau lot</h3>
-    <div class="field">
-      <label data-i18n="admin.prizes.modal.name">Nom du lot *</label>
-      <input type="text" id="m-name" data-i18n-placeholder="admin.prizes.ph.name" placeholder="Ex: Dessert offert">
-    </div>
-    <div class="field">
-      <label data-i18n="admin.prizes.modal.desc">Description</label>
-      <input type="text" id="m-desc" data-i18n-placeholder="admin.prizes.ph.desc" placeholder="Ex: Un dessert au choix offert">
-    </div>
-    <div class="field-row">
-      <div class="field">
-        <label data-i18n="admin.prizes.modal.prob">Probabilité (%)</label>
-        <input type="number" id="m-prob" min="1" max="100" placeholder="10">
-      </div>
-      <div class="field">
-        <label data-i18n="admin.prizes.modal.deadline">Délai pour utiliser (jours)</label>
-        <input type="number" id="m-deadline" min="0" max="365" placeholder="30">
-        <small style="color:var(--muted);font-size:0.75rem" data-i18n="admin.prizes.modal.deadline.hint">0 = case "Rien gagné"</small>
-      </div>
-    </div>
-    <div class="field">
-      <label data-i18n="admin.prizes.modal.color">Couleur</label>
-      <div class="color-row">
-        <input type="color" id="m-color-picker" value="#FF6B6B" oninput="document.getElementById('m-color').value=this.value">
-        <input type="text" id="m-color" value="#FF6B6B" placeholder="#FF6B6B" oninput="document.getElementById('m-color-picker').value=this.value">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closePrizeModal()" data-i18n="admin.prizes.modal.cancel">Annuler</button>
-      <button class="btn-save" onclick="savePrize()" data-i18n="admin.prizes.modal.save">Enregistrer</button>
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-bg" data-act="close-sheet"></div>
+    <div class="sheet-panel" id="sheet-panel">
+      <div class="handle"></div>
+      <div id="sheet-body"></div>
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" id="delete-prize-modal">
-  <div class="modal">
-    <h3 data-i18n="admin.prizes.modal.delete">Supprimer le lot</h3>
-    <p id="delete-prize-msg" style="margin:0 0 18px;color:var(--muted);line-height:1.45"></p>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeDeletePrizeModal()" data-i18n="admin.prizes.modal.cancel">Annuler</button>
-      <button class="btn-save" style="background:var(--red)" onclick="confirmDeletePrize()" data-i18n="admin.prizes.modal.delete.btn">Supprimer</button>
-    </div>
-  </div>
-</div>
-
-<script src="/js/i18n.js"></script>
-<script>
-const t = (k, v) => window.RW_I18N.t(k, v);
-const loc = () => window.RW_I18N.locale();
-let editingPrizeId = null;
-
-function isAppOpen() {
-  return document.getElementById('app').style.display === 'flex';
-}
-
-function refreshLangDynamic() {
-  if (!isAppOpen()) return;
-  const active = document.querySelector('.page.active');
-  const id = active ? active.id.replace('page-', '') : 'dashboard';
-  if (id === 'dashboard') loadStats();
-  if (id === 'search') doSearch();
-  if (id === 'prizes') { loadPrizes(); updateCalcPreview(); }
-  if (id === 'settings') loadSubscription();
-  const modal = document.getElementById('prize-modal');
-  if (modal.classList.contains('open')) {
-    document.getElementById('modal-title').textContent = editingPrizeId
-      ? t('admin.prizes.modal.edit')
-      : t('admin.prizes.modal.new');
-  }
-}
-
-document.addEventListener('rw:lang', refreshLangDynamic);
-
-// ── Auth ─────────────────────────────────────────────────────────────────────
-async function checkAuth() {
-  const res = await fetch('/api/admin/me');
-  const data = await res.json();
-  if (data.isAdmin) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    document.getElementById('resto-name').textContent = data.restaurant_name || t('admin.ph.resto');
-    initApp();
-  }
-}
-
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pwd   = document.getElementById('login-pwd').value;
-  const res = await fetch('/api/admin/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: pwd })
-  });
-  if (res.ok) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    const me = await (await fetch('/api/admin/me')).json();
-    document.getElementById('resto-name').textContent = me.restaurant_name || t('admin.ph.resto');
-    initApp();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-  }
-}
-
-['login-email', 'login-pwd'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-});
-
-async function doLogout() {
-  await fetch('/api/admin/logout', { method: 'POST' });
-  location.reload();
-}
-
-// ── Navigation ────────────────────────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.querySelector(`[data-page="${name}"]`).classList.add('active');
-
-  if (name === 'dashboard') loadStats();
-  if (name === 'search') doSearch();
-  if (name === 'prizes') {
-    loadPrizes();
-    fetch('/api/admin/settings').then(r => r.json()).then(s => {
-      if (s.daily_covers) document.getElementById('calc-covers').value = s.daily_covers;
-      if (s.daily_gifts != null) document.getElementById('calc-gifts').value = s.daily_gifts;
-      updateCalcPreview();
-    }).catch(() => {});
-  }
-  if (name === 'qrcode') loadQR();
-  if (name === 'settings') loadSettings();
-}
-
-function initApp() {
-  loadStats();
-}
-
-// ── Stats ─────────────────────────────────────────────────────────────────────
-async function loadStats() {
-  const res = await fetch('/api/admin/stats');
-  const s = await res.json();
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-label">${t('admin.stat.spins')}</div>
-      <div class="stat-value">${s.totalSpins}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">${t('admin.stat.wins')}</div>
-      <div class="stat-value green">${s.totalWins}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">${t('admin.stat.used')}</div>
-      <div class="stat-value green">${s.usedWins}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">${t('admin.stat.pending')}</div>
-      <div class="stat-value yellow">${s.pendingWins}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">${t('admin.stat.expired')}</div>
-      <div class="stat-value red">${s.expiredWins}</div>
-    </div>
-  `;
-}
-
-// ── Recherche client ──────────────────────────────────────────────────────────
-async function exportClientsCsv() {
-  const q = document.getElementById('search-input')?.value.trim() || '';
-  try {
-    const res = await fetch(`/api/admin/customers/export?q=${encodeURIComponent(q)}`, { credentials: 'same-origin' });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      alert(err.error || t('admin.clients.export.error'));
-      return;
-    }
-    const blob = await res.blob();
-    const disp = res.headers.get('Content-Disposition') || '';
-    const m = /filename="([^"]+)"/.exec(disp);
-    const filename = m?.[1] || `clients-restauwheel-${new Date().toISOString().slice(0, 10)}.csv`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (_) {
-    alert(t('admin.clients.export.error'));
-  }
-}
-
-async function doSearch() {
-  const q = document.getElementById('search-input').value.trim();
-  const res = await fetch(`/api/admin/search?q=${encodeURIComponent(q)}`);
-  const customers = await res.json();
-  const container = document.getElementById('search-results');
-
-  if (!Array.isArray(customers)) {
-    container.innerHTML = `<div class="no-results">${t('admin.clients.error')}</div>`;
-    return;
-  }
-
-  if (!customers.length) {
-    container.innerHTML = `<div class="no-results">${t('admin.clients.empty')}</div>`;
-    return;
-  }
-
-  container.innerHTML = customers.map(c => {
-    const lastSpinLabel = c.last_spin_at
-      ? new Date(c.last_spin_at.includes('T') ? c.last_spin_at : c.last_spin_at.replace(' ', 'T') + 'Z')
-          .toLocaleString(loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-      : '—';
-    const cooldownBadge = c.in_cooldown
-      ? `<span class="badge badge-cooldown">${t('admin.clients.cooldown', { hours: c.cooldown_hours })}</span>`
-      : `<span class="badge badge-ok">${t('admin.clients.canplay')}</span>`;
-
-    const spinsHtml = (!c.spins || c.spins.length === 0)
-      ? `<p style="color:var(--muted);font-size:0.85rem">${t('admin.clients.nospins')}</p>`
-      : c.spins.map(s => {
-          const isReal = s.deadline_days > 0;
-          const isExpired = s.deadline && new Date(s.deadline) < new Date();
-          const wonDate = new Date(s.won_at.includes('T') ? s.won_at : s.won_at.replace(' ', 'T') + 'Z')
-            .toLocaleString(loc(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const dlDate = s.deadline ? new Date(s.deadline).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' }) : null;
-
-          let badge, action = '';
-          if (!isReal) {
-            badge = `<span class="badge badge-lose">${t('admin.clients.nwin')}</span>`;
-          } else if (s.used) {
-            const usedDate = new Date(s.used_at).toLocaleDateString(loc());
-            badge = `<span class="badge badge-used">${t('admin.clients.used', { date: usedDate })}</span>`;
-          } else if (isExpired) {
-            badge = `<span class="badge badge-expired">${t('admin.clients.expired')}</span>`;
-          } else {
-            badge = `<span class="badge badge-pending">${t('admin.clients.pending')}</span>`;
-            action = `<button class="btn-use" onclick="useSpin(${s.id}, this)">${t('admin.clients.validate')}</button>`;
-          }
-
-          return `
-            <div class="spin-item" id="spin-${s.id}">
-              <div>
-                <div class="spin-prize" style="color:${s.prize_color || 'inherit'}">${escHtml(s.prize_name || 'Lot')}</div>
-                <div class="spin-meta">${t('admin.clients.spun', { date: wonDate })}${isReal && dlDate ? t('admin.clients.validuntil', { date: dlDate }) : ''}</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                ${badge}
-                ${action}
-              </div>
-            </div>`;
-        }).join('');
-
-    return `
-      <div class="customer-card">
-        <div class="customer-header">
-          <div>
-            <div class="customer-name">${escHtml(c.first_name)} ${escHtml(c.last_name)}</div>
-            <div class="customer-email">${escHtml(c.email)}${c.phone ? ' · ' + escHtml(c.phone) : ''}</div>
-          </div>
-          <div class="customer-date">${t('admin.clients.since', { date: new Date(c.created_at).toLocaleDateString(loc()) })}</div>
-        </div>
-        <div class="customer-stats">
-          <span>${t('admin.clients.spins', { n: c.spin_count || 0 })}</span>
-          <span>${t('admin.clients.wins', { n: c.win_count || 0 })}</span>
-          <span>${t('admin.clients.last', { date: lastSpinLabel })}</span>
-          ${cooldownBadge}
-        </div>
-        <div class="spin-list">${spinsHtml}</div>
-      </div>`;
-  }).join('');
-}
-
-async function useSpin(spinId, btn) {
-  const res = await fetch(`/api/admin/spins/${spinId}/use`, { method: 'PUT' });
-  const data = await res.json();
-  if (data.success) {
-    const item = document.getElementById('spin-' + spinId);
-    const today = new Date().toLocaleDateString(loc());
-    item.querySelector('.badge-pending')?.remove();
-    item.querySelector('.btn-use')?.remove();
-    const badgeWrap = item.querySelector('div[style]');
-    badgeWrap.innerHTML = `<span class="badge badge-used">${t('admin.clients.used', { date: today })}</span>`;
-    loadStats();
-  } else {
-    alert(data.error || t('admin.error'));
-  }
-}
-
-// ── Lots ──────────────────────────────────────────────────────────────────────
-let cachedPrizes = [];
-
-async function loadPrizes() {
-  const res = await fetch('/api/admin/prizes');
-  const prizes = (await res.json()).filter(p => Number(p.active) !== 0);
-  cachedPrizes = prizes;
-  const total = prizes.reduce((s, p) => s + p.probability, 0) || 1;
-  document.getElementById('prizes-grid').innerHTML = prizes.map(p => {
-    const pct = Math.round((p.probability / total) * 1000) / 10;
-    return `
-    <div class="prize-card" style="--prize-color:${p.color}">
-      <div class="prize-card-name">${escHtml(p.name)}</div>
-      <div class="prize-card-desc">${escHtml(p.description || '')}</div>
-      <div class="prize-meta">
-        <span>${t('admin.prizes.chance', { pct })}</span>
-        <span>${p.deadline_days === 0 ? t('admin.prizes.none') : t('admin.prizes.days', { n: p.deadline_days })}</span>
-      </div>
-      <div class="prize-actions">
-        <button class="btn-edit" onclick="openPrizeModal(${JSON.stringify(p).replace(/"/g,'&quot;')})">${t('admin.prizes.edit')}</button>
-        <button class="btn-del" onclick="deletePrize(${p.id})">${t('admin.prizes.del')}</button>
-      </div>
-    </div>`;
-  }).join('');
-  updateCalcPreview();
-}
-
-function updateCalcPreview() {
-  const covers = parseInt(document.getElementById('calc-covers')?.value, 10);
-  const gifts = parseInt(document.getElementById('calc-gifts')?.value, 10);
-  const el = document.getElementById('calc-result');
-  if (!el || !covers || covers < 1 || isNaN(gifts) || gifts < 0) return;
-  const winPct = Math.min(100, Math.round((gifts / covers) * 1000) / 10);
-  const total = cachedPrizes.reduce((s, p) => s + p.probability, 0) || 1;
-  const curWin = cachedPrizes.filter(p => p.deadline_days > 0).reduce((s, p) => s + p.probability, 0);
-  const curPct = Math.round((curWin / total) * 1000) / 10;
-  const curExpected = Math.round((curPct / 100) * covers * 10) / 10;
-  el.classList.add('show');
-  el.innerHTML = t('admin.prizes.preview', { winPct, gifts, curPct, curExpected, covers });
-}
-
-async function applyPrizeCalculator() {
-  const covers = parseInt(document.getElementById('calc-covers').value, 10);
-  const gifts = parseInt(document.getElementById('calc-gifts').value, 10);
-  if (!covers || covers < 1) { alert(t('admin.prizes.alert.covers')); return; }
-  if (isNaN(gifts) || gifts < 0) { alert(t('admin.prizes.alert.gifts')); return; }
-  if (gifts > covers) { alert(t('admin.prizes.alert.over')); return; }
-  if (!confirm(t('admin.prizes.confirm.cal', { gifts, covers }))) return;
-
-  const res = await fetch('/api/admin/prizes/calibrate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: JSON.stringify({ covers, gifts }),
-  });
-  const data = await res.json();
-  if (!res.ok) { alert(data.error || t('admin.error')); return; }
-  cachedPrizes = data.prizes || [];
-  await loadPrizes();
-  const el = document.getElementById('calc-result');
-  el.classList.add('show');
-  el.innerHTML = t('admin.prizes.updated', { pct: data.win_percent, gifts: data.expected_gifts_per_day });
-}
-
-document.getElementById('calc-covers')?.addEventListener('input', updateCalcPreview);
-document.getElementById('calc-gifts')?.addEventListener('input', updateCalcPreview);
-
-function openPrizeModal(prize) {
-  editingPrizeId = prize ? prize.id : null;
-  document.getElementById('modal-title').textContent = prize ? t('admin.prizes.modal.edit') : t('admin.prizes.modal.new');
-  document.getElementById('m-name').value = prize ? prize.name : '';
-  document.getElementById('m-desc').value = prize ? (prize.description || '') : '';
-  document.getElementById('m-prob').value = prize ? prize.probability : 10;
-  document.getElementById('m-deadline').value = prize ? prize.deadline_days : 30;
-  document.getElementById('m-color').value = prize ? prize.color : '#FF6B6B';
-  document.getElementById('m-color-picker').value = prize ? prize.color : '#FF6B6B';
-  document.getElementById('prize-modal').classList.add('open');
-}
-
-function closePrizeModal() {
-  document.getElementById('prize-modal').classList.remove('open');
-  editingPrizeId = null;
-}
-
-async function savePrize() {
-  const body = {
-    name: document.getElementById('m-name').value.trim(),
-    description: document.getElementById('m-desc').value.trim(),
-    probability: parseInt(document.getElementById('m-prob').value),
-    deadline_days: parseInt(document.getElementById('m-deadline').value),
-    color: document.getElementById('m-color').value
-  };
-
-  if (!body.name || isNaN(body.probability) || isNaN(body.deadline_days)) {
-    alert(t('admin.prizes.alert.required'));
-    return;
-  }
-
-  const url = editingPrizeId ? `/api/admin/prizes/${editingPrizeId}` : '/api/admin/prizes';
-  const method = editingPrizeId ? 'PUT' : 'POST';
-  const res = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-
-  if (res.ok) {
-    closePrizeModal();
-    loadPrizes();
-  } else {
-    const e = await res.json();
-    alert(e.error || t('admin.error'));
-  }
-}
-
-let pendingDeleteId = null;
-
-function deletePrize(id) {
-  pendingDeleteId = id;
-  document.getElementById('delete-prize-msg').textContent = t('admin.prizes.confirm.del');
-  document.getElementById('delete-prize-modal').classList.add('open');
-}
-
-function closeDeletePrizeModal() {
-  document.getElementById('delete-prize-modal').classList.remove('open');
-  pendingDeleteId = null;
-}
-
-async function confirmDeletePrize() {
-  const id = pendingDeleteId;
-  closeDeletePrizeModal();
-  if (!id) return;
-  const res = await fetch(`/api/admin/prizes/${id}/delete`, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    alert(e.error || t('admin.error'));
-    return;
-  }
-  cachedPrizes = cachedPrizes.filter(p => Number(p.id) !== Number(id));
-  await loadPrizes();
-}
-
-// ── QR Code ───────────────────────────────────────────────────────────────────
-async function loadQR() {
-  const res = await fetch('/api/admin/qrcode');
-  const data = await res.json();
-  const img = document.getElementById('qr-img');
-  img.src = data.qr;
-  document.getElementById('qr-url').textContent = data.url;
-  document.getElementById('qr-resto-name').textContent = data.restaurant_name || '';
-  const open = document.getElementById('qr-open');
-  if (open) open.href = data.url || '#';
-  const dl = document.getElementById('qr-dl');
-  dl.href = data.qr;
-  dl.download = `qrcode-${data.public_code || 'restaurant'}.png`;
-  const wheel = document.getElementById('s-wheel-url');
-  if (wheel && data.url) wheel.value = data.url;
-}
-
-// ── Paramètres ────────────────────────────────────────────────────────────────
-async function loadSettings() {
-  const [res, resEmail] = await Promise.all([fetch('/api/admin/settings'), fetch('/api/admin/email-settings')]);
-  const s = await res.json();
-  const e = await resEmail.json();
-  document.getElementById('s-name').value = s.restaurant_name || '';
-  document.getElementById('s-cooldown').value = s.spin_cooldown_hours ?? 24;
-  if (s.theme_accent) setAccent(s.theme_accent, false);
-  loadQR();
-  document.getElementById('s-email-name').value = e.email_from_name || '';
-  document.getElementById('s-email-replyto').value = e.email_reply_to || '';
-  document.getElementById('s-send-win').checked = e.send_win_email !== 0;
-  document.getElementById('s-send-lose').checked = !!e.send_lose_email;
-  document.getElementById('s-reminder-days').value = e.reminder_days ?? 3;
-  loadSubscription();
-}
-
-async function saveEmailSettings() {
-  const body = {
-    email_from_name:  document.getElementById('s-email-name').value.trim(),
-    email_reply_to:   document.getElementById('s-email-replyto').value.trim(),
-    send_win_email:   document.getElementById('s-send-win').checked,
-    send_lose_email:  document.getElementById('s-send-lose').checked,
-    reminder_days:    parseInt(document.getElementById('s-reminder-days').value) || 0,
-  };
-  const res = await fetch('/api/admin/email-settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (res.ok) {
-    const n = document.getElementById('email-notice');
-    n.style.display = 'block';
-    setTimeout(() => { n.style.display = 'none'; }, 2500);
-  }
-}
-
-function setAccent(hex, updatePicker = true) {
-  const value = String(hex || '#FFD700').toUpperCase();
-  if (updatePicker) document.getElementById('s-accent').value = value;
-  document.getElementById('accent-hex-display').textContent = value;
-  document.querySelectorAll('.color-preset').forEach((btn) => {
-    btn.classList.toggle('is-on', (btn.dataset.hex || '').toUpperCase() === value);
-  });
-}
-
-function pickAccent(hex) {
-  setAccent(hex, true);
-  saveAccent();
-}
-
-document.getElementById('s-accent')?.addEventListener('input', e => {
-  setAccent(e.target.value, false);
-});
-document.getElementById('s-accent')?.addEventListener('change', () => saveAccent());
-
-async function saveAccent() {
-  const hex = document.getElementById('s-accent').value;
-  const n = document.getElementById('accent-notice');
-  try {
-    const res = await fetch('/api/admin/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ theme_accent: hex })
-    });
-    if (!res.ok) throw new Error('save');
-    n.textContent = t('admin.set.theme.applied');
-    n.style.display = 'block';
-    setTimeout(() => { n.style.display = 'none'; }, 2500);
-  } catch {
-    n.textContent = t('admin.error');
-    n.style.display = 'block';
-  }
-}
-
-async function saveSettings() {
-  const body = {
-    restaurant_name: document.getElementById('s-name').value.trim(),
-    spin_cooldown_hours: parseInt(document.getElementById('s-cooldown').value, 10) || 24,
-    theme_accent: document.getElementById('s-accent').value,
-  };
-  const res = await fetch('/api/admin/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (res.ok) {
-    document.getElementById('resto-name').textContent = body.restaurant_name;
-    const n = document.getElementById('save-notice');
-    n.style.display = 'block';
-    setTimeout(() => { n.style.display = 'none'; }, 2500);
-  }
-}
-
-async function loadSubscription() {
-  const el = document.getElementById('cancel-status');
-  const btn = document.getElementById('btn-cancel-sub');
-  if (!el) return;
-  try {
-    const res = await fetch('/api/admin/subscription');
-    const d = await res.json();
-    const until = d.period_end
-      ? new Date(d.period_end).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
-      : '';
-    const email = d.email ? ` · ${d.email}` : '';
-    if (d.status === 'demo') {
-      el.textContent = t('admin.set.cancel.status.demo') + email;
-      if (btn) btn.disabled = true;
-    } else if (d.status === 'canceling') {
-      el.textContent = t('admin.set.cancel.status.canceling', { date: until }) + email;
-      if (btn) btn.disabled = true;
-    } else if (d.status === 'active') {
-      el.textContent = t('admin.set.cancel.status.active') + email;
-      if (btn) btn.disabled = false;
-    } else {
-      el.textContent = t('admin.set.cancel.status.none') + email;
-      if (btn) btn.disabled = true;
-    }
-  } catch (_) {
-    el.textContent = t('admin.set.cancel.error');
-  }
-}
-
-async function cancelSubscription() {
-  const notice = document.getElementById('cancel-notice');
-  const confirm = document.getElementById('s-cancel-confirm');
-  notice.classList.remove('bad');
-  notice.style.display = 'none';
-  if (!confirm.checked) {
-    notice.textContent = t('admin.set.cancel.need');
-    notice.classList.add('bad');
-    notice.style.display = 'block';
-    return;
-  }
-  const btn = document.getElementById('btn-cancel-sub');
-  btn.disabled = true;
-  try {
-    const res = await fetch('/api/admin/subscription/cancel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-      body: JSON.stringify({ confirm: true }),
-    });
-    const d = await res.json();
-    notice.style.display = 'block';
-    if (!res.ok) {
-      notice.classList.add('bad');
-      notice.textContent = d.code === 'none' ? t('admin.set.cancel.none') : (d.error || t('admin.set.cancel.error'));
-      btn.disabled = false;
-      return;
-    }
-    notice.classList.remove('bad');
-    notice.textContent = d.already ? t('admin.set.cancel.already') : t('admin.set.cancel.ok');
-    confirm.checked = false;
-    loadSubscription();
-  } catch (_) {
-    notice.classList.add('bad');
-    notice.textContent = t('admin.set.cancel.error');
-    notice.style.display = 'block';
-    btn.disabled = false;
-  }
-}
-
-async function savePwd() {
-  const pwd = document.getElementById('s-pwd').value;
-  if (pwd.length < 4) { alert(t('admin.set.pwd.min')); return; }
-  const res = await fetch('/api/admin/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ admin_password: pwd })
-  });
-  if (res.ok) {
-    document.getElementById('s-pwd').value = '';
-    const n = document.getElementById('pwd-notice');
-    n.style.display = 'block';
-    setTimeout(() => { n.style.display = 'none'; }, 2500);
-  }
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Fermer modal en cliquant dehors
-document.getElementById('prize-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('prize-modal')) closePrizeModal();
-});
-document.getElementById('delete-prize-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('delete-prize-modal')) closeDeletePrizeModal();
-});
-
-checkAuth();
-</script>
+  <script src="/admin/app.js?v=2"></script>
 </body>
 </html>

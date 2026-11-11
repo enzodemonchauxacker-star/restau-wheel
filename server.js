@@ -29,6 +29,7 @@ const {
 } = require('./lib/twenty');
 const rekoneBilling = require('./lib/rekone-billing');
 const rekoneAccounts = require('./lib/rekone-accounts');
+const { seriesFromRows } = require('./lib/admin-series');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -732,6 +733,38 @@ app.get('/api/admin/stats', requireRestaurant, async (req, res) => {
   const expiredWins = (await db.prepare('SELECT COUNT(*)::int as n FROM spins WHERE used=0 AND deadline IS NOT NULL AND deadline<CURRENT_TIMESTAMP AND customer_id IN (SELECT id FROM customers WHERE restaurant_id=?)').get(rid)).n;
   const pendingWins = (await db.prepare('SELECT COUNT(*)::int as n FROM spins WHERE used=0 AND deadline IS NOT NULL AND deadline>CURRENT_TIMESTAMP AND customer_id IN (SELECT id FROM customers WHERE restaurant_id=?)').get(rid)).n;
   res.json({ totalSpins, totalWins, usedWins, expiredWins, pendingWins });
+});
+
+/** Série des tirages : semaine civile en cours (lun→dim) et 12 mois de l'année, fuseau Europe/Paris. */
+app.get('/api/admin/stats/series', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const weekRows = await db.prepare(`
+    SELECT EXTRACT(ISODOW FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          >= date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date
+      AND (s.won_at AT TIME ZONE 'Europe/Paris')::date
+          < (date_trunc('week', (NOW() AT TIME ZONE 'Europe/Paris'))::date + 7)
+    GROUP BY 1
+  `).all(rid);
+  const monthRows = await db.prepare(`
+    SELECT EXTRACT(MONTH FROM (s.won_at AT TIME ZONE 'Europe/Paris'))::int AS bucket,
+           COUNT(*)::int AS n
+    FROM spins s
+    JOIN customers c ON s.customer_id = c.id
+    WHERE c.restaurant_id = ?
+      AND EXTRACT(YEAR FROM (s.won_at AT TIME ZONE 'Europe/Paris'))
+          = EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'Europe/Paris'))
+    GROUP BY 1
+  `).all(rid);
+  res.json({
+    week: seriesFromRows(weekRows, 7),
+    month: seriesFromRows(monthRows, 12),
+    timezone: 'Europe/Paris',
+  });
 });
 
 app.get('/api/admin/search', requireRestaurant, async (req, res) => {
