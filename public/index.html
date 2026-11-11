@@ -586,6 +586,7 @@
         data-i18n-aria="land.video.label"
         aria-label="Vidéo explicative Restau Wheel"
       >
+        <source src="https://cdn.jsdelivr.net/gh/enzodemonchauxacker-star/restau-wheel@3b2458b0ff638fb9fa6e799dea51c2071240537c/public/video/restau_wheel_explainer.mp4" type="video/mp4">
         <source src="/video/restau_wheel_explainer.mp4" type="video/mp4">
       </video>
       <button type="button" class="explainer-play" id="explainer-play" hidden data-i18n-aria="land.video.play" aria-label="Lire la vidéo">
@@ -746,6 +747,13 @@
       explainerPlay.hidden = false;
     });
     explainer.addEventListener('error', () => {
+      const local = '/video/restau_wheel_explainer.mp4';
+      if (!explainer.dataset.triedLocal) {
+        explainer.dataset.triedLocal = '1';
+        explainer.src = local;
+        explainer.load();
+        return;
+      }
       explainerPlay.hidden = false;
     });
   }

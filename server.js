@@ -148,7 +148,15 @@ app.get('/video/restau_wheel_explainer.mp4', (req, res) => {
   if (partial) res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
   res.setHeader('Content-Length', String(end - start + 1));
   if (req.method === 'HEAD') return res.end();
-  fs.createReadStream(EXPLAINER_VIDEO, { start, end }).pipe(res);
+  const length = end - start + 1;
+  const buf = Buffer.alloc(length);
+  const fd = fs.openSync(EXPLAINER_VIDEO, 'r');
+  try {
+    fs.readSync(fd, buf, 0, length, start);
+  } finally {
+    fs.closeSync(fd);
+  }
+  res.end(buf);
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
