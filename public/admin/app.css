@@ -512,6 +512,61 @@ h1.ob-title, .ob-title {
 .hint { font-size: 13px; color: var(--muted); margin: 8px 4px 14px; }
 .btn-block { width: 100%; }
 
+/* Ouverture : la roue tourne, puis tout l’écran remonte et le tableau apparaît. */
+#boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.boot-stage { position: relative; width: 228px; height: 228px; }
+.boot-wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 12px solid #ffd60a;
+  background: conic-gradient(
+    #ffd60a 0deg 60deg,
+    #26252b 60deg 120deg,
+    #ff2d6a 120deg 180deg,
+    #00c2ff 180deg 240deg,
+    #26252b 240deg 300deg,
+    #00e5c8 300deg 360deg
+  );
+  animation: rwSpin 1.05s linear infinite;
+}
+.boot-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  border: 4px solid #ffd60a;
+  color: #fff8e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 13px;
+}
+.boot-pointer {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  background: #0a0a0a;
+  transform: rotate(45deg);
+  border-radius: 4px;
+}
+#boot.leave { animation: rwBootUp .78s cubic-bezier(.22, 1, .36, 1) forwards; }
+#boot.leave .boot-wheel { animation-play-state: paused; }
+
+@keyframes rwSpin { to { transform: rotate(360deg); } }
+@keyframes rwBootUp { to { transform: translateY(-110%); } }
 @keyframes rwUp { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes rwIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rwFade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }

@@ -90,6 +90,8 @@ describe('marquage admin', () => {
     assert.match(app, /Valider le gain/);
     assert.match(app, /\/api\/admin\/stats\/series/);
     assert.match(app, /Gain validé/);
+    assert.match(app, /revealShell/);
+    assert.match(admin, /id="boot"/);
     assert.doesNotMatch(admin, /\/api\/admin\/crm|id="page-crm"|crm-workspace|twenty-frame/);
   });
 });

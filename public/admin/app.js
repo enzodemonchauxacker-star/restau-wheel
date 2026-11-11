@@ -244,6 +244,7 @@ function paintOnboarding() {
 function showOnboarding() {
   showView('view-ob');
   paintOnboarding();
+  revealShell();
 }
 
 function showLogin() {
@@ -252,6 +253,7 @@ function showLogin() {
   wheel.style.background = wheelBackground(S.prizes.length ? S.prizes : DEMO_WHEEL);
   wheel.style.transform = 'rotate(15deg)';
   $('login-error').hidden = true;
+  revealShell();
 }
 
 async function nextOb() {
@@ -939,6 +941,31 @@ async function enterApp() {
   S.navDir = 0;
   await loadHome();
   requestAnimationFrame(() => layoutNav(false));
+  revealShell();
+}
+
+let shellRevealed = false;
+
+function revealShell() {
+  if (shellRevealed) return;
+  shellRevealed = true;
+  const native = document.documentElement.dataset.native === '1';
+  const boot = document.getElementById('boot');
+  const elapsed = Date.now() - (window.__rwBoot || Date.now());
+  const wait = native ? 0 : Math.max(0, 1100 - elapsed);
+  setTimeout(() => {
+    const done = () => { document.documentElement.dataset.rwReady = '1'; };
+    if (!boot || native) {
+      if (boot) boot.remove();
+      done();
+      return;
+    }
+    boot.classList.add('leave');
+    boot.addEventListener('animationend', () => {
+      boot.remove();
+      done();
+    }, { once: true });
+  }, wait);
 }
 
 function buildLiquid() {

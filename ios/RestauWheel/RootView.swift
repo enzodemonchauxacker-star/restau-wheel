@@ -2,6 +2,12 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var model = WebViewModel()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var launchedAt = Date()
+    @State private var spinning = false
+    @State private var coverLifted = false
+    @State private var coverGone = false
+    @State private var exitScheduled = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -13,14 +19,14 @@ struct RootView: View {
             WebView(model: model)
                 .opacity(model.loadError == nil ? 1 : 0)
 
-            if model.isLoading, model.progress < 1 {
+            if coverGone, model.isLoading, model.progress < 1 {
                 ProgressBar(value: model.progress)
             }
 
             // Le geste de retour de WKWebView existe, mais rien à l'écran ne
             // l'annonce : sur /client et /admin il n'y a aucun lien de retour.
             // D'où cette pastille, visible seulement quand il y a un historique.
-            if model.canGoBack, model.loadError == nil {
+            if coverGone, model.canGoBack, model.loadError == nil {
                 BackButton { model.goBack() }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                     .padding(.leading, 16)
@@ -32,10 +38,85 @@ struct RootView: View {
                 ConnectionErrorView(error: error) { model.reload() }
                     .transition(.opacity)
             }
+
+            if !coverGone {
+                LaunchCover(spinning: spinning, lifted: coverLifted)
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: model.loadError == nil)
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: model.canGoBack)
         .preferredColorScheme(.light)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.linear(duration: 1.05).repeatForever(autoreverses: false)) {
+                spinning = true
+            }
+        }
+        .onReceive(Timer.publish(every: 0.15, on: .main, in: .common).autoconnect()) { _ in
+            guard !exitScheduled else { return }
+            model.probeContentReady()
+            let timedOut = Date().timeIntervalSince(launchedAt) > 8
+            if model.contentReady || model.loadError != nil || timedOut {
+                scheduleExit()
+            }
+        }
+    }
+
+    private func scheduleExit() {
+        exitScheduled = true
+        let elapsed = Date().timeIntervalSince(launchedAt)
+        let wait = reduceMotion ? 0.05 : max(0, 1.15 - elapsed)
+        let slide = reduceMotion ? 0.2 : 0.78
+        DispatchQueue.main.asyncAfter(deadline: .now() + wait) {
+            withAnimation(.timingCurve(0.22, 1, 0.36, 1, duration: slide)) {
+                coverLifted = true
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + wait + slide + 0.05) {
+            coverGone = true
+        }
+    }
+}
+
+/// Roue plein écran au lancement. Elle tourne, puis tout l’écran remonte
+/// et laisse voir le tableau de bord déjà chargé en dessous.
+private struct LaunchCover: View {
+    let spinning: Bool
+    let lifted: Bool
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                Theme.background
+                ZStack {
+                    WheelMark(
+                        colors: [
+                            Theme.gold, Theme.ink, Theme.pink,
+                            Theme.cyan, Theme.ink, Color(hex: 0x00E5C8),
+                        ],
+                        rimmed: true
+                    )
+                    .frame(width: 228, height: 228)
+                    .rotationEffect(.degrees(spinning ? 360 : 0))
+
+                    Text("RW")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.ivory)
+                        .frame(width: 54, height: 54)
+                        .background(Circle().fill(Theme.ink))
+                        .overlay(Circle().stroke(Theme.gold, lineWidth: 4))
+
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Theme.ink)
+                        .frame(width: 22, height: 22)
+                        .rotationEffect(.degrees(45))
+                        .offset(y: -122)
+                }
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .offset(y: lifted ? -geometry.size.height - 40 : 0)
+        }
+        .ignoresSafeArea()
     }
 }
 
@@ -129,10 +210,11 @@ private struct ConnectionErrorView: View {
 /// Petite roue dessinée en natif — évite de dépendre d'une image
 /// pour l'écran affiché justement quand le réseau est coupé.
 private struct WheelMark: View {
-    private let colors: [Color] = [
+    var colors: [Color] = [
         Theme.gold, Theme.pink, Theme.ivory, Theme.cyan,
         Theme.gold, Theme.pink, Theme.ivory, Theme.cyan,
     ]
+    var rimmed = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -158,9 +240,15 @@ private struct WheelMark: View {
                     .fill(colors[index])
                 }
 
-                Circle()
-                    .fill(Theme.ink)
-                    .frame(width: size * 0.22, height: size * 0.22)
+                if rimmed {
+                    Circle()
+                        .stroke(Theme.gold, lineWidth: 12)
+                        .frame(width: size, height: size)
+                } else {
+                    Circle()
+                        .fill(Theme.ink)
+                        .frame(width: size * 0.22, height: size * 0.22)
+                }
             }
             .frame(width: size, height: size)
         }
