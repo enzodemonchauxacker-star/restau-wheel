@@ -12,24 +12,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/app.css?v=6">
+  <link rel="stylesheet" href="/admin/app.css?v=7">
   <style>
     #boot { position: fixed; inset: 0; z-index: 80; background: #e6e5e1; }
     html[data-native] #boot { display: none !important; }
   </style>
-  <script>
-    window.__rwBoot = Date.now();
-    (function () {
-      try {
-        var screenH = screen.height || 0;
-        var innerH = window.innerHeight || 0;
-        var missing = screenH && innerH ? screenH - innerH : 999;
-        if (!window.matchMedia('(max-width: 520px)').matches || screenH < 800 || missing >= 48) return;
-        document.documentElement.style.setProperty('--sat', (screenH >= 852 ? 62 : 47) + 'px');
-        document.documentElement.style.setProperty('--sab', '34px');
-      } catch (e) {}
-    })();
-  </script>
+  <script>window.__rwBoot = Date.now();</script>
   <script>
     try {
       if (localStorage.getItem('rw-theme') === 'Sombre') document.documentElement.dataset.theme = 'dark';
@@ -267,16 +255,16 @@
         </div>
       </div>
     </section>
-  </div>
 
-  <nav class="dock" id="dock" hidden>
+    <nav class="dock" id="dock" hidden>
     <div class="dock-ind" id="dock-ind"></div>
     <button type="button" data-act="tab" data-tab="home" class="on">Accueil</button>
     <button type="button" data-act="tab" data-tab="clients">Clients</button>
     <button type="button" data-act="tab" data-tab="lots">Roue</button>
     <button type="button" data-act="tab" data-tab="qr">QR</button>
     <button type="button" data-act="tab" data-tab="profil">Profil</button>
-  </nav>
+    </nav>
+  </div>
 
   <div class="toast" id="toast" hidden role="status"></div>
 
@@ -288,6 +276,6 @@
     </div>
   </div>
 
-  <script src="/admin/app.js?v=6"></script>
+  <script src="/admin/app.js?v=7"></script>
 </body>
 </html>

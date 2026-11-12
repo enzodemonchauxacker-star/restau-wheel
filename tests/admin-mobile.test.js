@@ -78,20 +78,11 @@ describe('logique de l’app mobile', () => {
     assert.equal(labelColor('#26252b'), '#fff8e7');
   });
 
-  it('décale l’iPhone 16 Pro quand le webview est plein écran', () => {
+  it('ne crée pas de bandeau vide sur l’iPhone', () => {
     const { phoneInsets } = require('../public/admin/app.js');
-    assert.deepEqual(phoneInsets({
-      envTop: 0, envBottom: 0, screenH: 874, innerH: 874, narrow: true,
-    }), { top: 62, bottom: 34 });
-    assert.deepEqual(phoneInsets({
-      envTop: 59, envBottom: 34, screenH: 874, innerH: 874, narrow: true,
-    }), { top: 59, bottom: 34 });
-    assert.deepEqual(phoneInsets({
-      envTop: 0, envBottom: 0, screenH: 874, innerH: 778, narrow: true,
-    }), { top: 0, bottom: 0 });
-    assert.deepEqual(phoneInsets({
-      envTop: 0, envBottom: 0, screenH: 874, innerH: 874, narrow: false,
-    }), { top: 0, bottom: 0 });
+    assert.deepEqual(phoneInsets({ envTop: 0, envBottom: 0 }), { top: 0, bottom: 0 });
+    assert.deepEqual(phoneInsets({ envTop: 59, envBottom: 34 }), { top: 59, bottom: 34 });
+    assert.deepEqual(phoneInsets({ nativeTop: 62, nativeBottom: 34 }), { top: 62, bottom: 34 });
   });
 });
 
