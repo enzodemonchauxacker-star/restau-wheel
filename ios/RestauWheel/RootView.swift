@@ -11,12 +11,13 @@ struct RootView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // L'admin mobile est clair (#e6e5e1). On peint les safe areas de la
-            // même couleur : le WKWebView ne couvre pas le notch ni l'indicateur.
+            // Le webview va jusqu'aux bords. La page décale son contenu
+            // avec les safe areas ; ce fond ne se voit qu'au chargement.
             Theme.background
                 .ignoresSafeArea()
 
             WebView(model: model)
+                .ignoresSafeArea()
                 .opacity(model.loadError == nil ? 1 : 0)
 
             if coverGone, model.isLoading, model.progress < 1 {
