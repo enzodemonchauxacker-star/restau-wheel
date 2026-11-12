@@ -17,6 +17,7 @@ struct RootView: View {
                 .ignoresSafeArea()
 
             WebView(model: model)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
                 .opacity(model.loadError == nil ? 1 : 0)
 

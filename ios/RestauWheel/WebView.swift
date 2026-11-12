@@ -112,10 +112,12 @@ struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
-        webView.isOpaque = false
+        webView.isOpaque = true
         webView.backgroundColor = UIColor(Theme.background)
+        webView.underPageBackgroundColor = UIColor(Theme.background)
         webView.scrollView.backgroundColor = UIColor(Theme.background)
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.scrollView.automaticallyAdjustsScrollIndicatorInsets = false
 
         let refresh = UIRefreshControl()
         refresh.tintColor = UIColor(Theme.gold)
