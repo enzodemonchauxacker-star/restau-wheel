@@ -248,6 +248,7 @@ function showOnboarding() {
 }
 
 function showLogin() {
+  clearIntroFlag();
   showView('view-login');
   const wheel = $('login-wheel');
   wheel.style.background = wheelBackground(S.prizes.length ? S.prizes : DEMO_WHEEL);
@@ -285,26 +286,29 @@ function skipOb() {
   else showLogin();
 }
 
+let loginBusy = false;
+
 async function doLogin(event) {
   if (event) event.preventDefault();
+  if (loginBusy) return;
   const email = $('login-email').value.trim();
-  const password = $('login-pwd').value;
+  const password = $('login-pwd').value.trim();
   $('login-error').hidden = true;
+  if (!email || !password) {
+    $('login-error').hidden = false;
+    return;
+  }
+  loginBusy = true;
   try {
     await api('/api/admin/login', { method: 'POST', body: { email, password } });
     S.authed = true;
-    let draft = '';
-    try { draft = sessionStorage.getItem('rw-resto-draft') || ''; } catch { /* ignore */ }
-    if (draft.trim()) {
-      try {
-        await api('/api/admin/settings', { method: 'PUT', body: { restaurant_name: draft.trim() } });
-        sessionStorage.removeItem('rw-resto-draft');
-      } catch (e) { toast(e.message); }
-    }
+    try { sessionStorage.removeItem('rw-resto-draft'); } catch { /* ignore */ }
     try { localStorage.setItem('rw-ob-done', '1'); } catch { /* ignore */ }
     await enterApp();
   } catch {
     $('login-error').hidden = false;
+  } finally {
+    loginBusy = false;
   }
 }
 
@@ -919,6 +923,7 @@ async function savePrize() {
 }
 
 async function enterApp() {
+  clearIntroFlag();
   showView('view-app');
   S.tab = 'home';
   S.navDir = 0;
@@ -1101,6 +1106,16 @@ function boot() {
   bindPress();
   document.addEventListener('click', onClick);
   $('login-form').addEventListener('submit', doLogin);
+  const loginBtn = $('login-form').querySelector('button[type="submit"]');
+  loginBtn.addEventListener('pointerup', (event) => {
+    if (event.pointerType === 'mouse') return;
+    doLogin(event);
+  });
+  ['login-email', 'login-pwd'].forEach((id) => {
+    $(id).addEventListener('focus', () => {
+      setTimeout(() => $(id).scrollIntoView({ block: 'center' }), 280);
+    });
+  });
   $('q').addEventListener('input', () => {
     S.q = $('q').value;
     clearTimeout(searchTimer);
@@ -1136,8 +1151,23 @@ function boot() {
   checkAuth();
 }
 
+function wantsIntro() {
+  try { return new URLSearchParams(location.search).get('intro') === '1'; }
+  catch { return false; }
+}
+
+function clearIntroFlag() {
+  try {
+    const url = new URL(location.href);
+    if (url.searchParams.get('intro') !== '1') return;
+    url.searchParams.delete('intro');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  } catch { /* ignore */ }
+}
+
 async function checkAuth() {
   let done = false;
+  const intro = wantsIntro();
   try { done = localStorage.getItem('rw-ob-done') === '1'; } catch { /* ignore */ }
   try {
     const me = await api('/api/admin/me');
@@ -1153,8 +1183,8 @@ async function checkAuth() {
       return;
     }
   } catch { /* hors ligne : on reste sur la porte */ }
-  if (done) showLogin();
-  else showOnboarding();
+  if (intro || !done) showOnboarding();
+  else showLogin();
 }
 
 if (typeof document !== 'undefined') {
