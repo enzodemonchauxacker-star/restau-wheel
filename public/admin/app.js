@@ -1095,18 +1095,11 @@ function onClick(event) {
   else if (act === 'logout') doLogout();
 }
 
-/** Insets à ajouter quand le webview couvre l’écran mais que CSS env() vaut 0. */
-function phoneInsets({ envTop = 0, envBottom = 0, screenH = 0, innerH = 0, narrow = false } = {}) {
-  const top = Number(envTop) || 0;
-  const bottom = Number(envBottom) || 0;
-  const screen = Number(screenH) || 0;
-  const inner = Number(innerH) || 0;
-  const missing = screen > 0 && inner > 0 ? screen - inner : 999;
-  if (!narrow || screen < 800 || missing >= 48) return { top, bottom };
-  if (top >= 1 && bottom >= 1) return { top, bottom };
+/** Marges réelles seulement. Une marge inventée laisse un bandeau vide. */
+function phoneInsets({ envTop = 0, envBottom = 0, nativeTop = 0, nativeBottom = 0 } = {}) {
   return {
-    top: top >= 1 ? top : (screen >= 852 ? 62 : 47),
-    bottom: bottom >= 1 ? bottom : 34,
+    top: Math.max(Number(envTop) || 0, Number(nativeTop) || 0),
+    bottom: Math.max(Number(envBottom) || 0, Number(nativeBottom) || 0),
   };
 }
 
@@ -1126,24 +1119,27 @@ function fitPhoneFrame() {
   const root = document.documentElement;
   const nativeTop = parseFloat(getComputedStyle(root).getPropertyValue('--native-sat')) || 0;
   const nativeBottom = parseFloat(getComputedStyle(root).getPropertyValue('--native-sab')) || 0;
-  const narrow = window.matchMedia('(max-width: 520px)').matches;
   const guess = phoneInsets({
-    envTop: Math.max(env.top, nativeTop),
-    envBottom: Math.max(env.bottom, nativeBottom),
-    screenH: window.screen.height,
-    innerH: window.innerHeight,
-    narrow,
+    envTop: env.top,
+    envBottom: env.bottom,
+    nativeTop,
+    nativeBottom,
   });
   root.style.setProperty('--sat', guess.top + 'px');
   root.style.setProperty('--sab', guess.bottom + 'px');
-  if (!window.matchMedia('(max-width: 520px) and (min-height: 700px)').matches) return;
-  const hello = document.querySelector('#view-app.on .hello')
-    || document.querySelector('#view-ob.on .ob-top')
-    || document.querySelector('#view-login.on .ob-top');
-  if (!hello) return;
-  const minTop = guess.top >= 1 ? Math.max(guess.top, 54) : ((window.screen.height || 0) >= 852 ? 62 : 50);
-  const delta = minTop - hello.getBoundingClientRect().top;
-  if (delta > 4) root.style.setProperty('--sat', (guess.top + delta) + 'px');
+  const shell = document.querySelector('.shell');
+  const vv = window.visualViewport;
+  if (!shell) return;
+  const phone = window.matchMedia('(max-width: 820px)').matches;
+  if (!phone || !vv || vv.offsetTop < 1) {
+    shell.style.top = '';
+    shell.style.bottom = '';
+    shell.style.height = '';
+    return;
+  }
+  shell.style.top = `${vv.offsetTop}px`;
+  shell.style.bottom = 'auto';
+  shell.style.height = `${vv.height}px`;
 }
 
 function boot() {
@@ -1201,7 +1197,10 @@ function boot() {
     layoutNav(false);
     if (S.tab === 'home') renderHome();
   });
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitPhoneFrame);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitPhoneFrame);
+    window.visualViewport.addEventListener('scroll', fitPhoneFrame);
+  }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutNav(false));
   paintOnboarding();
   checkAuth();

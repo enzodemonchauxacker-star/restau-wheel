@@ -31,15 +31,16 @@ html[data-theme="dark"] {
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html, body { margin: 0; height: 100%; }
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
 body {
-  background: #1d1c20;
   color: var(--text);
   font-family: 'Geist', 'Helvetica Neue', Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
-}
-@media (max-width: 520px) {
-  html, body { background: var(--bg); }
 }
 button, input { font-family: inherit; }
 button {
@@ -54,10 +55,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 button:focus:not(:focus-visible) { outline: none; }
 a { color: var(--accent); }
 .shell {
-  position: relative;
-  width: min(100%, 480px);
-  height: 100%;
-  margin: 0 auto;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  margin: 0;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -216,7 +220,7 @@ h1.ob-title, .ob-title {
   position: absolute;
   inset: 0;
   overflow-y: auto;
-  padding: calc(16px + var(--sat)) 18px calc(108px + var(--sab));
+  padding: calc(12px + var(--sat)) 18px calc(80px + var(--sab));
   scrollbar-width: none;
   z-index: 1;
 }
@@ -440,10 +444,10 @@ h1.ob-title, .ob-title {
 }
 
 .dock {
-  position: fixed;
-  left: max(14px, calc(50% - 240px + 14px));
-  right: max(14px, calc(50% - 240px + 14px));
-  bottom: calc(8px + var(--sab));
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: var(--sab);
   height: 64px;
   border-radius: 99px;
   background: var(--glass2);
@@ -615,7 +619,7 @@ h1.ob-title, .ob-title {
 /* Écran large : la même interface, en deux colonnes, plus la colonne téléphone. */
 @media (min-width: 1024px) {
   body { background: var(--bg); }
-  .shell { width: 100%; }
+  .shell { left: 0; right: 0; width: auto; }
   .scroll {
     padding: 28px max(32px, calc(50vw - 640px)) 128px;
   }
