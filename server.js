@@ -449,9 +449,10 @@ app.post('/api/register', async (req, res) => {
 
 // ─── Auth admin restaurant ────────────────────────────────────────────────────
 app.post('/api/admin/login', async (req, res) => {
-  const { email, password } = req.body;
-  const r = await db.prepare('SELECT * FROM restaurants WHERE lower(email)=lower(?) AND active=1').get(email?.trim());
-  if (!r || password !== r.password) return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+  const email = String(req.body?.email || '').trim();
+  const password = String(req.body?.password || '').trim();
+  const r = await db.prepare('SELECT * FROM restaurants WHERE lower(email)=lower(?) AND active=1').get(email);
+  if (!r || password !== String(r.password || '').trim()) return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
   req.session.restaurantId   = parseInt(r.id, 10);
   req.session.restaurantName = r.name;
   res.json({ success: true });

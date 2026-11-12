@@ -102,7 +102,12 @@ h1.ob-title, .ob-title {
 .err { color: var(--pink); font-size: 14px; font-weight: 600; margin-top: 8px; }
 
 /* Onboarding + login */
-#view-ob, #view-login { padding: calc(20px + env(safe-area-inset-top)) 24px calc(34px + env(safe-area-inset-bottom)); overflow: hidden; }
+#view-ob, #view-login {
+  padding: calc(20px + env(safe-area-inset-top)) 24px calc(34px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .ob-wheel {
   position: absolute;
   width: 520px;
@@ -114,6 +119,7 @@ h1.ob-title, .ob-title {
   border: 14px solid var(--accent);
   transition: transform .9s cubic-bezier(.22, 1, .36, 1);
   z-index: 0;
+  pointer-events: none;
 }
 .ob-pointer {
   position: absolute;
@@ -126,6 +132,7 @@ h1.ob-title, .ob-title {
   transform: rotate(45deg);
   border-radius: 6px;
   z-index: 0;
+  pointer-events: none;
 }
 .ob-top, .ob-bottom { position: relative; z-index: 1; }
 .ob-top { display: flex; justify-content: space-between; align-items: center; }
@@ -180,6 +187,25 @@ h1.ob-title, .ob-title {
 .login-form .btn-accent { width: 100%; margin-top: 8px; }
 .fine { font-size: 14px; color: var(--muted); margin: 14px 0 0; text-align: center; }
 .fine a { font-weight: 700; text-decoration: none; }
+.ob-login {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 8px 0 2px;
+  background: none;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-height: 740px) {
+  .ob-wheel { width: 400px; height: 400px; margin-left: -200px; top: -190px; }
+  .ob-pointer { top: 200px; }
+  h1.ob-title, .ob-title { font-size: 28px; }
+  .field, .btn-accent { height: 52px; }
+}
 
 /* App */
 .scroll {

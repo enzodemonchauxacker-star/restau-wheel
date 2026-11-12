@@ -285,26 +285,29 @@ function skipOb() {
   else showLogin();
 }
 
+let loginBusy = false;
+
 async function doLogin(event) {
   if (event) event.preventDefault();
+  if (loginBusy) return;
   const email = $('login-email').value.trim();
-  const password = $('login-pwd').value;
+  const password = $('login-pwd').value.trim();
   $('login-error').hidden = true;
+  if (!email || !password) {
+    $('login-error').hidden = false;
+    return;
+  }
+  loginBusy = true;
   try {
     await api('/api/admin/login', { method: 'POST', body: { email, password } });
     S.authed = true;
-    let draft = '';
-    try { draft = sessionStorage.getItem('rw-resto-draft') || ''; } catch { /* ignore */ }
-    if (draft.trim()) {
-      try {
-        await api('/api/admin/settings', { method: 'PUT', body: { restaurant_name: draft.trim() } });
-        sessionStorage.removeItem('rw-resto-draft');
-      } catch (e) { toast(e.message); }
-    }
+    try { sessionStorage.removeItem('rw-resto-draft'); } catch { /* ignore */ }
     try { localStorage.setItem('rw-ob-done', '1'); } catch { /* ignore */ }
     await enterApp();
   } catch {
     $('login-error').hidden = false;
+  } finally {
+    loginBusy = false;
   }
 }
 
@@ -1101,6 +1104,16 @@ function boot() {
   bindPress();
   document.addEventListener('click', onClick);
   $('login-form').addEventListener('submit', doLogin);
+  const loginBtn = $('login-form').querySelector('button[type="submit"]');
+  loginBtn.addEventListener('pointerup', (event) => {
+    if (event.pointerType === 'mouse') return;
+    doLogin(event);
+  });
+  ['login-email', 'login-pwd'].forEach((id) => {
+    $(id).addEventListener('focus', () => {
+      setTimeout(() => $(id).scrollIntoView({ block: 'center' }), 280);
+    });
+  });
   $('q').addEventListener('input', () => {
     S.q = $('q').value;
     clearTimeout(searchTimer);

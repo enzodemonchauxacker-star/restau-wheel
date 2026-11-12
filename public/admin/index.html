@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/app.css?v=4">
+  <link rel="stylesheet" href="/admin/app.css?v=5">
   <style>
     #boot { position: fixed; inset: 0; z-index: 80; background: #e6e5e1; }
     html[data-native] #boot { display: none !important; }
@@ -44,7 +44,7 @@
       <div class="ob-pointer"></div>
       <div class="ob-top">
         <div class="brand">RESTAU WHEEL</div>
-        <button type="button" class="btn-skip" data-act="skip-ob">Passer</button>
+        <button type="button" class="btn-skip" data-act="skip-ob">Connexion</button>
       </div>
       <div class="ob-bottom">
         <div id="ob-0" class="fade">
@@ -67,6 +67,7 @@
           <div class="dots" id="ob-dots"><i class="on"></i><i></i><i></i></div>
           <button type="button" class="btn-accent" id="ob-cta" data-act="next-ob">Continuer</button>
         </div>
+        <button type="button" class="ob-login" data-act="skip-ob">J'ai déjà un compte</button>
       </div>
     </section>
 
@@ -79,8 +80,8 @@
       <form id="login-form" class="ob-bottom login-form">
         <div class="kicker">ESPACE RESTAURATEUR</div>
         <h1 class="ob-title">Connexion</h1>
-        <input id="login-email" class="field" type="email" placeholder="Votre email" autocomplete="username" required>
-        <input id="login-pwd" class="field" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+        <input id="login-email" class="field" type="email" placeholder="Votre email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" enterkeyhint="next" required>
+        <input id="login-pwd" class="field" type="password" placeholder="Mot de passe" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required>
         <div id="login-error" class="err" hidden>Email ou mot de passe incorrect.</div>
         <button type="submit" class="btn-accent">Se connecter</button>
         <p class="fine">Pas encore de compte ? <a href="/register">S'inscrire</a></p>
@@ -275,6 +276,6 @@
     </div>
   </div>
 
-  <script src="/admin/app.js?v=4"></script>
+  <script src="/admin/app.js?v=5"></script>
 </body>
 </html>
