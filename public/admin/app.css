@@ -34,8 +34,23 @@ html[data-theme="dark"] {
 html, body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   background: var(--bg);
+}
+/* Peint au-delà du cadre : sinon iOS laisse une bande vide en haut et en bas. */
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: -120px;
+  height: 140vh;
+  height: calc(100lvh + 240px);
+  background: var(--bg);
+  pointer-events: none;
 }
 body {
   color: var(--text);
