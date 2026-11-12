@@ -18,5 +18,14 @@ describe('dashboard Reikon', () => {
     assert.match(page, />Profil</);
     assert.match(page, /Reikon Pro/);
     assert.match(page, /\/admin\/app\.css/);
+    assert.match(page, /\/reikon\/theme\.css/);
+    const theme = fs.readFileSync(path.join(__dirname, '../public/reikon/theme.css'), 'utf8');
+    assert.match(theme, /#fff8f1/);
+    assert.match(theme, /#e8ff95/);
+    assert.match(theme, /#3b3b3b/);
+    assert.match(theme, /#1f8a5b/);
+    assert.match(theme, /#c43648/);
+    const script = fs.readFileSync(path.join(__dirname, '../public/reikon/app.js'), 'utf8');
+    assert.doesNotMatch(script, /#ffd60a|#ff2d6a|#00e5c8/);
   });
 });

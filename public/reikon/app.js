@@ -5,11 +5,11 @@ const MONTH = [40, 55, 48, 62, 70, 58, 80, 74, 66, 90, 84, 96];
 const WEEK_LETTERS = 'LMMJVSD';
 const MONTH_LETTERS = 'JFMAMJJASOND';
 const PRIZES = [
-  { name: 'Café offert', color: '#ffd60a', chance: 20 },
-  { name: 'Dessert offert', color: '#ff2d6a', chance: 15 },
-  { name: '−10 % sur la note', color: '#00c2ff', chance: 15 },
-  { name: 'Boisson offerte', color: '#00e5c8', chance: 20 },
-  { name: 'Perdu', color: '#26252b', chance: 30 },
+  { name: 'Café offert', color: '#e8ff95', chance: 20 },
+  { name: 'Dessert offert', color: '#c43648', chance: 15 },
+  { name: '−10 % sur la note', color: '#3b3b3b', chance: 15 },
+  { name: 'Boisson offerte', color: '#1f8a5b', chance: 20 },
+  { name: 'Perdu', color: '#d7ef78', chance: 30 },
 ];
 const CLIENTS = [
   { name: 'Camille Durand', sub: 'Dessert offert · aujourd’hui', status: 'pending', badge: 'EN ATTENTE' },
@@ -20,9 +20,9 @@ const CLIENTS = [
   { name: 'Noah Garcia', sub: 'Café offert · expiré', status: 'expired', badge: 'EXPIRÉ' },
 ];
 const BADGE = {
-  pending: ['#ffd60a', '#0a0a0a'],
-  used: ['#00e5c8', '#0a0a0a'],
-  expired: ['#ff2d6a', '#0a0a0a'],
+  pending: ['#fffaf0', '#9a6b12'],
+  used: ['#f3fbf7', '#1f8a5b'],
+  expired: ['#fff6f7', '#c43648'],
 };
 
 const state = { tab: 'home', period: 'week', filter: 'all', q: '' };
@@ -134,7 +134,10 @@ document.addEventListener('click', (event) => {
   }
   if (act === 'go-lots') showTab('lots');
   if (act === 'accent') {
-    document.documentElement.style.setProperty('--accent', btn.dataset.color);
+    const color = btn.dataset.color;
+    const onLight = color === '#e8ff95' || color === '#d7ef78';
+    document.documentElement.style.setProperty('--accent', color);
+    document.documentElement.style.setProperty('--on-accent', onLight ? '#1e1e1e' : '#fff8f1');
     document.querySelectorAll('#swatches button').forEach((el) => el.classList.toggle('on', el === btn));
     paintPrizes();
   }
