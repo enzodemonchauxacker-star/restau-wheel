@@ -1,872 +1,657 @@
 <!DOCTYPE html>
 <html lang="fr" data-i18n-title="land.title">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Restau Wheel — Fidélisation par la chance</title>
   <meta name="description" content="Une roue de fortune sur chaque table. Vos clients scannent, jouent, reviennent.">
-  <link rel="stylesheet" href="/css/theme.css">
+  <meta name="theme-color" content="#e6e5e1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #e6e5e1;
+      --card: rgba(255, 255, 255, .62);
+      --card2: rgba(10, 10, 10, .07);
+      --text: #0a0a0a;
+      --muted: #5f5e5a;
+      --line: rgba(10, 10, 10, .14);
+      --accent: #ffd60a;
+      --ink: #0a0a0a;
+      --pink: #ff2d6a;
+      --mint: #00e5c8;
+      --gl: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 0 0 1px rgba(255, 255, 255, .5), 0 10px 30px rgba(0, 0, 0, .07);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      background: var(--felt);
-      color: var(--ivory);
-      overflow-x: hidden;
+      margin: 0;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Helvetica Neue', Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-
-    /* Atmosphere */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 70% 45% at 15% 10%, rgba(255,214,10,0.28), transparent 55%),
-        radial-gradient(ellipse 55% 40% at 90% 75%, rgba(255,45,106,0.32), transparent 50%),
-        radial-gradient(ellipse 40% 30% at 70% 20%, rgba(0,194,255,0.18), transparent 50%),
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 3px,
-          rgba(0,0,0,0.03) 3px,
-          rgba(0,0,0,0.03) 4px
-        );
-      pointer-events: none;
-      z-index: 0;
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font-family: inherit; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .num {
+      font-family: 'Doto', ui-monospace, monospace;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      line-height: 1;
     }
-    .wrap { position: relative; z-index: 1; }
+    .halo { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .halo.a { width: 460px; height: 460px; right: -80px; top: -80px; background: var(--accent); filter: blur(90px); opacity: .55; }
+    .halo.b { width: 420px; height: 420px; left: -160px; top: 520px; background: var(--pink); filter: blur(100px); opacity: .28; }
+    .halo.c { width: 360px; height: 360px; right: -80px; bottom: -40px; background: var(--mint); filter: blur(100px); opacity: .35; }
 
-    /* Chrome — couche translucide, le contenu défile dessous */
-    .chrome {
+    .page { position: relative; z-index: 1; }
+
+    .top {
       position: sticky;
-      top: 0;
-      z-index: 40;
-      background: rgba(10, 10, 10, 0.78);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      backdrop-filter: blur(20px) saturate(180%);
-    }
-    .chrome::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0; bottom: -18px;
-      height: 18px;
-      pointer-events: none;
-      background: linear-gradient(to bottom, rgba(10,10,10,0.32), transparent);
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-    .chrome.is-scrolled::after { opacity: 1; }
-    .chrome.is-scrolled {
-      background: rgba(10, 10, 10, 0.88);
-    }
-
-    .nav {
+      top: 14px;
+      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.85rem clamp(1.25rem, 4vw, 4rem);
-      max-width: 1440px;
-      margin: 0 auto;
+      gap: 12px;
+      width: min(1180px, calc(100% - 28px));
+      margin: 14px auto 0;
+      padding: 8px 8px 8px 10px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .46);
+      backdrop-filter: blur(22px) saturate(1.8);
+      -webkit-backdrop-filter: blur(22px) saturate(1.8);
+      box-shadow: var(--gl);
     }
     .brand {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.15rem;
-      letter-spacing: 0.02em;
-      font-optical-sizing: auto;
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: .06em;
+      background: var(--ink);
+      color: #ffd60a;
+      padding: 10px 14px;
+      border-radius: 99px;
+      flex: none;
     }
-    .nav-actions { display: flex; align-items: center; gap: 1.15rem; }
+    .nav-actions { display: flex; align-items: center; gap: 6px; min-width: 0; }
     .nav-link {
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: rgba(255,248,231,0.82);
-      padding: 0.35rem 0;
-      transition: color 80ms ease-out, transform 80ms ease-out;
-    }
-    .nav-link:hover { color: var(--ivory); }
-    .nav-link:active { transform: scale(0.97); color: var(--ivory); }
-    .nav .btn { padding: 0.65rem 1.1rem; font-size: 0.82rem; }
-
-    /* HERO */
-    .hero {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: clamp(2rem, 5vw, 4rem);
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 99px;
+      display: inline-flex;
       align-items: center;
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 8vw, 6rem);
-      min-height: calc(100vh - 4.5rem);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      flex: none;
     }
-    .tag {
-      display: inline-block;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--brass);
-      color: var(--brass);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
-      margin-bottom: 1.5rem;
+    .nav-link:hover { background: var(--card2); }
+    .lang {
+      display: flex;
+      background: var(--card2);
+      border-radius: 99px;
+      padding: 4px;
     }
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.6rem, 6vw, 4.2rem);
+    .lang button {
+      height: 36px;
+      min-width: 40px;
+      border: none;
+      border-radius: 99px;
+      background: transparent;
+      color: var(--muted);
       font-weight: 700;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-      font-optical-sizing: auto;
-      margin-bottom: 1.25rem;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .lang button.is-active { background: var(--text); color: var(--bg); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 99px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--ink);
+      white-space: nowrap;
+      flex: none;
+    }
+    .btn-accent { background: var(--accent); }
+    .btn-ink { background: var(--ink); color: #fff8e7; }
+    .btn-glass {
+      background: var(--card);
+      box-shadow: var(--gl);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .btn-lg { height: 60px; padding: 0 26px; font-size: 17px; }
+
+    .hero {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 48px 0 28px;
+      display: grid;
+      gap: 28px;
+    }
+    .kicker {
+      font-size: 12px;
+      letter-spacing: .14em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-weight: 500;
+      font-size: clamp(38px, 6vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -.035em;
       max-width: 12ch;
     }
-    .hero-sub {
-      font-size: 1.1rem;
-      line-height: 1.55;
-      letter-spacing: 0.005em;
-      color: rgba(255,248,231,0.72);
+    .lede {
+      margin: 0 0 26px;
+      font-size: 18px;
+      line-height: 1.45;
+      color: var(--muted);
       max-width: 36ch;
-      margin-bottom: 2rem;
     }
-    .cta-row { display: flex; flex-wrap: wrap; gap: 0.9rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
-    /* Ticket — physique via --tx/--ty/--rx/--ry/--rz */
-    .hero-visual {
+    .board {
+      display: grid;
+      gap: 12px;
+    }
+    .chart {
+      background: var(--accent);
+      color: var(--ink);
+      border-radius: 36px;
+      padding: 22px 22px 18px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .chart-kicker { font-size: 11px; letter-spacing: .12em; }
+    .pills { display: flex; background: rgba(10, 10, 10, .1); border-radius: 99px; padding: 3px; }
+    .pills span { height: 32px; padding: 0 12px; border-radius: 99px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; }
+    .pills .on { background: #0a0a0a; color: #fff8e7; }
+    .big { font-size: clamp(64px, 8vw, 88px); margin: 12px 0 8px; }
+    .bars { display: flex; align-items: flex-end; gap: 7px; height: 84px; margin-top: auto; }
+    .bars i {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.1rem;
+      justify-content: flex-end;
+      gap: 6px;
+      height: 100%;
+      font-style: normal;
+      font-size: 11px;
     }
-    .ticket-stage {
-      perspective: 920px;
-      width: min(100%, 400px);
-    }
-    .ticket {
-      --tx: 0px;
-      --ty: 0px;
-      --rx: 0deg;
-      --ry: 0deg;
-      --rz: 2deg;
+    .bars b {
+      display: block;
       width: 100%;
-      background: var(--ivory);
-      color: var(--ink);
-      padding: 2rem 1.75rem;
-      position: relative;
-      border: 3px solid var(--ink);
-      box-shadow:
-        10px 10px 0 #ff2d6a,
-        0 30px 60px rgba(0,0,0,0.35);
-      transform:
-        translate3d(var(--tx), var(--ty), 0)
-        rotateX(var(--rx))
-        rotateY(var(--ry))
-        rotateZ(var(--rz));
-      transform-style: preserve-3d;
-      will-change: transform;
-      cursor: grab;
-      touch-action: pan-y;
-      user-select: none;
+      border-radius: 10px;
+      background: rgba(10, 10, 10, .22);
     }
-    .ticket.is-held { cursor: grabbing; }
-    .ticket::before,
-    .ticket::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      height: 12px;
-      background:
-        radial-gradient(circle at 10px 0, transparent 9px, var(--ivory) 10px) repeat-x;
-      background-size: 20px 12px;
+    .bars i.on b { background: #0a0a0a; }
+    .bars i.on { font-weight: 700; }
+
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { border-radius: 28px; padding: 16px; }
+    .stat .lbl { font-size: 10px; letter-spacing: .12em; }
+    .stat .mid { font-size: 36px; margin-top: 8px; }
+    .stat .go { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    .glass {
+      background: var(--card);
+      backdrop-filter: blur(26px) saturate(1.7);
+      -webkit-backdrop-filter: blur(26px) saturate(1.7);
+      box-shadow: var(--gl);
     }
-    .ticket::before { top: -12px; transform: scaleY(-1); }
-    .ticket::after { bottom: -12px; }
-    .ticket-top {
+    .stat.mint { background: var(--mint); }
+    .stat.pink { background: var(--pink); }
+
+    .wheel-card {
+      border-radius: 36px;
+      padding: 22px 18px 18px;
       display: flex;
-      justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px dashed var(--line);
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
     }
-    .ticket-top .warn { color: var(--wine); }
-    .ticket h2 {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.35rem;
-    }
-    .ticket-meta {
-      font-size: 0.88rem;
-      color: var(--muted);
-      margin-bottom: 1.4rem;
-    }
-    .wheel-mini {
-      width: 180px;
-      height: 180px;
-      margin: 0 auto 1.4rem;
+    .wheel-wrap { position: relative; width: min(210px, 70%); aspect-ratio: 1; }
+    .wheel {
+      position: absolute;
+      inset: 0;
       border-radius: 50%;
-      border: 6px solid var(--brass);
-      background:
-        conic-gradient(
-          from 20deg,
-          #0a0a0a 0 45deg,
-          #ff2d6a 45deg 90deg,
-          #ffd60a 90deg 135deg,
-          #00c2ff 135deg 180deg,
-          #00e5c8 180deg 225deg,
-          #ff2d6a 225deg 270deg,
-          #ffd60a 270deg 315deg,
-          #fff8e7 315deg 360deg
-        );
-      position: relative;
-      box-shadow: inset 0 0 0 3px var(--ink);
+      border: 10px solid var(--accent);
+      background: conic-gradient(
+        #ffd60a 0 60deg,
+        #0a0a0a 60deg 120deg,
+        #ff2d6a 120deg 180deg,
+        #fff8e7 180deg 240deg,
+        #00e5c8 240deg 300deg,
+        #00c2ff 300deg 360deg
+      );
       cursor: grab;
       touch-action: none;
-      will-change: transform;
     }
-    .wheel-mini:active { cursor: grabbing; }
-    .wheel-mini::after {
-      content: '';
+    .wheel:active { cursor: grabbing; }
+    .hub {
       position: absolute;
-      inset: 38%;
+      left: 50%; top: 50%;
+      width: 52px; height: 52px;
+      margin: -26px 0 0 -26px;
       border-radius: 50%;
-      background: var(--brass);
-      box-shadow: 0 0 0 3px var(--ink);
+      background: var(--ink);
+      border: 4px solid var(--accent);
+      color: #fff8e7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      font-size: 12px;
       pointer-events: none;
     }
-    .ticket-note {
-      font-size: 0.82rem;
-      line-height: 1.45;
-      color: var(--muted);
-      margin-bottom: 1.2rem;
+    .pointer {
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      width: 22px; height: 22px;
+      margin-left: -11px;
+      background: var(--text);
+      transform: rotate(45deg);
+      border-radius: 4px;
+      pointer-events: none;
     }
-    .stamp {
-      display: inline-block;
-      padding: 0.45rem 0.8rem;
-      border: 3px solid var(--wine);
-      color: var(--wine);
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      transform: rotate(-8deg);
-      animation: stampIn 0.6s var(--ease) 0.8s both;
-      background: rgba(255,45,106,0.08);
-    }
-    .ticket-hint {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,248,231,0.45);
-      transition: opacity 0.4s ease;
-    }
-    .ticket-hint.is-gone { opacity: 0; }
-
-    /* HOW */
-    .how {
-      background: var(--ivory);
-      color: var(--ink);
-      padding: clamp(4rem, 8vw, 5.5rem) clamp(1.25rem, 4vw, 4rem);
-    }
-    .how-inner { max-width: 1200px; margin: 0 auto; }
-    .eyebrow {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.18em;
-      color: var(--wine);
-      font-weight: 500;
-      margin-bottom: 0.75rem;
-    }
-    .how h2,
-    .features h2,
-    .cta-band h2 {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 4vw, 2.7rem);
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -0.025em;
-      font-optical-sizing: auto;
-      margin-bottom: 2.5rem;
-    }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
-    }
-    .step {
-      background: var(--ticket);
-      border: 3px solid var(--ink);
-      padding: 1.75rem 1.5rem;
-      transition: transform 100ms ease-out, box-shadow 0.35s, opacity 0.7s var(--ease);
-    }
-    .step.is-in:hover {
-      transform: translateY(-4px);
-      box-shadow: 6px 6px 0 #ff2d6a;
-    }
-    .step.is-in:active { transform: scale(0.985); }
-    .step-num {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--wine);
-      margin-bottom: 0.9rem;
-    }
-    .step h3 {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.7rem;
-    }
-    .step p {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: var(--muted);
-    }
-
-    /* FEATURES */
-    .features {
-      background: var(--felt-deep);
-      padding: clamp(4rem, 8vw, 5.5rem) clamp(1.25rem, 4vw, 4rem);
-    }
-    .features-inner { max-width: 1200px; margin: 0 auto; }
-    .feat-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-    }
-    .feat {
-      border: 3px solid rgba(255, 214, 10, 0.55);
-      background: rgba(20, 20, 20, 0.72);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
-      backdrop-filter: blur(16px) saturate(140%);
-      padding: 1.5rem 1.25rem;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-      transition: transform 100ms ease-out;
-    }
-    .feat:active { transform: scale(0.985); }
-    .feat-bar {
-      width: 2rem;
-      height: 3px;
-      background: var(--brass);
-      margin-bottom: 1rem;
-    }
-    .feat h3 {
-      font-family: var(--font-display);
-      font-size: 1.15rem;
-      line-height: 1.2;
-      letter-spacing: -0.015em;
-      margin-bottom: 0.6rem;
-    }
-    .feat p {
-      font-size: 0.88rem;
-      line-height: 1.5;
-      color: rgba(255,248,231,0.68);
-    }
-
-    /* CTA */
-    .cta-band {
-      background: var(--wine);
-      text-align: center;
-      padding: clamp(3.5rem, 7vw, 5rem) 1.5rem;
-    }
-    .cta-band p {
-      color: rgba(255,248,231,0.75);
-      margin: -1.5rem auto 1.75rem;
-      max-width: 40ch;
-      line-height: 1.5;
-    }
-
-    #comment,
-    .features,
-    .cta-band {
-      scroll-margin-top: 4.25rem;
-    }
-
-    /* FOOTER */
-    .footer {
+    .prize {
+      width: 100%;
+      border-radius: 24px;
+      padding: 12px 14px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      padding: 1.5rem clamp(1.25rem, 4vw, 4rem);
-      background: var(--felt-deep);
-      color: rgba(255,248,231,0.45);
-      font-size: 0.8rem;
+      align-items: flex-start;
+      gap: 12px;
+      text-align: left;
     }
-    .footer .brand {
-      font-size: 0.9rem;
-      color: rgba(255,248,231,0.55);
+    .prize strong { display: block; font-size: 15px; }
+    .prize span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+    .prize > div:first-child { min-width: 0; flex: 1; }
+    .badge {
+      margin-left: auto;
+      font-size: 10px;
+      letter-spacing: .08em;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 99px;
+      background: var(--accent);
+      flex: none;
     }
-    .footer a {
-      color: rgba(255,248,231,0.7);
-      font-weight: 500;
-    }
-    .footer a:hover { color: var(--ivory); }
+    .hint { margin: 0; font-size: 12px; letter-spacing: .08em; color: var(--muted); }
 
-    /* ── Scroll reveals ── */
+    .section {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 36px 0 12px;
+      scroll-margin-top: 110px;
+    }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .14em;
+      color: var(--pink);
+      margin: 0 0 8px;
+    }
+    h2 {
+      margin: 0 0 18px;
+      font-weight: 500;
+      font-size: clamp(30px, 4vw, 44px);
+      letter-spacing: -.03em;
+      line-height: 1.05;
+    }
+    .steps, .feats { display: grid; gap: 12px; }
+    .step, .feat {
+      border-radius: 32px;
+      padding: 22px 20px;
+    }
+    .step-num { font-size: 28px; margin-bottom: 14px; }
+    .step h3, .feat h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+    .step p, .feat p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--muted); }
+    .step.yellow { background: var(--accent); }
+    .step.yellow p { color: rgba(10, 10, 10, .72); }
+    .step.mint { background: var(--mint); }
+    .step.mint p { color: rgba(10, 10, 10, .72); }
+    .feat.pink { background: var(--pink); }
+    .feat.pink p { color: rgba(10, 10, 10, .78); }
+    .feat.mint { background: var(--mint); }
+    .feat.mint p { color: rgba(10, 10, 10, .72); }
+
+    .band {
+      width: min(1180px, calc(100% - 36px));
+      margin: 28px auto 10px;
+      background: var(--accent);
+      color: var(--ink);
+      border-radius: 40px;
+      padding: 36px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .band h2 { margin: 0 0 8px; }
+    .band p { margin: 0; font-size: 16px; max-width: 36ch; }
+    .price { font-size: 64px; }
+    .price span { font-family: 'Geist', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: 0; }
+
+    footer {
+      width: min(1180px, calc(100% - 36px));
+      margin: 8px auto 28px;
+      padding: 18px 8px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 22px;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer a { font-weight: 600; }
+    footer a:hover { color: var(--text); }
+    .foot-links { display: flex; flex-wrap: wrap; gap: 14px; }
+
     .reveal {
       opacity: 0;
-      transform: translateY(36px);
-      transition:
-        opacity 0.8s var(--ease),
-        transform 0.8s var(--ease);
-      transition-delay: var(--d, 0ms);
-      will-change: opacity, transform;
-    }
-    .reveal.from-left { transform: translateX(-40px); }
-    .reveal.from-right { transform: translateX(40px); }
-    .reveal.scale-up { transform: translateY(24px) scale(0.94); }
-    .reveal.is-in {
-      opacity: 1;
-      transform: none;
-    }
-    .feat.reveal.is-in .feat-bar {
-      animation: barGrow 0.55s var(--ease) both;
+      transform: translateY(18px);
+      animation: rise .7s cubic-bezier(.22, 1, .36, 1) forwards;
       animation-delay: var(--d, 0ms);
     }
-    @keyframes barGrow {
-      from { width: 0; opacity: 0; }
-      to { width: 2rem; opacity: 1; }
+    @keyframes rise {
+      to { opacity: 1; transform: none; }
     }
 
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; min-height: auto; text-align: left; }
-      .hero h1 { max-width: none; }
-      .steps, .feat-grid { grid-template-columns: 1fr; }
+    @media (min-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.15fr);
+        align-items: center;
+        gap: 40px;
+        min-height: calc(100dvh - 110px);
+        padding-top: 28px;
+      }
+      .board {
+        grid-template-columns: 1.2fr .9fr;
+        align-items: stretch;
+      }
+      .chart { grid-column: 1; grid-row: 1; }
+      .stats { grid-column: 1; grid-row: 2; }
+      .wheel-card { grid-column: 2; grid-row: 1 / span 2; justify-content: center; }
+      .steps { grid-template-columns: repeat(3, 1fr); }
+      .feats { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 720px) {
       .nav-how { display: none; }
-      .reveal.from-left,
-      .reveal.from-right { transform: translateY(28px); }
+      .top {
+        width: calc(100% - 16px);
+        flex-wrap: wrap;
+        border-radius: 28px;
+        padding: 8px;
+      }
+      .nav-actions { flex: 1 1 auto; justify-content: flex-end; }
+      .nav-link { padding: 0 8px; font-size: 13px; }
+      .btn { padding: 0 12px; font-size: 13px; }
+      h1 { max-width: none; }
     }
-    @media (max-width: 480px) {
-      .brand { font-size: 0.95rem; }
-      .nav { padding: 0.7rem 1rem; gap: 0.5rem; }
-      .nav-actions { gap: 0.55rem; }
-    }
-
     @media (prefers-reduced-motion: reduce) {
-      .reveal,
-      .reveal.from-left,
-      .reveal.from-right,
-      .reveal.scale-up {
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-      }
-      .ticket { cursor: default; }
-      .wheel-mini { cursor: default; }
-      .stamp { animation: none; }
-      .feat.reveal.is-in .feat-bar { animation: none; }
-      .step.is-in:hover,
-      .step.is-in:active,
-      .feat:active,
-      .nav-link:active { transform: none; }
-    }
-    @media (prefers-reduced-transparency: reduce) {
-      .chrome {
-        background: #0a0a0a;
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-      }
-      .feat {
-        background: #141414;
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-      }
-    }
-    @media (prefers-contrast: more) {
-      .chrome {
-        background: #000;
-        border-bottom: 2px solid var(--brass);
-      }
-      .chrome::after { display: none; }
-      .feat { border-color: var(--brass); background: #000; }
-      .nav-link { color: var(--ivory); }
-      .hero-sub { color: var(--ivory); }
-      .feat p { color: var(--ivory); }
+      html { scroll-behavior: auto; }
+      .reveal { animation: none; opacity: 1; transform: none; }
+      .wheel { cursor: default; }
     }
   </style>
 </head>
 <body>
-<div class="wrap">
+  <div class="halo a"></div>
+  <div class="halo b"></div>
+  <div class="halo c"></div>
 
-  <header class="chrome" id="chrome">
-    <nav class="nav">
+  <div class="page">
+    <header class="top">
       <a href="/" class="brand">RESTAU WHEEL</a>
       <div class="nav-actions">
         <a class="nav-link nav-how" href="#comment" data-i18n="nav.how">Comment ça marche</a>
-        <div class="lang-switch" role="group" aria-label="Language">
+        <div class="lang" role="group" aria-label="Language">
           <button type="button" data-lang-btn="fr">FR</button>
           <button type="button" data-lang-btn="en">EN</button>
         </div>
         <a class="nav-link" href="/admin" data-i18n="nav.login">Connexion</a>
-        <a class="btn btn-brass" href="/register" data-i18n="nav.start">Commencer</a>
+        <a class="btn btn-accent" href="/register" data-i18n="nav.start">Commencer</a>
       </div>
-    </nav>
-  </header>
+    </header>
 
-  <section class="hero">
-    <div class="hero-copy">
-      <div class="tag reveal is-in" style="--d:0ms" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
-      <h1 class="reveal is-in" style="--d:80ms" data-i18n="land.h1">Faites tourner la chance à table.</h1>
-      <p class="hero-sub reveal is-in" style="--d:180ms" data-i18n="land.sub">Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.</p>
-      <div class="cta-row reveal is-in" style="--d:280ms">
-        <a class="btn btn-wine" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
-        <a class="btn btn-brass" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
-      </div>
-    </div>
-
-    <div class="hero-visual">
-      <div class="ticket-stage reveal from-right is-in" style="--d:200ms">
-        <div class="ticket" id="hero-ticket">
-          <div class="ticket-top">
-            <span data-i18n="land.ticket.top">BON DE CHANCE</span>
-            <span class="warn" data-i18n="land.ticket.warn">VALABLE 7 J</span>
-          </div>
-          <h2 data-i18n="land.ticket.h2">Dessert offert</h2>
-          <p class="ticket-meta" data-i18n="land.ticket.meta">Gagné au tirage · Table 12</p>
-          <div class="wheel-mini" id="hero-wheel" role="img" aria-label="Roue"></div>
-          <p class="ticket-note" data-i18n="land.ticket.note">Présentez ce ticket à votre prochaine visite. Le restaurateur valide le lot.</p>
-          <span class="stamp" data-i18n="land.ticket.stamp">À RÉCLAMER</span>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="kicker reveal" data-i18n="land.tag">N° 000 · FIDÉLITÉ</div>
+        <h1 class="reveal" style="--d:60ms" data-i18n="land.h1">Faites tourner la chance à table.</h1>
+        <p class="lede reveal" style="--d:120ms" data-i18n="land.sub">Une roue sur chaque table. Vos clients scannent, jouent, reviennent. Vous gardez le contrôle des lots et des probabilités.</p>
+        <div class="cta-row reveal" style="--d:180ms">
+          <a class="btn btn-accent btn-lg" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
+          <a class="btn btn-glass btn-lg" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
         </div>
       </div>
-      <p class="ticket-hint" id="ticket-hint" data-i18n="land.ticket.hint">Glissez le ticket · Tournez la roue</p>
-    </div>
-  </section>
 
-  <section class="how" id="comment">
-    <div class="how-inner">
-      <p class="eyebrow reveal" style="--d:0ms" data-i18n="land.steps.eyebrow">03 ÉTAPES</p>
-      <h2 class="reveal" style="--d:60ms" data-i18n="land.steps.h2">Simple comme un ticket.</h2>
+      <div class="board reveal" style="--d:80ms">
+        <div class="chart">
+          <div class="chart-top">
+            <div class="chart-kicker" data-i18n="land.preview.spins">TIRAGES · SEMAINE</div>
+            <div class="pills"><span class="on" data-i18n="land.preview.week">Semaine</span><span data-i18n="land.preview.month">Mois</span></div>
+          </div>
+          <div class="num big">1 284</div>
+          <div class="bars" id="bars" aria-hidden="true"></div>
+        </div>
+        <div class="stats">
+          <div class="stat glass">
+            <div class="lbl" data-i18n="land.preview.gains">GAINS</div>
+            <div class="num mid">312</div>
+          </div>
+          <div class="stat mint">
+            <div class="lbl" data-i18n="land.preview.used">UTILISÉS</div>
+            <div class="num mid">187</div>
+          </div>
+          <div class="stat glass">
+            <div class="lbl" data-i18n="land.preview.pending">EN ATTENTE</div>
+            <div class="num mid">96</div>
+            <div class="go" data-i18n="land.preview.go">Valider un gain →</div>
+          </div>
+          <div class="stat pink">
+            <div class="lbl" data-i18n="land.preview.expired">EXPIRÉS</div>
+            <div class="num mid">29</div>
+          </div>
+        </div>
+        <div class="wheel-card glass">
+          <div class="wheel-wrap">
+            <div class="wheel" id="hero-wheel" role="img" aria-label="Roue"></div>
+            <div class="hub">RW</div>
+            <div class="pointer"></div>
+          </div>
+          <div class="prize">
+            <div>
+              <strong data-i18n="land.ticket.h2">Dessert offert</strong>
+              <span data-i18n="land.ticket.meta">Gagné au tirage · Table 12</span>
+            </div>
+            <div class="badge" data-i18n="land.ticket.stamp">À RÉCLAMER</div>
+          </div>
+          <p class="hint" data-i18n="land.ticket.hint">Tournez la roue</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="comment">
+      <p class="eyebrow" data-i18n="land.steps.eyebrow">03 ÉTAPES</p>
+      <h2 data-i18n="land.steps.h2">Simple comme un ticket.</h2>
       <div class="steps">
-        <article class="step reveal" style="--d:0ms">
-          <div class="step-num">01</div>
+        <article class="step glass">
+          <div class="num step-num">01</div>
           <h3 data-i18n="land.step1.h">Scannez</h3>
           <p data-i18n="land.step1.p">QR code sur la table. Le client entre son nom et son email.</p>
         </article>
-        <article class="step reveal" style="--d:120ms">
-          <div class="step-num">02</div>
+        <article class="step yellow">
+          <div class="num step-num">02</div>
           <h3 data-i18n="land.step2.h">Tournez</h3>
           <p data-i18n="land.step2.p">La roue s'anime. Un lot tombe — dessert, café, réduction…</p>
         </article>
-        <article class="step reveal" style="--d:240ms">
-          <div class="step-num">03</div>
+        <article class="step mint">
+          <div class="num step-num">03</div>
           <h3 data-i18n="land.step3.h">Revenez</h3>
           <p data-i18n="land.step3.p">Le gain est valable à la prochaine visite. Vous validez.</p>
         </article>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="features">
-    <div class="features-inner">
-      <h2 class="reveal" data-i18n="land.feat.h2" data-i18n-keep-br>Tout ce qu'il faut<br>pour faire revenir.</h2>
-      <div class="feat-grid">
-        <article class="feat reveal" style="--d:0ms">
-          <div class="feat-bar"></div>
+    <section class="section">
+      <h2 data-i18n="land.feat.h2" data-i18n-keep-br>Tout ce qu'il faut<br>pour faire revenir.</h2>
+      <div class="feats">
+        <article class="feat glass">
           <h3 data-i18n="land.feat1.h">Lots & probabilités</h3>
           <p data-i18n="land.feat1.p">Définissez chaque segment de la roue. Contrôlez exactement ce qui tombe.</p>
         </article>
-        <article class="feat reveal" style="--d:100ms">
-          <div class="feat-bar"></div>
+        <article class="feat glass">
           <h3 data-i18n="land.feat2.h">QR code table</h3>
           <p data-i18n="land.feat2.p">Générez et téléchargez un QR unique pour votre salle.</p>
         </article>
-        <article class="feat reveal" style="--d:200ms">
-          <div class="feat-bar"></div>
+        <article class="feat pink">
           <h3 data-i18n="land.feat3.h">Validation en caisse</h3>
           <p data-i18n="land.feat3.p">Recherchez le client, validez le gain en un clic.</p>
         </article>
-        <article class="feat reveal" style="--d:300ms">
-          <div class="feat-bar"></div>
+        <article class="feat mint">
           <h3 data-i18n="land.feat4.h">Email automatique</h3>
           <p data-i18n="land.feat4.p">Le client reçoit son ticket avec la date limite.</p>
         </article>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="cta-band">
-    <h2 class="reveal scale-up" data-i18n="land.cta.h2">Prêt à faire tourner ?</h2>
-    <p class="reveal" style="--d:100ms" data-i18n="land.cta.p">Abonnement 20 € / mois. Configuration en 5 minutes.</p>
-    <a class="btn btn-ivory reveal" style="--d:200ms" href="/register" data-i18n="land.cta.btn">Créer mon compte restaurant</a>
-  </section>
+    <section class="band">
+      <div>
+        <h2 data-i18n="land.cta.h2">Prêt à faire tourner ?</h2>
+        <p data-i18n="land.cta.p">Abonnement 20 € / mois. Configuration en 5 minutes.</p>
+      </div>
+      <div class="num price">20 €<span data-i18n="land.preview.per"> / mois</span></div>
+      <a class="btn btn-ink btn-lg" href="/register" data-i18n="land.cta.btn">Créer mon compte restaurant</a>
+    </section>
 
-  <footer class="footer">
-    <span class="brand">RESTAU WHEEL</span>
-    <span data-i18n="footer.tagline">Fidélisation · Roue de fortune · Restaurants</span>
-    <span style="display:flex;gap:1rem;flex-wrap:wrap;opacity:0.85">
-      <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
-      <a href="/mentions#privacy" data-i18n="footer.privacy">Confidentialité</a>
-      <a href="/cancel" data-i18n="footer.cancel">Résilier mon abonnement</a>
-    </span>
-  </footer>
+    <footer>
+      <span class="brand">RESTAU WHEEL</span>
+      <span data-i18n="footer.tagline">Fidélisation · Roue de fortune · Restaurants</span>
+      <span class="foot-links">
+        <a href="/mentions" data-i18n="footer.legal">Mentions légales</a>
+        <a href="/mentions#privacy" data-i18n="footer.privacy">Confidentialité</a>
+        <a href="/cancel" data-i18n="footer.cancel">Résilier mon abonnement</a>
+      </span>
+    </footer>
+  </div>
 
-</div>
-<script src="/js/i18n.js"></script>
-<script>
-  document.title = window.RW_I18N ? window.RW_I18N.t('land.title') : document.title;
-  document.addEventListener('rw:lang', () => {
-    document.title = window.RW_I18N.t('land.title');
-  });
-
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Scroll reveals
-  const reveals = document.querySelectorAll('.reveal');
-  if (reduce) {
-    reveals.forEach(el => el.classList.add('is-in'));
-  } else {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-in');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
-    reveals.forEach(el => io.observe(el));
-  }
-
-  // Chrome : masque de bordure au scroll (pas un divider dur)
-  const chrome = document.getElementById('chrome');
-  const onChromeScroll = () => {
-    chrome.classList.toggle('is-scrolled', window.scrollY > 8);
-  };
-  onChromeScroll();
-  window.addEventListener('scroll', onChromeScroll, { passive: true });
-
-  // Smooth scroll for in-page anchors
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', (e) => {
-      const id = a.getAttribute('href');
-      const target = id && document.querySelector(id);
-      if (!target) return;
-      e.preventDefault();
-      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  <script src="/js/i18n.js"></script>
+  <script>
+    document.title = window.RW_I18N ? window.RW_I18N.t('land.title') : document.title;
+    document.addEventListener('rw:lang', () => {
+      document.title = window.RW_I18N.t('land.title');
     });
-  });
 
-  /* ── Physique Apple : springs, 1:1, velocity, rubber-band ── */
-  (function () {
-    const ticket = document.getElementById('hero-ticket');
-    const wheel = document.getElementById('hero-wheel');
-    const hint = document.getElementById('ticket-hint');
-    if (!ticket || !wheel) return;
+    const bars = document.getElementById('bars');
+    const heights = [42, 58, 36, 72, 96, 124, 88];
+    const letters = { fr: 'LMMJVSD', en: 'MTWTFSS' };
+    function paintBars() {
+      const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
+      const name = letters[lang];
+      bars.innerHTML = heights.map((h, i) =>
+        `<i class="${i === 5 ? 'on' : ''}"><b style="height:${Math.round(h / 124 * 64)}px"></b>${name[i]}</i>`
+      ).join('');
+    }
+    paintBars();
+    document.addEventListener('rw:lang', paintBars);
 
-    const IDLE_SPIN = 20; // deg/s — même rythme que l’ancienne anim 18s
-    const REST_RZ = 2;
+    document.querySelectorAll('a[href^="#"]').forEach((a) => {
+      a.addEventListener('click', (event) => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (!target) return;
+        event.preventDefault();
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    });
 
-    function springStep(state, target, dt, response, damping) {
-      const omega = (2 * Math.PI) / response;
-      const accel = (target - state.x) * omega * omega - state.v * (2 * damping * omega);
-      state.v += accel * dt;
-      state.x += state.v * dt;
-    }
-    function rubberband(overshoot, dimension, constant) {
-      return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
-    }
-    function hideHint() {
-      if (hint && !hint.classList.contains('is-gone')) hint.classList.add('is-gone');
-    }
-
-    const tx = { x: 0, v: 0 };
-    const ty = { x: 0, v: 0 };
-    const rx = { x: 0, v: 0 };
-    const ry = { x: 0, v: 0 };
-    const rz = { x: REST_RZ, v: 0 };
-
-    let dragging = false;
-    let spinning = false;
-    let pointerId = null;
-    let startX = 0, startY = 0;
-    let restTx = 0, restTy = 0;
-    let hover = false;
-    let hoverRx = 0, hoverRy = 0;
-    const samples = [];
-
-    let wheelAngle = 0;
-    let flickVel = 0;
-    let lastWheelAng = null;
-    const wheelSamples = [];
-
-    function tiltFromEvent(e) {
-      const r = ticket.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width - 0.5;
-      const py = (e.clientY - r.top) / r.height - 0.5;
-      hoverRy = px * 16;
-      hoverRx = -py * 12;
-    }
-    function pushSample(arr, t, a, b) {
-      arr.push({ t, a, b });
-      while (arr.length > 5) arr.shift();
-    }
-    function velocity(arr, key) {
-      if (arr.length < 2) return 0;
-      const a = arr[0], b = arr[arr.length - 1];
-      const dt = (b.t - a.t) / 1000;
-      if (dt <= 0) return 0;
-      return (b[key] - a[key]) / dt;
-    }
-    function applyTicket() {
-      ticket.style.setProperty('--tx', tx.x + 'px');
-      ticket.style.setProperty('--ty', ty.x + 'px');
-      ticket.style.setProperty('--rx', rx.x + 'deg');
-      ticket.style.setProperty('--ry', ry.x + 'deg');
-      ticket.style.setProperty('--rz', rz.x + 'deg');
-    }
-    function applyWheel() {
-      wheel.style.transform = 'rotate(' + wheelAngle + 'deg)';
-    }
-    function angleAt(e) {
-      const r = wheel.getBoundingClientRect();
-      return Math.atan2(
-        e.clientY - (r.top + r.height / 2),
-        e.clientX - (r.left + r.width / 2)
-      ) * (180 / Math.PI);
-    }
-
-    if (!reduce) {
+    (function () {
+      const wheel = document.getElementById('hero-wheel');
+      if (!wheel || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      let angle = 0;
+      let flick = 0;
+      let dragging = false;
+      let pointerId = null;
+      let last = null;
+      const samples = [];
+      function apply() { wheel.style.transform = 'rotate(' + angle + 'deg)'; }
+      function angleAt(e) {
+        const r = wheel.getBoundingClientRect();
+        return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * (180 / Math.PI);
+      }
       let lastT = performance.now();
       function loop(now) {
         const dt = Math.min(0.032, (now - lastT) / 1000);
         lastT = now;
-
         if (!dragging) {
-          springStep(tx, 0, dt, 0.4, 1.0);
-          springStep(ty, 0, dt, 0.4, 1.0);
-          springStep(rz, REST_RZ, dt, 0.4, 1.0);
-          const tRx = hover ? hoverRx : 0;
-          const tRy = hover ? hoverRy : 0;
-          springStep(rx, tRx, dt, 0.3, 1.0);
-          springStep(ry, tRy, dt, 0.3, 1.0);
+          flick *= Math.pow(0.998, dt * 1000);
+          angle += (18 + flick) * dt;
+          apply();
         }
-        applyTicket();
-
-        if (!spinning) {
-          // Friction exponentielle vers l’idle (Apple 0.998 / ms)
-          flickVel *= Math.pow(0.998, dt * 1000);
-          wheelAngle += (IDLE_SPIN + flickVel) * dt;
-        }
-        applyWheel();
         requestAnimationFrame(loop);
       }
       requestAnimationFrame(loop);
-    }
-
-    ticket.addEventListener('pointerenter', (e) => {
-      if (reduce) return;
-      hover = true;
-      tiltFromEvent(e);
-    });
-    ticket.addEventListener('pointerleave', () => {
-      hover = false;
-    });
-    ticket.addEventListener('pointermove', (e) => {
-      if (reduce || dragging || spinning) return;
-      if (hover) tiltFromEvent(e);
-    });
-
-    ticket.addEventListener('pointerdown', (e) => {
-      if (reduce || e.button) return;
-      const onWheel = e.target.closest('.wheel-mini');
-      startX = e.clientX;
-      startY = e.clientY;
-      restTx = tx.x;
-      restTy = ty.x;
-      pointerId = e.pointerId;
-      samples.length = 0;
-      wheelSamples.length = 0;
-      hideHint();
-
-      if (onWheel) {
-        spinning = true;
-        dragging = false;
-        ticket.classList.add('is-held');
-        lastWheelAng = angleAt(e);
-        flickVel = 0;
-        ticket.setPointerCapture(e.pointerId);
-        e.preventDefault();
-        return;
-      }
-      // Ticket : tracking 1:1 après ~10 px d’hystérésis
-    });
-
-    ticket.addEventListener('pointermove', (e) => {
-      if (reduce || e.pointerId !== pointerId) return;
-
-      if (spinning) {
+      wheel.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        pointerId = e.pointerId;
+        last = angleAt(e);
+        samples.length = 0;
+        flick = 0;
+        wheel.setPointerCapture(e.pointerId);
+      });
+      wheel.addEventListener('pointermove', (e) => {
+        if (!dragging || e.pointerId !== pointerId) return;
         const ang = angleAt(e);
-        let delta = ang - lastWheelAng;
+        let delta = ang - last;
         if (delta > 180) delta -= 360;
         if (delta < -180) delta += 360;
-        wheelAngle += delta;
-        lastWheelAng = ang;
-        pushSample(wheelSamples, performance.now(), wheelAngle, 0);
-        applyWheel();
-        return;
-      }
-
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      const dist = Math.hypot(dx, dy);
-
-      if (!dragging) {
-        if (dist < 10) return;
-        const isTouch = e.pointerType === 'touch';
-        if (isTouch && Math.abs(dy) > Math.abs(dx) * 1.35) {
-          pointerId = null;
-          return;
+        angle += delta;
+        last = ang;
+        samples.push({ t: performance.now(), a: angle });
+        if (samples.length > 5) samples.shift();
+        apply();
+      });
+      function end(e) {
+        if (!dragging || (e && e.pointerId !== pointerId)) return;
+        if (samples.length >= 2) {
+          const a = samples[0], b = samples[samples.length - 1];
+          const dt = (b.t - a.t) / 1000;
+          flick = dt > 0 ? (b.a - a.a) / dt : 420;
+        } else {
+          flick = 420;
         }
-        dragging = true;
-        hover = true;
-        ticket.classList.add('is-held');
-        ticket.style.touchAction = 'none';
-        ticket.setPointerCapture(e.pointerId);
+        dragging = false;
+        pointerId = null;
       }
-
-      let nx = restTx + dx;
-      let ny = restTy + dy;
-      const limit = 90;
-      if (Math.abs(nx) > limit) nx = Math.sign(nx) * limit + rubberband(nx - Math.sign(nx) * limit, 280, 0.55);
-      if (Math.abs(ny) > limit) ny = Math.sign(ny) * limit + rubberband(ny - Math.sign(ny) * limit, 360, 0.55);
-      tx.x = nx;
-      ty.x = ny;
-      tiltFromEvent(e);
-      rx.x = hoverRx;
-      ry.x = hoverRy;
-      pushSample(samples, performance.now(), nx, ny);
-      applyTicket();
-    });
-
-    function endGesture(e) {
-      if (e && pointerId != null && e.pointerId !== pointerId) return;
-
-      if (spinning) {
-        const v = velocity(wheelSamples, 'a');
-        flickVel = wheelSamples.length >= 2 ? v : 480;
-        lastWheelAng = null;
-      }
-      if (dragging) {
-        tx.v = velocity(samples, 'a');
-        ty.v = velocity(samples, 'b');
-        rx.v = 0;
-        ry.v = 0;
-      }
-      dragging = false;
-      spinning = false;
-      pointerId = null;
-      ticket.classList.remove('is-held');
-      ticket.style.touchAction = 'pan-y';
-    }
-
-    ticket.addEventListener('pointerup', endGesture);
-    ticket.addEventListener('pointercancel', endGesture);
-  })();
-</script>
+      wheel.addEventListener('pointerup', end);
+      wheel.addEventListener('pointercancel', end);
+    })();
+  </script>
 </body>
 </html>
