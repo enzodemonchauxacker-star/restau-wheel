@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e6e5e1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Reikon</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/app.css?v=8">
+</head>
+<body>
+  <div class="shell">
+    <div class="halo a"></div>
+    <div class="halo b"></div>
+    <div class="halo c"></div>
+
+    <section id="view-app" class="view on">
+      <div class="scroll" id="scroll">
+        <div class="screen on" data-tab="home" data-screen-label="Accueil">
+          <div class="hello">
+            <div class="logo">RK</div>
+            <div class="who"><div class="hi">Bonjour,</div><div class="name" id="hello-name">Reikon</div></div>
+            <div class="pro">PRO</div>
+          </div>
+          <div class="hero">
+            <div class="hero-top">
+              <div class="hero-kicker">ACTIVITÉ · <span id="stat-kicker">SEMAINE</span></div>
+              <div class="period" id="periods">
+                <button type="button" data-act="period" data-period="week" class="on">Semaine</button>
+                <button type="button" data-act="period" data-period="month">Mois</button>
+              </div>
+            </div>
+            <div class="num big" id="stat-spins">0</div>
+            <div class="bars" id="bars"></div>
+          </div>
+          <div class="grid2">
+            <div class="stat glass">
+              <div class="lbl mute">GAINS</div>
+              <div class="num mid" id="stat-wins">128</div>
+            </div>
+            <div class="stat mint">
+              <div class="lbl">UTILISÉS</div>
+              <div class="num mid" id="stat-used">86</div>
+            </div>
+            <button type="button" class="stat glass" data-act="go-pending">
+              <div class="lbl mute">EN ATTENTE</div>
+              <div class="num mid" id="stat-pending">24</div>
+              <div class="go">Voir les clients →</div>
+            </button>
+            <div class="stat pink">
+              <div class="lbl">EXPIRÉS</div>
+              <div class="num mid" id="stat-expired">18</div>
+            </div>
+          </div>
+          <button type="button" class="test-card glass" data-act="go-lots">
+            <div class="mini-wheel" id="mini-wheel"></div>
+            <div style="flex:1"><strong>La roue Reikon</strong><span id="win-line">5 cases · 70 % de chances de gagner</span></div>
+            <div class="go-round">→</div>
+          </button>
+        </div>
+
+        <div class="screen" data-tab="clients" data-screen-label="Clients">
+          <div class="screen-head">
+            <h2 class="screen-title">Clients</h2>
+            <button type="button" class="export" id="export-btn">Exporter</button>
+          </div>
+          <input id="q" class="search glass" placeholder="Nom, email, téléphone…" enterkeyhint="search" autocomplete="off">
+          <div class="chips" id="filters">
+            <button type="button" class="chip on" data-act="filter" data-filter="all">Tous</button>
+            <button type="button" class="chip" data-act="filter" data-filter="pending">En attente</button>
+            <button type="button" class="chip" data-act="filter" data-filter="used">Utilisés</button>
+            <button type="button" class="chip" data-act="filter" data-filter="expired">Expirés</button>
+          </div>
+          <div class="rows" id="client-list"></div>
+          <div class="empty" id="client-empty" hidden>Aucun client trouvé.</div>
+        </div>
+
+        <div class="screen" data-tab="lots" data-screen-label="Roue">
+          <h2 class="screen-title">La roue</h2>
+          <div class="wheel-card glass">
+            <div class="wheel-wrap">
+              <div class="wheel" id="wheel"></div>
+              <div class="hub">RK</div>
+              <div class="pointer"></div>
+            </div>
+            <button type="button" class="btn-accent spin-btn" id="spin-btn">Tourner la roue</button>
+          </div>
+          <div class="list-head">
+            <div class="block-title">Cases de la roue</div>
+          </div>
+          <div class="rows" id="prize-list"></div>
+        </div>
+
+        <div class="screen" data-tab="qr" data-screen-label="QR Code">
+          <h2 class="screen-title">QR Code</h2>
+          <div class="qr-card">
+            <div class="eye">REIKON · SCANNEZ</div>
+            <h3>Reikon</h3>
+            <div class="qr-ph">QR code Reikon</div>
+            <div class="qr-url" id="qr-url"></div>
+          </div>
+          <div class="pair">
+            <button type="button" class="btn-glass glass" id="copy-btn">Copier le lien</button>
+            <button type="button" class="btn-accent" id="share-btn">Partager</button>
+          </div>
+          <p class="note">Ce lien ouvre le tableau de bord Reikon. Placez-le là où vos clients arrivent.</p>
+        </div>
+
+        <div class="screen" data-tab="profil" data-screen-label="Profil">
+          <h2 class="screen-title">Profil</h2>
+          <div class="card glass">
+            <div class="lbl">NOM</div>
+            <input id="resto-input" type="text" value="Reikon" autocomplete="organization">
+          </div>
+          <div class="card glass">
+            <h3 style="margin:0 0 12px;font-size:16px">Couleur du thème</h3>
+            <div class="swatches" id="swatches">
+              <button type="button" data-act="accent" data-color="#ffd60a" style="background:#ffd60a" class="on" aria-label="Jaune"></button>
+              <button type="button" data-act="accent" data-color="#ff2d6a" style="background:#ff2d6a" aria-label="Rose"></button>
+              <button type="button" data-act="accent" data-color="#00c2ff" style="background:#00c2ff" aria-label="Bleu"></button>
+              <button type="button" data-act="accent" data-color="#00e5c8" style="background:#00e5c8" aria-label="Menthe"></button>
+              <button type="button" data-act="accent" data-color="#ff8a3d" style="background:#ff8a3d" aria-label="Orange"></button>
+              <button type="button" data-act="accent" data-color="#b79cff" style="background:#b79cff" aria-label="Violet"></button>
+            </div>
+            <div class="themes" id="themes">
+              <button type="button" data-act="theme" data-theme="dark">Sombre</button>
+              <button type="button" data-act="theme" data-theme="light" class="on">Clair</button>
+            </div>
+          </div>
+          <div class="plan">
+            <div><div class="lbl">ABONNEMENT</div><strong>Reikon Pro</strong></div>
+            <div class="price">20 €<span> /mois</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="dock" id="dock">
+      <div class="dock-ind" id="dock-ind"></div>
+      <button type="button" data-act="tab" data-tab="home" class="on">Accueil</button>
+      <button type="button" data-act="tab" data-tab="clients">Clients</button>
+      <button type="button" data-act="tab" data-tab="lots">Roue</button>
+      <button type="button" data-act="tab" data-tab="qr">QR</button>
+      <button type="button" data-act="tab" data-tab="profil">Profil</button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast" hidden role="status"></div>
+  <script src="/reikon/app.js?v=1"></script>
+</body>
+</html>
