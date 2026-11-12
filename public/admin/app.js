@@ -248,6 +248,7 @@ function showOnboarding() {
 }
 
 function showLogin() {
+  clearIntroFlag();
   showView('view-login');
   const wheel = $('login-wheel');
   wheel.style.background = wheelBackground(S.prizes.length ? S.prizes : DEMO_WHEEL);
@@ -922,6 +923,7 @@ async function savePrize() {
 }
 
 async function enterApp() {
+  clearIntroFlag();
   showView('view-app');
   S.tab = 'home';
   S.navDir = 0;
@@ -1149,8 +1151,23 @@ function boot() {
   checkAuth();
 }
 
+function wantsIntro() {
+  try { return new URLSearchParams(location.search).get('intro') === '1'; }
+  catch { return false; }
+}
+
+function clearIntroFlag() {
+  try {
+    const url = new URL(location.href);
+    if (url.searchParams.get('intro') !== '1') return;
+    url.searchParams.delete('intro');
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  } catch { /* ignore */ }
+}
+
 async function checkAuth() {
   let done = false;
+  const intro = wantsIntro();
   try { done = localStorage.getItem('rw-ob-done') === '1'; } catch { /* ignore */ }
   try {
     const me = await api('/api/admin/me');
@@ -1166,8 +1183,8 @@ async function checkAuth() {
       return;
     }
   } catch { /* hors ligne : on reste sur la porte */ }
-  if (done) showLogin();
-  else showOnboarding();
+  if (intro || !done) showOnboarding();
+  else showLogin();
 }
 
 if (typeof document !== 'undefined') {

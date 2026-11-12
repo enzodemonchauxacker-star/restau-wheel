@@ -3,6 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    (function () {
+      try {
+        var ua = navigator.userAgent || '';
+        if (/bot|crawler|crawl|spider/i.test(ua)) return;
+        var phone = /iPhone|iPod|Android.+Mobile|webOS|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(ua)
+          || window.matchMedia('(max-width: 820px) and (pointer: coarse) and (hover: none)').matches;
+        if (!phone) return;
+        document.documentElement.classList.add('phone-gate');
+        location.replace('/admin?intro=1');
+      } catch (e) {}
+    })();
+  </script>
+  <style>html.phone-gate body { visibility: hidden; }</style>
   <title>Restau Wheel — Fidélisation par la chance</title>
   <meta name="description" content="Une roue de fortune sur chaque table. Vos clients scannent, jouent, reviennent.">
   <meta name="theme-color" content="#e6e5e1">

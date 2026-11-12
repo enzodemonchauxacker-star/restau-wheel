@@ -10,6 +10,7 @@ const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail }
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { seriesFromRows } = require('./lib/admin-series');
+const { isPhoneUserAgent } = require('./lib/phone');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -1359,7 +1360,12 @@ app.get('/mentions-legales', async (req, res) => res.redirect(301, '/mentions'))
 app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
-app.get('/',            async (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/', async (req, res) => {
+  if (isPhoneUserAgent(req.headers['user-agent'])) {
+    return res.redirect(302, '/admin?intro=1');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ─── Cron / rappels ───────────────────────────────────────────────────────────
 async function runReminderJob() {
