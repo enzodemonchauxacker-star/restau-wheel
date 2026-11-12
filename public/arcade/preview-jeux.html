@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reikon — aperçu des jeux</title>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&display=swap">
+<link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=reikon">
+<link rel="stylesheet" href="/arcade/fid/css/games-reikon.css?v=1">
+<style>
+  body { margin:0; background:#fff8f1; color:#1e1e1e; font-family:"General Sans",sans-serif; }
+  .wrap { width:min(1100px, calc(100% - 28px)); margin:24px auto 48px; }
+  h1 { font-size:28px; font-weight:500; letter-spacing:-.03em; margin:0 0 8px; }
+  .sub { color:#8d8d8d; margin:0 0 22px; }
+  .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+  .card { background:#fff; border:1px solid #e8e2d9; border-radius:24px; padding:16px; }
+  @media (max-width:720px) { .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<svg class="ios-defs" aria-hidden="true" focusable="false">
+    <clipPath id="iphone-screen" clipPathUnits="objectBoundingBox">
+      <path d="M 0.7532 0 c 0.0864 0 0.1296 0 0.1626 0.0077 a 0.1542 0.0709 0 0 1 0.0674 0.031 c 0.0168 0.0152 0.0168 0.035 0.0168 0.0748 L 1 0.8865 c 0 0.0397 0 0.0596 -0.0168 0.0748 a 0.1542 0.0709 0 0 1 -0.0674 0.031 c -0.033 0.0077 -0.0762 0.0077 -0.1626 0.0077 L 0.2468 1 c -0.0864 0 -0.1296 0 -0.1626 -0.0077 a 0.1542 0.0709 0 0 1 -0.0674 -0.031 c -0.0168 -0.0152 -0.0168 -0.035 -0.0168 -0.0748 L 0 0.1135 c 0 -0.0397 0 -0.0596 0.0168 -0.0748 a 0.1542 0.0709 0 0 1 0.0674 -0.031 c 0.033 -0.0077 0.0762 -0.0077 0.1626 -0.0077 Z"/>
+    </clipPath>
+    <symbol id="pin-glyph" viewBox="0 0 160 340">
+      <ellipse cx="80" cy="326" rx="42" ry="8" fill="#3b3b3b" opacity="0.14"/>
+      <path fill="#fff8f1" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+      <path fill="#e24b4b" d="M54 104C70 118 90 118 106 104C94 112 66 112 54 104Z"/>
+      <path fill="#e24b4b" d="M50 124C70 142 90 142 110 124C94 136 66 136 50 124Z"/>
+      <ellipse cx="80" cy="236" rx="32" ry="38" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M64 40C74 26 92 24 102 36" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <path fill="none" stroke="#3b3b3b" stroke-width="3.5" stroke-linejoin="round" d="M80 16C106 16 122 40 122 66C122 88 108 102 102 118C96 134 94 146 98 164C106 190 130 208 138 240C148 280 132 308 110 318H50C28 308 12 280 22 240C30 208 54 190 62 164C66 146 64 134 58 118C52 102 38 88 38 66C38 40 54 16 80 16Z"/>
+    </symbol>
+    <symbol id="sack-glyph" viewBox="0 0 80 100">
+      <ellipse cx="40" cy="94" rx="26" ry="4.5" fill="#3b3b3b" opacity="0.12"/>
+      <path fill="#f3ecdf" d="M16 58c-2 14 2 30 10 36 6 4 22 6 28 4 10-4 14-20 12-36-2-10-8-16-14-18-8 4-32 4-36 14z"/>
+      <path fill="#e8e2d9" d="M48 46c10 6 16 20 14 38-1 8-8 12-8 12 8-2 16-14 16-30 0-14-8-24-16-28-2 2-4 5-6 8z"/>
+      <path fill="none" stroke="#c9b28a" stroke-width="1.5" stroke-linecap="round" opacity="0.7" d="M27 54c2 12-1 24-4 36M35 50c-1 14 2 26 0 38"/>
+      <path fill="#fff8f1" d="M22 52c6-16 12-22 18-24 8 2 16 10 20 24-8-6-28-6-38 0z"/>
+      <path fill="#efe6d8" d="M30 38c2-8 6-12 10-14 5 2 9 8 11 14-6-3-16-3-21 0z"/>
+      <ellipse cx="40" cy="27" rx="7" ry="4.5" fill="#3b3b3b"/>
+      <path d="M24 31h22" stroke="#3b3b3b" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M46 31c8-1 14 4 12 10" fill="none" stroke="#3b3b3b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M33 25c-2-6 2-10 6-8" fill="none" stroke="#3b3b3b" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="dollar-glyph" viewBox="0 0 32 44">
+      <path d="M21 8c-7 0-11 2.5-11 7s4.5 6 11 7 11 3 11 8-5 8-12 8c-5 0-9-1.5-11-4" fill="none" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+      <path d="M16 3v38" stroke="#e39a12" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="gift-glyph" viewBox="0 0 64 64">
+      <rect x="10" y="28" width="44" height="26" rx="5" fill="#e8ff95" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28v26M10 40h44" fill="none" stroke="#3b3b3b" stroke-width="3"/>
+      <path d="M32 28c-8-14-22-8-16 0M32 28c8-14 22-8 16 0" fill="none" stroke="#3b3b3b" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+        <symbol id="bone-glyph" viewBox="0 0 88 44">
+      <g fill="#3b3b3b">
+        <circle cx="20" cy="16" r="9"/>
+        <circle cx="20" cy="28" r="9"/>
+        <circle cx="68" cy="16" r="9"/>
+        <circle cx="68" cy="28" r="9"/>
+        <rect x="18" y="16" width="52" height="12" rx="6"/>
+      </g>
+      <g fill="#fff8f1" opacity=".22">
+        <circle cx="20" cy="16" r="4"/>
+        <circle cx="68" cy="16" r="4"/>
+      </g>
+    </symbol>
+  </svg>
+<div class="wrap">
+  <h1>Reikon — jeux refondus</h1>
+  <p class="sub">Bowling, laser, pince, dix butins · palette crème / lime / encre</p>
+  <div class="grid">
+    <div class="card"><article class="card card-steps game-card" id="game-bowl">
+            <div class="game-head">
+              <h3 data-scramble>Bowling</h3>
+              <p class="game-score" id="bowl-score">Vise, puis lance.</p>
+            </div>
+            <div class="lane alley" id="bowl-lane">
+              <svg class="alley-art" viewBox="0 0 563 258" role="img" aria-label="Piste de bowling">
+<defs>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f3e6cf"/>
+    <stop offset="0.55" stop-color="#e8d5b3"/>
+    <stop offset="1" stop-color="#dcc49a"/>
+  </linearGradient>
+  <linearGradient id="gutter" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#2a2a2a"/>
+    <stop offset="0.5" stop-color="#3b3b3b"/>
+    <stop offset="1" stop-color="#2a2a2a"/>
+  </linearGradient>
+  <radialGradient id="ball-play" cx="34%" cy="30%" r="72%">
+    <stop offset="0" stop-color="#5a5a5a"/>
+    <stop offset="0.45" stop-color="#3b3b3b"/>
+    <stop offset="1" stop-color="#1e1e1e"/>
+  </radialGradient>
+  <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff8f1"/>
+    <stop offset="1" stop-color="#efe6d8"/>
+  </linearGradient>
+</defs>
+<!-- room -->
+<rect width="563" height="258" fill="#fff8f1"/>
+<rect x="0" y="0" width="563" height="92" fill="url(#board)"/>
+<!-- score strip -->
+<rect x="148" y="18" width="267" height="52" rx="14" fill="#ffffff" stroke="#e8e2d9" stroke-width="1.5"/>
+<text x="281.5" y="40" text-anchor="middle" fill="#1e1e1e" font-family="Inter Tight, Inter, sans-serif" font-weight="600" font-size="15" letter-spacing="2">BOWLING</text>
+<g font-family="Inter Tight, Inter, sans-serif" font-weight="500" font-size="11" fill="#8d8d8d">
+  <text x="178" y="58" text-anchor="middle">1</text>
+  <text x="206" y="58" text-anchor="middle">2</text>
+  <text x="234" y="58" text-anchor="middle">3</text>
+  <text x="262" y="58" text-anchor="middle">4</text>
+  <text x="290" y="58" text-anchor="middle">5</text>
+  <text x="318" y="58" text-anchor="middle">6</text>
+  <text x="346" y="58" text-anchor="middle">7</text>
+  <text x="374" y="58" text-anchor="middle">8</text>
+</g>
+<!-- approach / gutters / lane -->
+<path d="M78 258 L214 96 H349 L485 258 Z" fill="url(#gutter)"/>
+<path d="M108 258 L232 102 H331 L455 258 Z" fill="url(#wood)"/>
+<!-- wood planks -->
+<g stroke="#c9b28a" stroke-width="1" opacity=".55">
+  <path d="M248 102 L214 258"/>
+  <path d="M262 102 L245 258"/>
+  <path d="M276 102 L281.5 258"/>
+  <path d="M290 102 L318 258"/>
+  <path d="M304 102 L355 258"/>
+</g>
+<!-- foul line -->
+<path d="M214 148 H349" stroke="#3b3b3b" stroke-width="2" opacity=".35"/>
+<!-- arrows -->
+<g fill="#3b3b3b" opacity=".28">
+  <path d="M248 178 l6 10 -6 2z"/>
+  <path d="M268 178 l6 10 -6 2z"/>
+  <path d="M288 178 l6 10 -6 2z"/>
+  <path d="M308 178 l6 10 -6 2z"/>
+</g>
+<!-- pin deck shadow -->
+<ellipse cx="280.8" cy="142" rx="28" ry="5" fill="#3b3b3b" opacity=".12"/>
+<g id="bowl-pins">
+<g class="bowl-pin" data-row="0" data-x="268.80" data-y="124.00" data-s="0.500" transform="translate(268.80 124.00) scale(0.500)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="0" data-x="276.80" data-y="124.00" data-s="0.500" transform="translate(276.80 124.00) scale(0.500)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="0" data-x="284.80" data-y="124.00" data-s="0.500" transform="translate(284.80 124.00) scale(0.500)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="0" data-x="292.80" data-y="124.00" data-s="0.500" transform="translate(292.80 124.00) scale(0.500)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="1" data-x="272.80" data-y="129.00" data-s="0.560" transform="translate(272.80 129.00) scale(0.560)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="1" data-x="280.80" data-y="129.00" data-s="0.560" transform="translate(280.80 129.00) scale(0.560)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="1" data-x="288.80" data-y="129.00" data-s="0.560" transform="translate(288.80 129.00) scale(0.560)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="2" data-x="276.80" data-y="134.00" data-s="0.620" transform="translate(276.80 134.00) scale(0.620)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="2" data-x="284.80" data-y="134.00" data-s="0.620" transform="translate(284.80 134.00) scale(0.620)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g><g class="bowl-pin" data-row="3" data-x="280.80" data-y="139.00" data-s="0.700" transform="translate(280.80 139.00) scale(0.700)"><g>
+  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
+  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
+</g></g>
+</g>
+<!-- playable ball -->
+<g transform="translate(280.8 230)">
+  <g id="bowl-ball-wrap">
+    <g id="bowl-ball">
+      <circle r="14" fill="url(#ball-play)"/>
+      <ellipse cx="-4" cy="-4.4" rx="4.6" ry="3.1" fill="#e8ff95" opacity=".9"/>
+      <circle cx="-2" cy="0" r="1.25" fill="#1e1e1e"/>
+      <circle cx="1.1" cy="-2" r="1.25" fill="#1e1e1e"/>
+      <circle cx="2" cy="1.7" r="1.25" fill="#1e1e1e"/>
+    </g>
+  </g>
+</g>
+</svg>
+            </div>
+            <button class="btn btn-dark game-btn" type="button" id="bowl-throw">Lancer</button>
+          </article></div><div class="card"><article class="card card-people game-card" id="game-laser">
+            <div class="game-head">
+              <h3 data-scramble>Laser Game</h3>
+              <p class="game-score" id="laser-score">Touche les cibles.</p>
+            </div>
+            <div class="arena" id="laser-arena"></div>
+            <button class="btn btn-dark game-btn" type="button" id="laser-start">Jouer</button>
+          </article></div><div class="card"><article class="card card-tools game-card" id="game-claw">
+            <div class="game-head">
+              <h3 data-scramble>La Pince</h3>
+              <p class="game-score" id="claw-msg">Attrape le cadeau.</p>
+            </div>
+            <div class="cab-glass" id="claw-cab">
+              <div class="cab-rail" aria-hidden="true"></div>
+              <div class="claw-track" id="claw-track">
+                <div class="claw" id="claw">
+                  <span class="cable"></span>
+                  <svg class="claw-mech" viewBox="0 0 120 150" aria-hidden="true">
+                    <g class="arm arm-l">
+                      <path fill="#3b3b3b" d="M52 46 L46 78 Q40 110 36 128 Q34 138 44 136 Q50 120 54 90 L64 46 Z"/>
+                      <path fill="#1e1e1e" d="M36 124 Q32 136 44 134 Q48 128 44 122 Z"/>
+                    </g>
+                    <g class="arm arm-r">
+                      <path fill="#3b3b3b" d="M68 46 L74 78 Q80 110 84 128 Q86 138 76 136 Q70 120 66 90 L56 46 Z"/>
+                      <path fill="#1e1e1e" d="M84 124 Q88 136 76 134 Q72 128 76 122 Z"/>
+                    </g>
+                    <path fill="#2a2a2a" d="M54 64 L60 138 L66 64 Z"/>
+                    <path fill="#3b3b3b" d="M60 64 L66 64 L60 138 Z"/>
+                    <rect x="38" y="0" width="44" height="16" rx="3" fill="#1e1e1e"/>
+                    <rect x="48" y="14" width="24" height="12" rx="2" fill="#3b3b3b"/>
+                    <rect x="26" y="34" width="68" height="12" rx="5" fill="#1e1e1e"/>
+                    <path fill="#e8ff95" d="M60 40 L48 56 L60 68 L72 56 Z"/>
+                    <circle cx="60" cy="54" r="5" fill="#3b3b3b"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="prize-row">
+                <span class="gift sack-prize" id="claw-gift">
+                  <svg viewBox="0 0 80 100" aria-hidden="true"><use href="#sack-glyph"/></svg>
+                </span>
+              </div>
+            </div>
+            <button class="btn btn-dark game-btn" type="button" id="claw-go">Attraper</button>
+          </article></div><div class="card"><article class="card card-keep game-card" id="game-loot">
+            <div class="game-head">
+              <h3 data-scramble>Dix Butins</h3>
+              <p class="game-score" id="loot-msg">Un cadeau, neuf os.</p>
+            </div>
+            <div class="loot-grid" id="loot-grid"></div>
+            <button class="btn btn-dark game-btn" type="button" id="loot-reset">Mélanger</button>
+          </article></div>
+  </div>
+</div>
+<script src="/arcade/fid/js/games.js?v=reikon"></script>
+</body>
+</html>
