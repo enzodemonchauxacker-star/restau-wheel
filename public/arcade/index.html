@@ -126,123 +126,11 @@
               <h3 data-scramble>Bowling</h3>
               <p class="game-score" id="bowl-score">Vise, puis lance.</p>
             </div>
-            <div class="lane alley" id="bowl-lane">
-              <svg class="alley-art" viewBox="0 0 563 258" role="img" aria-label="Piste de bowling">
-<defs>
-  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#f3e6cf"/>
-    <stop offset="0.55" stop-color="#e8d5b3"/>
-    <stop offset="1" stop-color="#dcc49a"/>
-  </linearGradient>
-  <linearGradient id="gutter" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#2a2a2a"/>
-    <stop offset="0.5" stop-color="#3b3b3b"/>
-    <stop offset="1" stop-color="#2a2a2a"/>
-  </linearGradient>
-  <radialGradient id="ball-play" cx="34%" cy="30%" r="72%">
-    <stop offset="0" stop-color="#5a5a5a"/>
-    <stop offset="0.45" stop-color="#3b3b3b"/>
-    <stop offset="1" stop-color="#1e1e1e"/>
-  </radialGradient>
-  <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#fff8f1"/>
-    <stop offset="1" stop-color="#efe6d8"/>
-  </linearGradient>
-</defs>
-<!-- room -->
-<rect width="563" height="258" fill="#fff8f1"/>
-<rect x="0" y="0" width="563" height="92" fill="url(#board)"/>
-<!-- score strip -->
-<rect x="148" y="18" width="267" height="52" rx="14" fill="#ffffff" stroke="#e8e2d9" stroke-width="1.5"/>
-<text x="281.5" y="40" text-anchor="middle" fill="#1e1e1e" font-family="Inter Tight, Inter, sans-serif" font-weight="600" font-size="15" letter-spacing="2">BOWLING</text>
-<g font-family="Inter Tight, Inter, sans-serif" font-weight="500" font-size="11" fill="#8d8d8d">
-  <text x="178" y="58" text-anchor="middle">1</text>
-  <text x="206" y="58" text-anchor="middle">2</text>
-  <text x="234" y="58" text-anchor="middle">3</text>
-  <text x="262" y="58" text-anchor="middle">4</text>
-  <text x="290" y="58" text-anchor="middle">5</text>
-  <text x="318" y="58" text-anchor="middle">6</text>
-  <text x="346" y="58" text-anchor="middle">7</text>
-  <text x="374" y="58" text-anchor="middle">8</text>
-</g>
-<!-- approach / gutters / lane -->
-<path d="M78 258 L214 96 H349 L485 258 Z" fill="url(#gutter)"/>
-<path d="M108 258 L232 102 H331 L455 258 Z" fill="url(#wood)"/>
-<!-- wood planks -->
-<g stroke="#c9b28a" stroke-width="1" opacity=".55">
-  <path d="M248 102 L214 258"/>
-  <path d="M262 102 L245 258"/>
-  <path d="M276 102 L281.5 258"/>
-  <path d="M290 102 L318 258"/>
-  <path d="M304 102 L355 258"/>
-</g>
-<!-- foul line -->
-<path d="M214 148 H349" stroke="#3b3b3b" stroke-width="2" opacity=".35"/>
-<!-- arrows -->
-<g fill="#3b3b3b" opacity=".28">
-  <path d="M248 178 l6 10 -6 2z"/>
-  <path d="M268 178 l6 10 -6 2z"/>
-  <path d="M288 178 l6 10 -6 2z"/>
-  <path d="M308 178 l6 10 -6 2z"/>
-</g>
-<!-- pin deck shadow -->
-<ellipse cx="280.8" cy="142" rx="28" ry="5" fill="#3b3b3b" opacity=".12"/>
-<g id="bowl-pins">
-<g class="bowl-pin" data-row="0" data-x="268.80" data-y="124.00" data-s="0.500" transform="translate(268.80 124.00) scale(0.500)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="0" data-x="276.80" data-y="124.00" data-s="0.500" transform="translate(276.80 124.00) scale(0.500)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="0" data-x="284.80" data-y="124.00" data-s="0.500" transform="translate(284.80 124.00) scale(0.500)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="0" data-x="292.80" data-y="124.00" data-s="0.500" transform="translate(292.80 124.00) scale(0.500)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="1" data-x="272.80" data-y="129.00" data-s="0.560" transform="translate(272.80 129.00) scale(0.560)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="1" data-x="280.80" data-y="129.00" data-s="0.560" transform="translate(280.80 129.00) scale(0.560)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="1" data-x="288.80" data-y="129.00" data-s="0.560" transform="translate(288.80 129.00) scale(0.560)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="2" data-x="276.80" data-y="134.00" data-s="0.620" transform="translate(276.80 134.00) scale(0.620)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="2" data-x="284.80" data-y="134.00" data-s="0.620" transform="translate(284.80 134.00) scale(0.620)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g><g class="bowl-pin" data-row="3" data-x="280.80" data-y="139.00" data-s="0.700" transform="translate(280.80 139.00) scale(0.700)"><g>
-  <path fill="#fff8f1" d="M0,-22 C2.3,-22 3.6,-20.5 3.6,-18.5 C3.6,-17.1 2.7,-16.1 2.2,-15.3 C4.4,-13.4 5.4,-9.8 5.1,-5.6 C4.8,-1.8 3.4,0 0,0 C-3.4,0 -4.8,-1.8 -5.1,-5.6 C-5.4,-9.8 -4.4,-13.4 -2.2,-15.3 C-2.7,-16.1 -3.6,-17.1 -3.6,-18.5 C-3.6,-20.5 -2.3,-22 0,-22 Z"/>
-  <path d="M-2.5,-16.5 H2.5 M-2.9,-14.8 H2.9" stroke="#3b3b3b" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M-1.1,-20.3 C0,-20.8 1,-19.8 0.5,-18.8" stroke="#ffffff" stroke-width="0.7" stroke-linecap="round" opacity=".7"/>
-</g></g>
-</g>
-<!-- playable ball -->
-<g transform="translate(280.8 230)">
-  <g id="bowl-ball-wrap">
-    <g id="bowl-ball">
-      <circle r="14" fill="url(#ball-play)"/>
-      <ellipse cx="-4" cy="-4.4" rx="4.6" ry="3.1" fill="#e8ff95" opacity=".9"/>
-      <circle cx="-2" cy="0" r="1.25" fill="#1e1e1e"/>
-      <circle cx="1.1" cy="-2" r="1.25" fill="#1e1e1e"/>
-      <circle cx="2" cy="1.7" r="1.25" fill="#1e1e1e"/>
-    </g>
-  </g>
-</g>
-</svg>
+            <div class="lane alley lane-3d" id="bowl-lane">
+              <canvas id="bowl-canvas" width="563" height="258" aria-label="Piste de bowling en perspective"></canvas>
+              <div class="pin-hero" aria-hidden="true">
+                <canvas data-pin data-yaw="18" data-tilt="-6"></canvas>
+              </div>
             </div>
             <button class="btn btn-dark game-btn" type="button" id="bowl-throw">Lancer</button>
           </article>
@@ -453,6 +341,9 @@
   <script src="/arcade/fid/vendor/lenis/lenis.min.js"></script>
   <script src="/arcade/fid/js/solutions.js?v=rekone"></script>
   <script src="/arcade/fid/js/fidelize.js?v=nav"></script>
+  <script type="importmap">{ "imports": { "three": "/arcade/vendor/three.module.js" } }</script>
+  <script type="module" src="/arcade/pin-stage.js"></script>
+  <script src="/arcade/fid/js/bowl-3d.js?v=1"></script>
   <script src="/arcade/fid/js/games.js?v=result"></script>
   <script src="/arcade/fid/js/session-nav.js?v=compte"></script>
 </body>

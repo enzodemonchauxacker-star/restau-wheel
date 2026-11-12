@@ -6,7 +6,7 @@
   <title>Rekone</title>
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500&display=swap">
   <link rel="stylesheet" href="/arcade/fid/css/fidelize.css?v=reikon">
-  <link rel="stylesheet" href="/arcade/fid/css/games-reikon.css?v=1">
+  <link rel="stylesheet" href="/arcade/fid/css/games-reikon.css?v=2">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&display=swap">
   <style>
     body { background: #fff8f1; }
@@ -414,8 +414,23 @@
           status.remove();
           if (defs) stage.append(defs);
           stage.append(article);
+          if (!document.querySelector('script[data-reikon-3d]')) {
+            const map = document.createElement('script');
+            map.type = 'importmap';
+            map.textContent = JSON.stringify({ imports: { three: '/arcade/vendor/three.module.js' } });
+            document.head.append(map);
+            const pin = document.createElement('script');
+            pin.type = 'module';
+            pin.src = '/arcade/pin-stage.js';
+            pin.dataset.reikon3d = '1';
+            document.body.append(pin);
+            const bowl = document.createElement('script');
+            bowl.src = '/arcade/fid/js/bowl-3d.js?v=1';
+            bowl.dataset.reikon3d = '1';
+            document.body.append(bowl);
+          }
           const script = document.createElement('script');
-          script.src = '/arcade/fid/js/games.js?v=result';
+          script.src = '/arcade/fid/js/games.js?v=reikon3d';
           document.body.append(script);
         })
         .catch(() => {
