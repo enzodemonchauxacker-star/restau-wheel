@@ -405,10 +405,11 @@ function renderHome() {
     btn.classList.toggle('on', btn.dataset.period === S.period);
   });
   const max = Math.max(...series, 1);
+  const cap = window.matchMedia('(min-width: 1024px)').matches ? 150 : 72;
   $('bars').style.gap = month ? '4px' : '7px';
   $('bars').innerHTML = series.map((v, i) => {
     const on = S.day === i;
-    const h = Math.round((v / max) * 72);
+    const h = Math.round((v / max) * cap);
     return `<button type="button" data-act="bar" data-i="${i}">
       <div class="bar${on ? ' on' : ''}" style="height:${h}px"></div>
       <small class="${on ? 'on' : ''}">${letters[i]}</small>
@@ -1126,7 +1127,10 @@ function boot() {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeSheet();
   });
-  window.addEventListener('resize', () => layoutNav(false));
+  window.addEventListener('resize', () => {
+    layoutNav(false);
+    if (S.tab === 'home') renderHome();
+  });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutNav(false));
   paintOnboarding();
   checkAuth();
