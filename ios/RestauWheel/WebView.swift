@@ -60,6 +60,29 @@ final class WebViewModel: ObservableObject {
     }
 }
 
+// Le CSS lit --native-sat / --native-sab, puis décide du décalage.
+private final class InsetWebView: WKWebView {
+    var onInsets: (() -> Void)?
+    private var applied = UIEdgeInsets(top: -1, left: 0, bottom: 0, right: 0)
+
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        report()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        report()
+    }
+
+    private func report() {
+        let insets = safeAreaInsets
+        guard insets != applied else { return }
+        applied = insets
+        onInsets?()
+    }
+}
+
 // MARK: - Pont SwiftUI ↔ WKWebView
 
 struct WebView: UIViewRepresentable {
@@ -81,7 +104,11 @@ struct WebView: UIViewRepresentable {
             )
         )
 
-        let webView = WKWebView(frame: .zero, configuration: configuration)
+        let webView = InsetWebView(frame: .zero, configuration: configuration)
+        webView.onInsets = { [weak webView] in
+            guard let webView else { return }
+            context.coordinator.publishSafeArea(webView)
+        }
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
@@ -215,6 +242,14 @@ struct WebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             endRefreshing(webView)
             model.loadError = nil
+            publishSafeArea(webView)
+        }
+
+        /// env() reste à 0 sur certains WKWebView : on publie les insets réels.
+        func publishSafeArea(_ webView: WKWebView) {
+            let insets = webView.safeAreaInsets
+            let js = "document.documentElement.style.setProperty('--native-sat','\(insets.top)px');document.documentElement.style.setProperty('--native-sab','\(insets.bottom)px');if(window.__rwFit)window.__rwFit();"
+            webView.evaluateJavaScript(js, completionHandler: nil)
         }
 
         func webView(

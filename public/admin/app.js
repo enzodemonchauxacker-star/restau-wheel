@@ -948,6 +948,7 @@ async function enterApp() {
   await loadHome();
   requestAnimationFrame(() => layoutNav(false));
   revealShell();
+  fitPhoneFrame();
 }
 
 let shellRevealed = false;
@@ -1094,7 +1095,60 @@ function onClick(event) {
   else if (act === 'logout') doLogout();
 }
 
+/** Insets à ajouter quand le webview couvre l’écran mais que CSS env() vaut 0. */
+function phoneInsets({ envTop = 0, envBottom = 0, screenH = 0, innerH = 0, narrow = false } = {}) {
+  const top = Number(envTop) || 0;
+  const bottom = Number(envBottom) || 0;
+  const screen = Number(screenH) || 0;
+  const inner = Number(innerH) || 0;
+  const missing = screen > 0 && inner > 0 ? screen - inner : 999;
+  if (!narrow || screen < 800 || missing >= 48) return { top, bottom };
+  if (top >= 1 && bottom >= 1) return { top, bottom };
+  return {
+    top: top >= 1 ? top : (screen >= 852 ? 62 : 47),
+    bottom: bottom >= 1 ? bottom : 34,
+  };
+}
+
+function readEnvInsets() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);';
+  document.documentElement.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  const top = parseFloat(cs.paddingTop) || 0;
+  const bottom = parseFloat(cs.paddingBottom) || 0;
+  probe.remove();
+  return { top, bottom };
+}
+
+function fitPhoneFrame() {
+  const env = readEnvInsets();
+  const root = document.documentElement;
+  const nativeTop = parseFloat(getComputedStyle(root).getPropertyValue('--native-sat')) || 0;
+  const nativeBottom = parseFloat(getComputedStyle(root).getPropertyValue('--native-sab')) || 0;
+  const narrow = window.matchMedia('(max-width: 520px)').matches;
+  const guess = phoneInsets({
+    envTop: Math.max(env.top, nativeTop),
+    envBottom: Math.max(env.bottom, nativeBottom),
+    screenH: window.screen.height,
+    innerH: window.innerHeight,
+    narrow,
+  });
+  root.style.setProperty('--sat', guess.top + 'px');
+  root.style.setProperty('--sab', guess.bottom + 'px');
+  if (!window.matchMedia('(max-width: 520px) and (min-height: 700px)').matches) return;
+  const hello = document.querySelector('#view-app.on .hello')
+    || document.querySelector('#view-ob.on .ob-top')
+    || document.querySelector('#view-login.on .ob-top');
+  if (!hello) return;
+  const minTop = guess.top >= 1 ? Math.max(guess.top, 54) : ((window.screen.height || 0) >= 852 ? 62 : 50);
+  const delta = minTop - hello.getBoundingClientRect().top;
+  if (delta > 4) root.style.setProperty('--sat', (guess.top + delta) + 'px');
+}
+
 function boot() {
+  window.__rwFit = fitPhoneFrame;
+  fitPhoneFrame();
   try {
     const theme = localStorage.getItem('rw-theme');
     if (theme === 'Sombre' || theme === 'Clair') S.theme = theme;
@@ -1143,9 +1197,11 @@ function boot() {
     if (event.key === 'Escape') closeSheet();
   });
   window.addEventListener('resize', () => {
+    fitPhoneFrame();
     layoutNav(false);
     if (S.tab === 'home') renderHome();
   });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitPhoneFrame);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layoutNav(false));
   paintOnboarding();
   checkAuth();
@@ -1195,6 +1251,6 @@ if (typeof document !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     fmtInt, spinStatus, matchClient, wheelBackground, pickPrizeIndex, spinRotation,
-    winPercent, share, calcTarget, labelColor, clientBadge, initials,
+    winPercent, share, calcTarget, labelColor, clientBadge, initials, phoneInsets,
   };
 }

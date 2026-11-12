@@ -12,12 +12,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Doto:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/app.css?v=5">
+  <link rel="stylesheet" href="/admin/app.css?v=6">
   <style>
     #boot { position: fixed; inset: 0; z-index: 80; background: #e6e5e1; }
     html[data-native] #boot { display: none !important; }
   </style>
-  <script>window.__rwBoot = Date.now();</script>
+  <script>
+    window.__rwBoot = Date.now();
+    (function () {
+      try {
+        var screenH = screen.height || 0;
+        var innerH = window.innerHeight || 0;
+        var missing = screenH && innerH ? screenH - innerH : 999;
+        if (!window.matchMedia('(max-width: 520px)').matches || screenH < 800 || missing >= 48) return;
+        document.documentElement.style.setProperty('--sat', (screenH >= 852 ? 62 : 47) + 'px');
+        document.documentElement.style.setProperty('--sab', '34px');
+      } catch (e) {}
+    })();
+  </script>
   <script>
     try {
       if (localStorage.getItem('rw-theme') === 'Sombre') document.documentElement.dataset.theme = 'dark';
@@ -276,6 +288,6 @@
     </div>
   </div>
 
-  <script src="/admin/app.js?v=5"></script>
+  <script src="/admin/app.js?v=6"></script>
 </body>
 </html>
