@@ -167,6 +167,47 @@
     }
     .cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
+    .player {
+      position: relative;
+      border-radius: 36px;
+      overflow: hidden;
+      background: #0a0a0a;
+      box-shadow: var(--gl);
+      scroll-margin-top: 110px;
+    }
+    .player video {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      background: #0a0a0a;
+      object-fit: cover;
+    }
+    .player-play {
+      position: absolute;
+      inset: 0;
+      border: 0;
+      padding: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, .28), transparent 46%);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .player-play[hidden] { display: none; }
+    .player-play span {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .22);
+    }
+    .player-play svg { display: block; margin-left: 4px; }
+    .player-play:hover span { transform: translateY(-1px); }
+    .player-play:active span { transform: scale(0.97); }
+
     .board {
       display: grid;
       gap: 12px;
@@ -385,12 +426,12 @@
 
     @media (min-width: 900px) {
       .hero {
-        grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.15fr);
+        grid-template-columns: minmax(320px, .82fr) minmax(480px, 1.18fr);
         align-items: center;
-        gap: 40px;
-        min-height: calc(100dvh - 110px);
-        padding-top: 28px;
+        gap: 28px 40px;
+        padding-top: 36px;
       }
+      .board { grid-column: 1 / -1; }
       .board {
         grid-template-columns: 1.2fr .9fr;
         align-items: stretch;
@@ -402,7 +443,7 @@
       .feats { grid-template-columns: repeat(4, 1fr); }
     }
     @media (max-width: 720px) {
-      .nav-how { display: none; }
+      .nav-how, .nav-video { display: none; }
       .top {
         width: calc(100% - 16px);
         flex-wrap: wrap;
@@ -418,6 +459,8 @@
       html { scroll-behavior: auto; }
       .reveal { animation: none; opacity: 1; transform: none; }
       .wheel { cursor: default; }
+      .player-play:hover span,
+      .player-play:active span { transform: none; }
     }
   </style>
 </head>
@@ -430,6 +473,7 @@
     <header class="top">
       <a href="/" class="brand">RESTAU WHEEL</a>
       <div class="nav-actions">
+        <a class="nav-link nav-video" href="#video" data-i18n="nav.video">Vidéo</a>
         <a class="nav-link nav-how" href="#comment" data-i18n="nav.how">Comment ça marche</a>
         <div class="lang" role="group" aria-label="Language">
           <button type="button" data-lang-btn="fr">FR</button>
@@ -449,6 +493,23 @@
           <a class="btn btn-accent btn-lg" href="/register" data-i18n="land.cta">Lancer mon restaurant →</a>
           <a class="btn btn-glass btn-lg" href="/demo?src=home" data-i18n="land.demo">Essayer la démo</a>
         </div>
+      </div>
+
+      <div class="player" id="video">
+        <video
+          id="explainer"
+          poster="/video/restau_wheel_explainer.jpg"
+          preload="metadata"
+          playsinline
+          aria-label="Vidéo explicative Restau Wheel"
+        >
+          <source src="/video/restau_wheel_explainer.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="player-play" id="explainer-play" aria-label="Lire la vidéo">
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M8 5.5v13l11-6.5z"/></svg>
+          </span>
+        </button>
       </div>
 
       <div class="board reveal" style="--d:80ms">
@@ -579,7 +640,30 @@
       ).join('');
     }
     paintBars();
-    document.addEventListener('rw:lang', paintBars);
+    document.addEventListener('rw:lang', () => {
+      paintBars();
+      const video = document.getElementById('explainer');
+      const play = document.getElementById('explainer-play');
+      if (video && window.RW_I18N) video.setAttribute('aria-label', window.RW_I18N.t('land.video.label'));
+      if (play && window.RW_I18N) play.setAttribute('aria-label', window.RW_I18N.t('land.video.play'));
+    });
+
+    const explainer = document.getElementById('explainer');
+    const explainerPlay = document.getElementById('explainer-play');
+    if (explainer && explainerPlay) {
+      explainerPlay.addEventListener('click', async () => {
+        explainer.controls = true;
+        explainerPlay.hidden = true;
+        try {
+          await explainer.play();
+        } catch (err) {
+          explainerPlay.hidden = false;
+        }
+      });
+      explainer.addEventListener('ended', () => {
+        explainerPlay.hidden = false;
+      });
+    }
 
     document.querySelectorAll('a[href^="#"]').forEach((a) => {
       a.addEventListener('click', (event) => {
