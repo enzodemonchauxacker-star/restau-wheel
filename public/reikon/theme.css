@@ -1,0 +1,47 @@
+/* Palette Rekone : crème, lime, encre. Le tableau de bord admin n’est pas touché. */
+:root {
+  --bg: #fff8f1;
+  --card: rgba(255, 255, 255, .86);
+  --card2: rgba(59, 59, 59, .06);
+  --glass: rgba(255, 255, 255, .78);
+  --glass2: rgba(255, 248, 241, .55);
+  --text: #1e1e1e;
+  --muted: #8d8d8d;
+  --line: #e8e2d9;
+  --accent: #e8ff95;
+  --ink: #3b3b3b;
+  --pink: #c43648;
+  --mint: #1f8a5b;
+  --amber: #9a6b12;
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  --bg: #2a2a2a;
+  --card: rgba(255, 248, 241, .08);
+  --card2: rgba(255, 248, 241, .12);
+  --glass: rgba(59, 59, 59, .72);
+  --glass2: rgba(42, 42, 42, .55);
+  --text: #fff8f1;
+  --muted: #c8c2b8;
+  --line: rgba(255, 248, 241, .16);
+  --ink: #1e1e1e;
+  color-scheme: dark;
+}
+
+.halo.a { background: #e8ff95; opacity: .7; }
+.halo.b { background: #d7ef78; opacity: .4; }
+.halo.c { background: #e8ff95; opacity: .22; }
+
+.hero,
+.period button { color: var(--on-accent, #1e1e1e); }
+.period button.on { background: var(--on-accent, #1e1e1e); color: var(--accent); }
+.bar.on { background: var(--on-accent, #1e1e1e); }
+
+.stat.mint,
+.stat.pink { color: #fff8f1; }
+.stat.mint .lbl,
+.stat.pink .lbl { color: inherit; }
+
+.qr-card { background: #fff8f1; color: #1e1e1e; }
+.hub { color: #fff8f1; }
+.dock button.on { color: var(--on-accent, #1e1e1e); }

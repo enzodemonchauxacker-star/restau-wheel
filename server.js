@@ -1335,6 +1335,7 @@ app.post('/api/checkout', async (req, res) => {
 // ─── Pages HTML ───────────────────────────────────────────────────────────────
 app.get('/client',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'client',     'index.html')));
 app.get('/admin',       async (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin',      'index.html')));
+app.get('/reikon',      async (req, res) => res.sendFile(path.join(__dirname, 'public', 'reikon',     'index.html')));
 app.get('/register',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'register',   'index.html')));
 app.get('/superadmin',  async (req, res) => res.sendFile(path.join(__dirname, 'public', 'superadmin', 'index.html')));
 app.get('/checkout',    async (req, res) => res.sendFile(path.join(__dirname, 'public', 'checkout',   'index.html')));
