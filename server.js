@@ -21,12 +21,21 @@ if (process.env.VERCEL) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+function isRekoneHost(req) {
+  const raw = [].concat(req.headers['x-forwarded-host'] || [], req.headers.host || []);
+  return String(raw).split(',')
+    .map((h) => h.trim().split(':')[0].toLowerCase().replace(/\.$/, ''))
+    .some((h) => h === 'rekone.si' || h === 'www.rekone.si');
+}
+
 // HTML jamais mis en cache (les JS/CSS/images restent cachés normalement)
 app.use((req, res, next) => {
   if (
     req.path.endsWith('.html') ||
     req.path === '/' ||
-    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo)\/?$/.test(req.path)
+    /^\/(admin|client|superadmin|register|checkout|cancel|carte|demo|arcade)\/?$/.test(req.path) ||
+    /^\/arcade\/(dashboard|jouer|abonnement|resiliation|compte|connexion|preview-jeux)\/?$/.test(req.path)
   ) {
     res.setHeader('Cache-Control', 'no-store');
   }
@@ -40,6 +49,14 @@ app.get('/carte.vcf', (req, res) => {
   res.setHeader('Content-Disposition', 'inline; filename="Enzo-Demonchaux-Acker.vcf"');
   res.setHeader('Cache-Control', 'no-store');
   res.send(body);
+});
+// rekone.si et www.rekone.si : la racine sert Rekone, pas Restau Wheel
+app.use((req, res, next) => {
+  if (!isRekoneHost(req) || (req.method !== 'GET' && req.method !== 'HEAD') || req.path !== '/') {
+    return next();
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  return res.sendFile(path.join(__dirname, 'public', 'arcade', 'index.html'));
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -1361,6 +1378,10 @@ app.get('/privacy',     async (req, res) => res.redirect(301, '/mentions#privacy
 app.get('/confidentialite', async (req, res) => res.redirect(301, '/mentions#privacy'));
 app.get('/resiliation', async (req, res) => res.redirect(301, '/cancel'));
 app.get('/', async (req, res) => {
+  if (isRekoneHost(req)) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.sendFile(path.join(__dirname, 'public', 'arcade', 'index.html'));
+  }
   if (isPhoneUserAgent(req.headers['user-agent'])) {
     return res.redirect(302, '/admin?intro=1');
   }
