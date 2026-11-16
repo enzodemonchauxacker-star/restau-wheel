@@ -18,5 +18,5 @@ test('la racine Rekone sert arcade/index.html, pas Restau Wheel', () => {
   const rootHandler = serverSrc.slice(serverSrc.indexOf("app.get('/',"), serverSrc.indexOf('runReminderJob'));
   assert.match(rootHandler, /isRekoneHost/);
   assert.match(rootHandler, /arcade/);
-  assert.ok(rootHandler.indexOf('isRekoneHost') < rootHandler.indexOf('isPhoneUserAgent'));
+  assert.doesNotMatch(rootHandler, /isPhoneUserAgent/);
 });
