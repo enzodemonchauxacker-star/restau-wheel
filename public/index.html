@@ -3,6 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    // Coquille iOS (WKWebView) seulement — Safari / Chrome restent sur la landing.
+    (function () {
+      try {
+        if (document.documentElement.dataset.native === '1') {
+          location.replace('/admin');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <title>Restau Wheel — Fidélisation par la chance</title>
   <meta name="description" content="Une roue de fortune sur chaque table. Vos clients scannent, jouent, reviennent.">
   <meta name="theme-color" content="#e6e5e1">
