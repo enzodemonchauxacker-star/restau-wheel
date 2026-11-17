@@ -251,6 +251,19 @@
     .traffic-n { font-size:.68rem; font-weight:700; color:var(--ink); line-height:1; }
     .traffic-d { font-size:.62rem; color:var(--muted); font-family:var(--font-mono); }
     .stat-sub { color:var(--muted); font-size:.75rem; margin-top:2px; }
+    .aff-link {
+      display:inline-flex; align-items:center; gap:8px; max-width:260px;
+      font-family: var(--font-mono); font-size:.72rem; color:var(--wine);
+    }
+    .aff-link code {
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;
+      background:var(--ticket); padding:4px 8px; border-radius:var(--radius); color:var(--ink);
+    }
+    .aff-banner {
+      display:none; margin-bottom:1rem; padding:10px 12px;
+      background: rgba(201,162,39,.12); border:1px solid rgba(201,162,39,.35);
+      border-radius: var(--radius); color: var(--ink); font-size:.88rem;
+    }
   </style>
 </head>
 <body>
@@ -283,6 +296,7 @@
       <span class="topbar-badge" data-i18n="sa.top.badge">SUPER ADMIN</span>
       <nav class="topbar-nav" aria-label="Super admin">
         <button type="button" class="active" data-page="dash" onclick="showPage('dash')" data-i18n="sa.nav.dash">Tableau de bord</button>
+        <button type="button" data-page="affiliates" onclick="showPage('affiliates')" data-i18n="sa.nav.affiliates">Affiliés</button>
         <button type="button" data-page="clients" onclick="showPage('clients')" data-i18n="sa.nav.clients">Clients</button>
       </nav>
     </div>
@@ -420,6 +434,7 @@
           <tr>
             <th data-i18n="sa.th.resto">Restaurant</th>
             <th data-i18n="sa.th.email">Email</th>
+            <th data-i18n="sa.aff.th.affiliate">Affilié</th>
             <th data-i18n="sa.th.clients">Clients</th>
             <th data-i18n="sa.th.spins">Tirages</th>
             <th data-i18n="sa.th.date">Inscrit le</th>
@@ -495,6 +510,58 @@
         </table>
       </div>
     </div>
+
+    <div id="page-affiliates" style="display:none">
+      <div class="page-title" data-i18n="sa.aff.title">Affiliés</div>
+      <p class="page-desc" data-i18n="sa.aff.desc">Créez des affiliés de prospection, générez leur lien d’inscription, et suivez quel restaurant a souscrit via quel affilié.</p>
+
+      <div class="stats-row" id="aff-stats-row">
+        <div class="stat-card"><div class="stat-value" id="st-aff-total">–</div><div class="stat-label" data-i18n="sa.aff.stat.total">Affiliés</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-aff-active">–</div><div class="stat-label" data-i18n="sa.aff.stat.active">Actifs</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-aff-conv">–</div><div class="stat-label" data-i18n="sa.aff.stat.conv">Contrats</div></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title" data-i18n="sa.aff.list">Liste des affiliés</div>
+        <button class="btn-add" type="button" onclick="openAffiliateModal()" data-i18n="sa.aff.create">+ Créer un affilié</button>
+      </div>
+      <div class="table-wrap" style="margin-bottom:28px">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="sa.th.name">Nom</th>
+              <th data-i18n="sa.th.email">Email</th>
+              <th data-i18n="sa.th.phone">Téléphone</th>
+              <th data-i18n="sa.aff.th.code">Code</th>
+              <th data-i18n="sa.aff.th.link">Lien</th>
+              <th data-i18n="sa.aff.th.conv">Contrats</th>
+              <th data-i18n="sa.th.status">Statut</th>
+              <th data-i18n="sa.th.actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="aff-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title" data-i18n="sa.aff.conv.title">Contrats affiliés → restaurants</div>
+      </div>
+      <p class="page-desc" style="margin-top:-12px" data-i18n="sa.aff.conv.desc">Restaurants inscrits via un lien affilié.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="sa.aff.th.affiliate">Affilié</th>
+              <th data-i18n="sa.th.resto">Restaurant</th>
+              <th data-i18n="sa.th.email">Email resto</th>
+              <th data-i18n="sa.th.date">Inscrit le</th>
+              <th data-i18n="sa.th.status">Statut</th>
+            </tr>
+          </thead>
+          <tbody id="aff-conv-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -522,6 +589,38 @@
   </div>
 </div>
 
+<!-- Modal affilié -->
+<div class="modal-overlay" id="aff-modal">
+  <div class="modal">
+    <h3 id="aff-modal-title" data-i18n="sa.aff.modal.create">Créer un affilié</h3>
+    <div class="field">
+      <label data-i18n="sa.aff.modal.name">Nom</label>
+      <input type="text" id="aff-m-name" placeholder="Camille Prospect">
+    </div>
+    <div class="field">
+      <label data-i18n="sa.aff.modal.email">Email</label>
+      <input type="email" id="aff-m-email" placeholder="camille@exemple.fr">
+    </div>
+    <div class="field">
+      <label data-i18n="sa.aff.modal.phone">Téléphone</label>
+      <input type="text" id="aff-m-phone" placeholder="06…">
+    </div>
+    <div class="field">
+      <label data-i18n="sa.aff.modal.code">Code lien (optionnel)</label>
+      <input type="text" id="aff-m-code" placeholder="auto si vide">
+    </div>
+    <div class="field">
+      <label data-i18n="sa.aff.modal.notes">Notes</label>
+      <input type="text" id="aff-m-notes" placeholder="">
+    </div>
+    <p class="err" id="aff-modal-err"></p>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeAffiliateModal()" data-i18n="sa.modal.cancel">Annuler</button>
+      <button class="btn-save" onclick="saveAffiliateModal()" data-i18n="sa.modal.save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/i18n.js"></script>
 <script>
 const t = (k, v) => window.RW_I18N.t(k, v);
@@ -537,10 +636,16 @@ document.addEventListener('rw:lang', () => {
   loadDemoTraffic();
   fillClientsRestoFilter();
   if (currentPage === 'clients') loadCustomers();
+  if (currentPage === 'affiliates') loadAffiliatesPage();
   if (document.getElementById('modal').style.display === 'flex') {
     document.getElementById('modal-title').textContent = editingId
       ? t('sa.modal.edit')
       : t('sa.modal.create');
+  }
+  if (document.getElementById('aff-modal').style.display === 'flex') {
+    document.getElementById('aff-modal-title').textContent = editingAffiliateId
+      ? t('sa.aff.modal.edit')
+      : t('sa.aff.modal.create');
   }
 });
 
@@ -581,7 +686,7 @@ async function showApp() {
   prospectFilterCity = document.getElementById('scan-city').value.trim();
   await loadProspects();
   const hash = (location.hash || '').replace('#', '');
-  showPage(hash === 'clients' ? 'clients' : 'dash');
+  showPage(['clients', 'affiliates'].includes(hash) ? hash : 'dash');
 }
 
 async function loadSMTP() {
@@ -635,6 +740,7 @@ async function loadRestaurants() {
     <tr>
       <td><strong>${esc(r.name)}</strong></td>
       <td>${esc(r.email)}</td>
+      <td>${r.affiliate_name ? esc(r.affiliate_name) : '<span class="muted">—</span>'}</td>
       <td>${r.total_customers}</td>
       <td>${r.total_spins}</td>
       <td>${new Date(r.created_at).toLocaleDateString(loc())}</td>
@@ -956,15 +1062,172 @@ async function savePwd() {
 
 // Vérifier si déjà connecté
 function showPage(name) {
-  currentPage = name === 'clients' ? 'clients' : 'dash';
+  currentPage = ['clients', 'affiliates'].includes(name) ? name : 'dash';
   document.getElementById('page-dash').style.display = currentPage === 'dash' ? 'block' : 'none';
   document.getElementById('page-clients').style.display = currentPage === 'clients' ? 'block' : 'none';
+  document.getElementById('page-affiliates').style.display = currentPage === 'affiliates' ? 'block' : 'none';
   document.querySelectorAll('.topbar-nav [data-page]').forEach((el) => {
     el.classList.toggle('active', el.getAttribute('data-page') === currentPage);
   });
-  const nextHash = currentPage === 'clients' ? '#clients' : '#dash';
+  const nextHash = currentPage === 'dash' ? '#dash' : `#${currentPage}`;
   if (location.hash !== nextHash) history.replaceState(null, '', nextHash);
   if (currentPage === 'clients') loadCustomers();
+  if (currentPage === 'affiliates') loadAffiliatesPage();
+}
+
+let affiliates = [];
+let editingAffiliateId = null;
+
+async function loadAffiliatesPage() {
+  await Promise.all([loadAffiliates(), loadAffiliateConversions()]);
+}
+
+async function loadAffiliates() {
+  const res = await fetch('/api/superadmin/affiliates');
+  if (!res.ok) return;
+  affiliates = await res.json();
+  const active = affiliates.filter((a) => a.active).length;
+  const conversions = affiliates.reduce((sum, a) => sum + (a.conversions || 0), 0);
+  document.getElementById('st-aff-total').textContent = affiliates.length;
+  document.getElementById('st-aff-active').textContent = active;
+  document.getElementById('st-aff-conv').textContent = conversions;
+
+  const tbody = document.getElementById('aff-tbody');
+  if (!affiliates.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="muted">${t('sa.aff.empty')}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = affiliates.map((a) => `
+    <tr>
+      <td><strong>${esc(a.name)}</strong></td>
+      <td>${a.email ? esc(a.email) : '—'}</td>
+      <td>${a.phone ? esc(a.phone) : '—'}</td>
+      <td><code>${esc(a.code)}</code></td>
+      <td>
+        <span class="aff-link">
+          <code title="${esc(a.link || '')}">${esc(a.link || '')}</code>
+          <button class="action-btn" type="button" onclick="copyAffiliateLink(${a.id})">${t('sa.aff.copy')}</button>
+        </span>
+      </td>
+      <td>${a.conversions || 0}</td>
+      <td><span class="${a.active ? 'badge-active' : 'badge-inactive'}">${a.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
+      <td>
+        <button class="action-btn" type="button" onclick="editAffiliate(${a.id})">${t('sa.act.edit')}</button>
+        <button class="action-btn ${a.active ? 'danger' : ''}" type="button" onclick="toggleAffiliate(${a.id}, ${a.active ? 1 : 0})">
+          ${a.active ? t('sa.act.suspend') : t('sa.act.restore')}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function loadAffiliateConversions() {
+  const res = await fetch('/api/superadmin/affiliates/conversions');
+  const tbody = document.getElementById('aff-conv-tbody');
+  if (!res.ok) {
+    tbody.innerHTML = `<tr><td colspan="5" class="muted">${t('sa.aff.conv.err')}</td></tr>`;
+    return;
+  }
+  const rows = await res.json();
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="muted">${t('sa.aff.conv.empty')}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td><strong>${esc(r.affiliate_name || '—')}</strong><span class="addr">${esc(r.affiliate_code || '')}</span></td>
+      <td>${esc(r.name || '—')}</td>
+      <td>${esc(r.email || '—')}</td>
+      <td>${r.created_at ? new Date(r.created_at).toLocaleDateString(loc()) : '—'}</td>
+      <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
+    </tr>
+  `).join('');
+}
+
+function openAffiliateModal() {
+  editingAffiliateId = null;
+  document.getElementById('aff-modal-title').textContent = t('sa.aff.modal.create');
+  document.getElementById('aff-m-name').value = '';
+  document.getElementById('aff-m-email').value = '';
+  document.getElementById('aff-m-phone').value = '';
+  document.getElementById('aff-m-code').value = '';
+  document.getElementById('aff-m-notes').value = '';
+  document.getElementById('aff-modal-err').style.display = 'none';
+  document.getElementById('aff-modal').style.display = 'flex';
+}
+
+function editAffiliate(id) {
+  const a = affiliates.find((x) => x.id === id);
+  if (!a) return;
+  editingAffiliateId = id;
+  document.getElementById('aff-modal-title').textContent = t('sa.aff.modal.edit');
+  document.getElementById('aff-m-name').value = a.name || '';
+  document.getElementById('aff-m-email').value = a.email || '';
+  document.getElementById('aff-m-phone').value = a.phone || '';
+  document.getElementById('aff-m-code').value = a.code || '';
+  document.getElementById('aff-m-notes').value = a.notes || '';
+  document.getElementById('aff-modal-err').style.display = 'none';
+  document.getElementById('aff-modal').style.display = 'flex';
+}
+
+function closeAffiliateModal() {
+  document.getElementById('aff-modal').style.display = 'none';
+}
+
+async function saveAffiliateModal() {
+  const name = document.getElementById('aff-m-name').value.trim();
+  const email = document.getElementById('aff-m-email').value.trim();
+  const phone = document.getElementById('aff-m-phone').value.trim();
+  const code = document.getElementById('aff-m-code').value.trim();
+  const notes = document.getElementById('aff-m-notes').value.trim();
+  const errEl = document.getElementById('aff-modal-err');
+  errEl.style.display = 'none';
+  if (!name) {
+    errEl.textContent = t('sa.aff.modal.required');
+    errEl.style.display = 'block';
+    return;
+  }
+  const body = { name, email, phone, notes };
+  if (code) body.code = code;
+  const url = editingAffiliateId
+    ? `/api/superadmin/affiliates/${editingAffiliateId}`
+    : '/api/superadmin/affiliates';
+  const method = editingAffiliateId ? 'PUT' : 'POST';
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    errEl.textContent = d.error || t('sa.aff.modal.err');
+    errEl.style.display = 'block';
+    return;
+  }
+  closeAffiliateModal();
+  await loadAffiliatesPage();
+}
+
+async function toggleAffiliate(id, currentlyActive) {
+  const msg = currentlyActive ? t('sa.aff.confirm.suspend') : t('sa.aff.confirm.restore');
+  if (!confirm(msg)) return;
+  await fetch(`/api/superadmin/affiliates/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active: !currentlyActive }),
+  });
+  await loadAffiliatesPage();
+}
+
+async function copyAffiliateLink(id) {
+  const a = affiliates.find((x) => x.id === id);
+  if (!a?.link) return;
+  try {
+    await navigator.clipboard.writeText(a.link);
+    alert(t('sa.aff.copied'));
+  } catch {
+    prompt(t('sa.aff.copy.manual'), a.link);
+  }
 }
 
 function fillClientsRestoFilter() {

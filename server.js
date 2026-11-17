@@ -10,6 +10,11 @@ const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail }
 const { normalizePhone, sendExpirySms } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { seriesFromRows } = require('./lib/admin-series');
+const {
+  newAffiliateCode,
+  normalizeAffiliateCode,
+  buildAffiliateRegisterUrl,
+} = require('./lib/affiliates');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -446,6 +451,14 @@ app.put('/api/spin/:id/reminders', async (req, res) => {
 });
 
 // ─── Inscription restaurant ───────────────────────────────────────────────────
+app.get('/api/affiliate/:code', async (req, res) => {
+  const code = normalizeAffiliateCode(req.params.code);
+  if (!code) return res.status(404).json({ error: 'Lien affilié invalide' });
+  const aff = await db.prepare('SELECT name, code FROM affiliates WHERE lower(code)=lower(?) AND active=1').get(code);
+  if (!aff) return res.status(404).json({ error: 'Affilié introuvable' });
+  res.json({ name: aff.name, code: aff.code });
+});
+
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Tous les champs sont requis' });
@@ -455,13 +468,30 @@ app.post('/api/register', async (req, res) => {
   const exists = await db.prepare('SELECT id FROM restaurants WHERE lower(email)=lower(?) ').get(email.trim());
   if (exists) return res.status(409).json({ error: 'Cet email est déjà utilisé' });
 
+  const ref = normalizeAffiliateCode(req.body?.ref || req.body?.affiliate_code);
+  let affiliateId = null;
+  let affiliateCode = null;
+  if (ref) {
+    const aff = await db.prepare('SELECT id, code FROM affiliates WHERE lower(code)=lower(?) AND active=1').get(ref);
+    if (aff) {
+      affiliateId = aff.id;
+      affiliateCode = aff.code;
+    }
+  }
+
   const code = newPublicCode();
-  const r = await db.prepare('INSERT INTO restaurants (name, email, password, public_code) VALUES (?,?,?,?)').run(name.trim(), email.toLowerCase().trim(), password, code);
+  const r = await db.prepare(
+    'INSERT INTO restaurants (name, email, password, public_code, affiliate_id) VALUES (?,?,?,?,?)'
+  ).run(name.trim(), email.toLowerCase().trim(), password, code, affiliateId);
   await createDefaultPrizes(r.lastInsertRowid);
 
   req.session.restaurantId   = parseInt(r.lastInsertRowid, 10);
   req.session.restaurantName = name.trim();
-  res.json({ success: true, restaurant_id: req.session.restaurantId });
+  res.json({
+    success: true,
+    restaurant_id: req.session.restaurantId,
+    affiliate_code: affiliateCode,
+  });
 });
 
 // ─── Auth admin restaurant ────────────────────────────────────────────────────
@@ -901,9 +931,13 @@ app.get('/api/superadmin/me', async (req, res) => {
 app.get('/api/superadmin/restaurants', requireSuperAdmin, async (req, res) => {
   const rows = await db.prepare(`
     SELECT r.*,
+      a.name AS affiliate_name,
+      a.code AS affiliate_code,
       (SELECT COUNT(*) FROM customers c WHERE c.restaurant_id=r.id) as total_customers,
       (SELECT COUNT(*) FROM spins s JOIN customers c ON s.customer_id=c.id WHERE c.restaurant_id=r.id) as total_spins
-    FROM restaurants r ORDER BY r.created_at DESC
+    FROM restaurants r
+    LEFT JOIN affiliates a ON a.id = r.affiliate_id
+    ORDER BY r.created_at DESC
   `).all();
   res.json(rows);
 });
@@ -1100,6 +1134,94 @@ app.post('/api/superadmin/restaurants', requireSuperAdmin, async (req, res) => {
   const r = await db.prepare('INSERT INTO restaurants (name, email, password, public_code) VALUES (?,?,?,?)').run(name.trim(), email.toLowerCase().trim(), password, code);
   await createDefaultPrizes(r.lastInsertRowid);
   res.json(await db.prepare('SELECT * FROM restaurants WHERE id=?').get(r.lastInsertRowid));
+});
+
+// ─── Affiliés (prospection) ───────────────────────────────────────────────────
+app.get('/api/superadmin/affiliates', requireSuperAdmin, async (req, res) => {
+  const base = getPublicBaseUrl(req);
+  const rows = await db.prepare(`
+    SELECT a.*,
+      (SELECT COUNT(*)::int FROM restaurants r WHERE r.affiliate_id = a.id) AS conversions
+    FROM affiliates a
+    ORDER BY a.created_at DESC
+  `).all();
+  res.json((rows || []).map((a) => ({
+    ...a,
+    link: buildAffiliateRegisterUrl(base, a.code),
+  })));
+});
+
+app.get('/api/superadmin/affiliates/conversions', requireSuperAdmin, async (req, res) => {
+  const affiliateId = parseInt(req.query.affiliate_id, 10);
+  const clauses = ['r.affiliate_id IS NOT NULL'];
+  const params = [];
+  if (affiliateId > 0) {
+    clauses.push('r.affiliate_id=?');
+    params.push(affiliateId);
+  }
+  const rows = await db.prepare(`
+    SELECT r.id, r.name, r.email, r.created_at, r.active,
+           a.id AS affiliate_id, a.name AS affiliate_name, a.code AS affiliate_code, a.email AS affiliate_email
+    FROM restaurants r
+    JOIN affiliates a ON a.id = r.affiliate_id
+    WHERE ${clauses.join(' AND ')}
+    ORDER BY r.created_at DESC
+    LIMIT 400
+  `).all(...params);
+  res.json(rows || []);
+});
+
+app.post('/api/superadmin/affiliates', requireSuperAdmin, async (req, res) => {
+  const name = String(req.body?.name || '').trim();
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const phone = String(req.body?.phone || '').trim();
+  const notes = String(req.body?.notes || '').trim();
+  let code = normalizeAffiliateCode(req.body?.code);
+  if (!name) return res.status(400).json({ error: 'Nom requis' });
+  if (!code) code = newAffiliateCode();
+  const exists = await db.prepare('SELECT id FROM affiliates WHERE lower(code)=lower(?)').get(code);
+  if (exists) return res.status(409).json({ error: 'Ce code affilié existe déjà' });
+  const r = await db.prepare(
+    'INSERT INTO affiliates (name, email, phone, code, notes) VALUES (?,?,?,?,?)'
+  ).run(name, email, phone, code, notes);
+  const row = await db.prepare('SELECT * FROM affiliates WHERE id=?').get(r.lastInsertRowid);
+  const base = getPublicBaseUrl(req);
+  res.json({ ...row, link: buildAffiliateRegisterUrl(base, row.code), conversions: 0 });
+});
+
+app.put('/api/superadmin/affiliates/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const current = await db.prepare('SELECT * FROM affiliates WHERE id=?').get(id);
+  if (!current) return res.status(404).json({ error: 'Affilié introuvable' });
+
+  const name = req.body?.name != null ? String(req.body.name).trim() : current.name;
+  const email = req.body?.email != null ? String(req.body.email).trim().toLowerCase() : (current.email || '');
+  const phone = req.body?.phone != null ? String(req.body.phone).trim() : (current.phone || '');
+  const notes = req.body?.notes != null ? String(req.body.notes).trim() : (current.notes || '');
+  let code = current.code;
+  if (req.body?.code != null) {
+    const next = normalizeAffiliateCode(req.body.code);
+    if (!next) return res.status(400).json({ error: 'Code invalide' });
+    if (next !== String(current.code || '').toLowerCase()) {
+      const clash = await db.prepare('SELECT id FROM affiliates WHERE lower(code)=lower(?) AND id<>?').get(next, id);
+      if (clash) return res.status(409).json({ error: 'Ce code affilié existe déjà' });
+      code = next;
+    }
+  }
+  const active = req.body?.active == null ? current.active : (req.body.active ? 1 : 0);
+  if (!name) return res.status(400).json({ error: 'Nom requis' });
+
+  await db.prepare(
+    'UPDATE affiliates SET name=?, email=?, phone=?, code=?, notes=?, active=? WHERE id=?'
+  ).run(name, email, phone, code, notes, active, id);
+
+  const row = await db.prepare(`
+    SELECT a.*,
+      (SELECT COUNT(*)::int FROM restaurants r WHERE r.affiliate_id = a.id) AS conversions
+    FROM affiliates a WHERE a.id=?
+  `).get(id);
+  const base = getPublicBaseUrl(req);
+  res.json({ ...row, link: buildAffiliateRegisterUrl(base, row.code) });
 });
 
 app.put('/api/superadmin/restaurants/:id', requireSuperAdmin, async (req, res) => {
@@ -1320,6 +1442,34 @@ app.post('/api/checkout', async (req, res) => {
   const name  = String(req.body?.name || '').trim();
   if (!email || !name) return res.status(400).json({ error: 'Email et nom requis' });
 
+  const affiliateCode = normalizeAffiliateCode(req.body?.ref || req.body?.affiliate_code);
+  let affiliateMeta = {};
+  if (affiliateCode) {
+    const aff = await db.prepare('SELECT id, code, name FROM affiliates WHERE lower(code)=lower(?) AND active=1').get(affiliateCode);
+    if (aff) {
+      affiliateMeta = {
+        affiliate_id: String(aff.id),
+        affiliate_code: aff.code,
+        affiliate_name: aff.name,
+      };
+    }
+  } else {
+    const resto = await db.prepare(`
+      SELECT a.id, a.code, a.name
+      FROM restaurants r
+      JOIN affiliates a ON a.id = r.affiliate_id
+      WHERE lower(r.email)=lower(?)
+      LIMIT 1
+    `).get(email);
+    if (resto) {
+      affiliateMeta = {
+        affiliate_id: String(resto.id),
+        affiliate_code: resto.code,
+        affiliate_name: resto.name,
+      };
+    }
+  }
+
   // Stripe Checkout (carte collectée côté Stripe — PCI safe)
   if (stripe && process.env.STRIPE_PRICE_ID) {
     try {
@@ -1330,7 +1480,10 @@ app.post('/api/checkout', async (req, res) => {
         line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
         success_url: `${origin}/admin?paid=1`,
         cancel_url: `${origin}/checkout?canceled=1`,
-        metadata: { customer_name: name },
+        metadata: { customer_name: name, ...affiliateMeta },
+        subscription_data: Object.keys(affiliateMeta).length
+          ? { metadata: affiliateMeta }
+          : undefined,
       });
       return res.json({ checkoutUrl: session.url });
     } catch (e) {
@@ -1345,6 +1498,7 @@ app.post('/api/checkout', async (req, res) => {
     success: true,
     last4: String(req.body?.last4 || '').slice(-4),
     brand: req.body?.brand || 'card',
+    affiliate_code: affiliateMeta.affiliate_code || null,
   });
 });
 

@@ -126,8 +126,24 @@ async function initSchema() {
     `;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS theme_accent TEXT NOT NULL DEFAULT '#FFD700'`;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS public_code TEXT`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS affiliate_id INTEGER`;
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS restaurants_public_code_uidx ON restaurants (public_code)`;
     await backfillPublicCodes();
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliates (
+        id         SERIAL PRIMARY KEY,
+        name       TEXT NOT NULL,
+        email      TEXT DEFAULT '',
+        phone      TEXT DEFAULT '',
+        code       TEXT NOT NULL UNIQUE,
+        active     INTEGER NOT NULL DEFAULT 1,
+        notes      TEXT DEFAULT '',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    await sql`CREATE UNIQUE INDEX IF NOT EXISTS affiliates_code_uidx ON affiliates (lower(code))`;
+    await sql`CREATE INDEX IF NOT EXISTS restaurants_affiliate_id_idx ON restaurants (affiliate_id)`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS prizes (
