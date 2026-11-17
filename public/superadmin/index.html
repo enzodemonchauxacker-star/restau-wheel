@@ -566,6 +566,55 @@
         </table>
       </div>
 
+      <div id="aff-profile" class="scan-box" style="display:none;margin-bottom:28px">
+        <div class="section-header" style="margin-bottom:8px">
+          <div>
+            <div class="section-title" id="aff-profile-title">—</div>
+            <p class="page-desc" style="margin:6px 0 0" id="aff-profile-meta"></p>
+          </div>
+          <button class="action-btn" type="button" onclick="closeAffiliateProfile()" data-i18n="sa.aff.profile.close">Fermer</button>
+        </div>
+        <div class="stats-row" style="margin-bottom:16px">
+          <div class="stat-card">
+            <div class="stat-value" id="aff-profile-contracts">–</div>
+            <div class="stat-label" data-i18n="sa.aff.profile.contracts">Contrats signés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="aff-profile-stripe-n">–</div>
+            <div class="stat-label" data-i18n="sa.aff.profile.stripe">Inscrits Stripe</div>
+          </div>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:1.05rem;margin:0 0 8px" data-i18n="sa.aff.profile.stripe.title">Personnes inscrites via Stripe</h3>
+        <p class="page-desc" style="margin-top:0" data-i18n="sa.aff.profile.stripe.desc">Clients / abonnements Stripe rattachés au code d’affiliation.</p>
+        <div class="table-wrap" style="margin-bottom:18px">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="sa.th.name">Nom</th>
+                <th data-i18n="sa.th.email">Email</th>
+                <th data-i18n="sa.th.status">Statut</th>
+                <th data-i18n="sa.th.date">Inscrit le</th>
+              </tr>
+            </thead>
+            <tbody id="aff-profile-stripe-tbody"></tbody>
+          </table>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:1.05rem;margin:0 0 8px" data-i18n="sa.aff.profile.restos.title">Restaurants liés</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="sa.th.resto">Restaurant</th>
+                <th data-i18n="sa.th.email">Email</th>
+                <th data-i18n="sa.th.date">Inscrit le</th>
+                <th data-i18n="sa.th.status">Statut</th>
+              </tr>
+            </thead>
+            <tbody id="aff-profile-resto-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="section-header">
         <div class="section-title" data-i18n="sa.aff.conv.title">Contrats affiliés → restaurants</div>
       </div>
@@ -1131,7 +1180,7 @@ async function loadAffiliates() {
   }
   tbody.innerHTML = affiliates.map((a) => `
     <tr>
-      <td><strong>${esc(a.name)}</strong></td>
+      <td><strong><button type="button" class="action-btn" style="margin:0;padding:0;border:none;background:none;color:var(--wine);font-weight:700" onclick="openAffiliateProfile(${a.id})">${esc(a.name)}</button></strong></td>
       <td>${a.email ? esc(a.email) : '—'}</td>
       <td>${a.phone ? esc(a.phone) : '—'}</td>
       <td><code>${esc(a.code)}</code></td>
@@ -1144,6 +1193,7 @@ async function loadAffiliates() {
       <td>${a.conversions || 0}</td>
       <td><span class="${a.active ? 'badge-active' : 'badge-inactive'}">${a.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
       <td>
+        <button class="action-btn" type="button" onclick="openAffiliateProfile(${a.id})">${t('sa.aff.profile.open')}</button>
         <button class="action-btn" type="button" onclick="editAffiliate(${a.id})">${t('sa.act.edit')}</button>
         <button class="action-btn ${a.active ? 'danger' : ''}" type="button" onclick="toggleAffiliate(${a.id}, ${a.active ? 1 : 0})">
           ${a.active ? t('sa.act.suspend') : t('sa.act.restore')}
@@ -1151,6 +1201,71 @@ async function loadAffiliates() {
       </td>
     </tr>
   `).join('');
+}
+
+function closeAffiliateProfile() {
+  const el = document.getElementById('aff-profile');
+  if (el) el.style.display = 'none';
+}
+
+async function openAffiliateProfile(id) {
+  const panel = document.getElementById('aff-profile');
+  if (!panel) return;
+  panel.style.display = 'block';
+  document.getElementById('aff-profile-title').textContent = t('sa.aff.profile.loading');
+  document.getElementById('aff-profile-meta').textContent = '';
+  document.getElementById('aff-profile-contracts').textContent = '…';
+  document.getElementById('aff-profile-stripe-n').textContent = '…';
+  document.getElementById('aff-profile-stripe-tbody').innerHTML = `<tr><td colspan="4" class="muted">${t('sa.aff.profile.loading')}</td></tr>`;
+  document.getElementById('aff-profile-resto-tbody').innerHTML = '';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const res = await fetch(`/api/superadmin/affiliates/${id}`);
+  if (!res.ok) {
+    document.getElementById('aff-profile-title').textContent = t('sa.aff.profile.err');
+    return;
+  }
+  const p = await res.json();
+  document.getElementById('aff-profile-title').textContent = p.name || '—';
+  document.getElementById('aff-profile-meta').textContent = [
+    p.code ? `${t('sa.aff.th.code')}: ${p.code}` : '',
+    p.email || '',
+    p.link || '',
+  ].filter(Boolean).join(' · ');
+  document.getElementById('aff-profile-contracts').textContent = p.contracts_count ?? p.conversions ?? 0;
+  const signups = (p.stripe && p.stripe.signups) || [];
+  document.getElementById('aff-profile-stripe-n').textContent = signups.length;
+
+  const stripeBody = document.getElementById('aff-profile-stripe-tbody');
+  if (p.stripe && p.stripe.demo) {
+    stripeBody.innerHTML = `<tr><td colspan="4" class="muted">${t('sa.aff.profile.stripe.demo')}</td></tr>`;
+  } else if (!signups.length) {
+    stripeBody.innerHTML = `<tr><td colspan="4" class="muted">${t('sa.aff.profile.stripe.empty')}</td></tr>`;
+  } else {
+    stripeBody.innerHTML = signups.map((s) => `
+      <tr>
+        <td><strong>${esc(s.name || '—')}</strong></td>
+        <td>${s.email ? esc(s.email) : '—'}</td>
+        <td>${esc(s.status || '—')}</td>
+        <td>${s.created_at ? new Date(s.created_at).toLocaleString(loc()) : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  const restos = p.restaurants || [];
+  const restoBody = document.getElementById('aff-profile-resto-tbody');
+  if (!restos.length) {
+    restoBody.innerHTML = `<tr><td colspan="4" class="muted">${t('sa.aff.profile.restos.empty')}</td></tr>`;
+  } else {
+    restoBody.innerHTML = restos.map((r) => `
+      <tr>
+        <td><strong>${esc(r.name || '—')}</strong></td>
+        <td>${esc(r.email || '—')}</td>
+        <td>${r.created_at ? new Date(r.created_at).toLocaleDateString(loc()) : '—'}</td>
+        <td><span class="${r.active ? 'badge-active' : 'badge-inactive'}">${r.active ? t('sa.status.on') : t('sa.status.off')}</span></td>
+      </tr>
+    `).join('');
+  }
 }
 
 async function loadAffiliateConversions() {
