@@ -15,6 +15,7 @@ const {
   normalizeAffiliateCode,
   buildAffiliateRegisterUrl,
 } = require('./lib/affiliates');
+const { listStripeSignupsForAffiliate } = require('./lib/affiliate-stripe');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -1169,6 +1170,48 @@ app.get('/api/superadmin/affiliates/conversions', requireSuperAdmin, async (req,
     LIMIT 400
   `).all(...params);
   res.json(rows || []);
+});
+
+app.get('/api/superadmin/affiliates/:id', requireSuperAdmin, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!(id > 0)) return res.status(400).json({ error: 'ID invalide' });
+  const base = getPublicBaseUrl(req);
+  const aff = await db.prepare('SELECT * FROM affiliates WHERE id=?').get(id);
+  if (!aff) return res.status(404).json({ error: 'Affilié introuvable' });
+
+  const restaurants = await db.prepare(`
+    SELECT r.id, r.name, r.email, r.created_at, r.active
+    FROM restaurants r
+    WHERE r.affiliate_id = ?
+    ORDER BY r.created_at DESC
+    LIMIT 400
+  `).all(id);
+
+  let stripeInfo = { demo: true, configured: false, signups: [], contracts: 0 };
+  try {
+    stripeInfo = await listStripeSignupsForAffiliate(stripe, aff);
+  } catch (e) {
+    console.error('[sa-affiliate-profile]', e.message);
+    stripeInfo = { demo: !stripe, configured: !!stripe, signups: [], contracts: 0, error: e.message };
+  }
+
+  const dbContracts = (restaurants || []).length;
+  const stripeContracts = stripeInfo.contracts || (stripeInfo.signups || []).length;
+  const contracts_count = Math.max(dbContracts, stripeContracts);
+
+  res.json({
+    ...aff,
+    link: buildAffiliateRegisterUrl(base, aff.code),
+    conversions: dbContracts,
+    contracts_count,
+    restaurants: restaurants || [],
+    stripe: {
+      demo: !!stripeInfo.demo,
+      configured: !!stripeInfo.configured,
+      signups: stripeInfo.signups || [],
+      error: stripeInfo.error || null,
+    },
+  });
 });
 
 app.post('/api/superadmin/affiliates', requireSuperAdmin, async (req, res) => {
