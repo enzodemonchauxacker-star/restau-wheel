@@ -591,16 +591,19 @@
       btn.textContent = 'Traitement…';
 
       try {
+        const ref = new URLSearchParams(location.search).get('ref') || '';
+        const payload = {
+          email,
+          name,
+          demo: true,
+          last4: number.slice(-4),
+          brand: detectBrand(number),
+        };
+        if (ref) payload.ref = ref;
         const res = await fetch('/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            name,
-            demo: true,
-            last4: number.slice(-4),
-            brand: detectBrand(number),
-          }),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur paiement');

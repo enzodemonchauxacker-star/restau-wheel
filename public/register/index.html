@@ -109,6 +109,17 @@
       color: rgba(255,248,231,0.45);
     }
     .back:hover { color: var(--ivory); }
+    .aff-banner {
+      display: none;
+      margin-bottom: 1rem;
+      padding: 10px 12px;
+      background: rgba(201,162,39,.14);
+      border: 1px solid rgba(201,162,39,.4);
+      border-radius: 8px;
+      color: var(--ink);
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
 
     @media (max-width: 760px) {
       .shell { grid-template-columns: 1fr; }
@@ -136,6 +147,7 @@ de votre salle.</h1>
 
     <div class="card">
       <h2 data-i18n="reg.card.title">Nouveau restaurant</h2>
+      <div id="aff-banner" class="aff-banner" role="status"></div>
       <div class="field">
         <label data-i18n="reg.name">Nom du restaurant</label>
         <input type="text" id="name" data-i18n-placeholder="reg.ph.name" placeholder="Le Bistrot du Coin" autocomplete="organization">
@@ -157,7 +169,34 @@ de votre salle.</h1>
   <script src="/js/i18n.js"></script>
   <script>
     document.title = window.RW_I18N.t('reg.title');
-    document.addEventListener('rw:lang', () => { document.title = window.RW_I18N.t('reg.title'); });
+    document.addEventListener('rw:lang', () => {
+      document.title = window.RW_I18N.t('reg.title');
+      renderAffiliateBanner();
+    });
+
+    const affiliateRef = new URLSearchParams(location.search).get('ref') || '';
+    let affiliateName = '';
+
+    function renderAffiliateBanner() {
+      const el = document.getElementById('aff-banner');
+      if (!el || !affiliateRef || !affiliateName) {
+        if (el) el.style.display = 'none';
+        return;
+      }
+      el.textContent = window.RW_I18N.t('reg.aff.banner', { name: affiliateName });
+      el.style.display = 'block';
+    }
+
+    (async () => {
+      if (!affiliateRef) return;
+      try {
+        const res = await fetch('/api/affiliate/' + encodeURIComponent(affiliateRef));
+        if (!res.ok) return;
+        const data = await res.json();
+        affiliateName = data.name || '';
+        renderAffiliateBanner();
+      } catch (_) { /* ignore */ }
+    })();
 
     async function register() {
       const name     = document.getElementById('name').value.trim();
@@ -173,13 +212,18 @@ de votre salle.</h1>
       const submitLabel = window.RW_I18N.t('reg.submit');
       btn.textContent = window.RW_I18N.getLang() === 'en' ? 'Creating…' : 'Création…';
       try {
+        const payload = { name, email, password };
+        if (affiliateRef) payload.ref = affiliateRef;
         const res  = await fetch('/api/register', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (!res.ok) { showErr(data.error || 'Erreur'); btn.disabled=false; btn.textContent=submitLabel; return; }
-        window.location.href = '/checkout?email=' + encodeURIComponent(email);
+        const ref = data.affiliate_code || affiliateRef;
+        let checkout = '/checkout?email=' + encodeURIComponent(email);
+        if (ref) checkout += '&ref=' + encodeURIComponent(ref);
+        window.location.href = checkout;
       } catch(e) {
         showErr(window.RW_I18N.getLang() === 'en' ? 'Network error.' : 'Erreur réseau.');
         btn.disabled=false; btn.textContent=submitLabel;
