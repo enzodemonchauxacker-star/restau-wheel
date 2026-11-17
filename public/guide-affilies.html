@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Guide affilié — Restau Wheel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0a0a0a;
+      --ivory: #fff8e7;
+      --ticket: #ffe566;
+      --brass: #ffd60a;
+      --wine: #ff2d6a;
+      --muted: #5c5c5c;
+      --green: #00e5c8;
+      --bg: #ffe566;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page { size: A4; margin: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Outfit', system-ui, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      padding-bottom: 28px;
+    }
+    .topbar {
+      background: #0a0a0a;
+      color: var(--brass);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(255,214,10,.35);
+    }
+    .brand {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--brass);
+    }
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .1em;
+      border: 1px solid rgba(255,214,10,.45);
+      background: rgba(255,214,10,.14);
+      color: var(--brass);
+      padding: 5px 10px;
+    }
+    .main { padding: 28px 28px 20px; }
+    h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 22px;
+      max-width: 58ch;
+      line-height: 1.45;
+    }
+    .card {
+      background: var(--ivory);
+      border: 1px solid var(--ink);
+      padding: 18px 18px 16px;
+      margin-bottom: 16px;
+      break-inside: avoid;
+    }
+    .card.alert {
+      border-color: var(--wine);
+      box-shadow: 6px 6px 0 var(--wine);
+    }
+    .card h2 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      background: var(--wine);
+      color: #fff;
+      font-family: 'DM Mono', monospace;
+      font-size: .75rem;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .card h3 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: .88rem;
+      margin: 14px 0 8px;
+    }
+    p, li { font-size: .9rem; line-height: 1.5; }
+    ul, ol { padding-left: 1.2rem; margin: 8px 0; }
+    li { margin: 4px 0; }
+    .muted { color: var(--muted); }
+    .strong { font-weight: 700; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 6px;
+      font-size: .88rem;
+    }
+    th {
+      background: #0a0a0a;
+      color: var(--brass);
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--ink);
+    }
+    td {
+      background: #fffdf5;
+      border: 1px solid var(--ink);
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+    code, .mono {
+      font-family: 'DM Mono', monospace;
+      font-size: .82em;
+      background: var(--ticket);
+      padding: 2px 6px;
+      border: 1px solid rgba(10,10,10,.2);
+    }
+    .quote {
+      margin: 12px 0;
+      padding: 12px 14px;
+      background: rgba(255,45,106,.08);
+      border-left: 4px solid var(--wine);
+      font-style: italic;
+      font-size: .9rem;
+    }
+    .pill {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: rgba(0,229,200,.14);
+      color: #007a6c;
+      border: 1px solid rgba(0,229,200,.4);
+      margin-left: 6px;
+    }
+    .pill.danger {
+      background: rgba(255,45,106,.12);
+      color: var(--wine);
+      border-color: rgba(255,45,106,.4);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .stat {
+      background: #fffdf5;
+      border: 1px solid var(--ink);
+      text-align: center;
+      padding: 14px 10px;
+    }
+    .stat .v {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2rem;
+      color: var(--wine);
+      line-height: 1;
+    }
+    .stat .l {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .recap {
+      display: grid;
+      gap: 8px;
+    }
+    .recap-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: #fffdf5;
+      border: 1px solid var(--ink);
+      padding: 10px 12px;
+      font-size: .9rem;
+    }
+    .footer {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(10,10,10,.25);
+      font-family: 'DM Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    a { color: var(--wine); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">Restau Wheel</div>
+      <div class="badge">GUIDE AFFILIÉ</div>
+    </div>
+    <div class="main">
+      <h1>Guide affilié</h1>
+      <p class="lede">Faites souscrire des restaurants via <strong>votre lien personnel</strong>, présentez le produit avec le compte démo, puis suivez vos inscriptions.</p>
+
+      <section class="card">
+        <h2><span class="num">1</span> Compte de démonstration</h2>
+        <p>Tous les affiliés utilisent le <strong>même compte démo</strong> pour présenter le SaaS.</p>
+        <table>
+          <thead>
+            <tr><th>Champ</th><th>Valeur</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Identifiant</td><td><code>comptoir@restauwheel.com</code></td></tr>
+            <tr><td>Mot de passe</td><td><code>comptoir</code></td></tr>
+            <tr><td>Lien de démo</td><td><a href="https://comptoir-base-restaurants.com">comptoir-base-restaurants.com</a></td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:10px">Ce compte sert uniquement à la démo (roue, lots, parcours). Il ne remplace <strong>pas</strong> l’inscription du restaurant via votre lien.</p>
+      </section>
+
+      <section class="card alert">
+        <h2><span class="num">2</span> Règle absolue : le lien <span class="pill danger">Obligatoire</span></h2>
+        <p class="strong">Le restaurant doit s’inscrire avec VOTRE lien personnel.</p>
+        <p style="margin-top:8px">Sans inscription via ce lien :</p>
+        <ul>
+          <li>le restaurant n’est <strong>pas</strong> rattaché à vous ;</li>
+          <li><strong>aucune commission</strong> ne peut vous être versée.</li>
+        </ul>
+        <div class="quote">« Pour souscrire, tu dois passer par mon lien. Sinon je ne peux pas être commissionné, et on ne pourra pas te suivre correctement. »</div>
+        <ol>
+          <li>Envoyez <strong>uniquement</strong> votre lien Restau Wheel.</li>
+          <li>Faites ouvrir le lien devant vous si possible.</li>
+          <li>Vérifiez que l’URL contient votre code (<code>?ref=…</code>).</li>
+          <li>Évitez l’accueil général, un autre affilié, ou un vieux favori.</li>
+        </ol>
+        <p class="strong" style="margin-top:10px;color:var(--wine)">Pas de lien = pas de commission. Aucune exception « on régularisera après ».</p>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">3</span> Conditions de versement</h2>
+        <div class="stats">
+          <div class="stat"><div class="v">20 €</div><div class="l">1er versement à l’inscription</div></div>
+          <div class="stat"><div class="v">10 €</div><div class="l">2e versement au 2e mois</div></div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Étape</th><th>Montant</th><th>Condition</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1er versement</td>
+              <td><strong>20 €</strong></td>
+              <td>dès l’inscription du client (restaurant)</td>
+            </tr>
+            <tr>
+              <td>2e versement</td>
+              <td><strong>10 €</strong></td>
+              <td>le mois suivant, si 2e mois souscrit et <strong>pas de résiliation</strong> entre-temps</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>inscription validée → <strong>20 €</strong> ;</li>
+          <li>client toujours abonné au 2e mois → <strong>+10 €</strong> ;</li>
+          <li>résiliation avant le 2e mois → pas de second versement.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">4</span> Bonnes pratiques</h2>
+        <h3>Partager votre lien</h3>
+        <ul>
+          <li>Bouche-à-oreille local, commerçants, réseaux du coin.</li>
+          <li>QR code de votre lien sur place.</li>
+          <li>Message court + lien (WhatsApp, LinkedIn, Instagram).</li>
+          <li>Renvoyer le lien juste après la démo.</li>
+        </ul>
+        <div class="quote">« Voici mon lien Restau Wheel pour créer ton compte resto. Passe uniquement par ce lien : [VOTRE LIEN] »</div>
+
+        <h3>À éviter</h3>
+        <ul>
+          <li>Spam (emails / SMS / messages en masse).</li>
+          <li>Faux comptes ou inscriptions pour « tester » la commission.</li>
+          <li>Partager le mot de passe démo hors présentation.</li>
+          <li>Promettre des tarifs non validés.</li>
+          <li>Inscrire le resto sans son accord.</li>
+        </ul>
+
+        <h3>Suivre vos parrainages</h3>
+        <ol>
+          <li>Gardez votre lien et votre code.</li>
+          <li>Notez qui vous avez prospecté et quand.</li>
+          <li>Les inscriptions via votre lien apparaissent sur votre profil affilié.</li>
+          <li>Si le resto « s’est inscrit » mais n’apparaît pas : vérifier le lien utilisé.</li>
+        </ol>
+
+        <h3>Litige commission</h3>
+        <p>Contactez le support avec : nom / code affilié, nom + email du resto, date approx., preuve du lien partagé.</p>
+
+        <h3>Confidentialité</h3>
+        <ul>
+          <li>Ne stockez pas les mots de passe des restaurants.</li>
+          <li>Ne diffusez pas emails / téléphones / stats hors besoin.</li>
+          <li>Compte démo partagé : aucune donnée personnelle dessus.</li>
+          <li>Prospectez loyalement (RGPD).</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">5</span> Récapitulatif express</h2>
+        <div class="recap">
+          <div class="recap-item"><span class="num">1</span><span>Démo : <code>comptoir@restauwheel.com</code> / <code>comptoir</code></span></div>
+          <div class="recap-item"><span class="num">2</span><span>Le resto s’inscrit <strong>obligatoirement</strong> via votre lien</span></div>
+          <div class="recap-item"><span class="num">3</span><span>Commission : <strong>20 €</strong> puis <strong>10 €</strong> au 2e mois s’il reste abonné</span></div>
+          <div class="recap-item"><span class="num">4</span><span><strong>Pas de lien = pas de commission</strong></span></div>
+        </div>
+      </section>
+
+      <div class="footer">
+        <span>Restau Wheel — Guide affiliés</span>
+        <span>Confidentiel partenaires</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
