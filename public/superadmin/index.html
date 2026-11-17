@@ -446,28 +446,51 @@
       </table>
     </div>
 
-    <div class="pwd-card">
+    <div class="pwd-card" id="smtp-card" style="max-width:560px">
       <h3 data-i18n="sa.smtp.h">Configuration SMTP (emails)</h3>
       <p style="color:#8892a4;font-size:.88rem;margin-bottom:16px;" data-i18n="sa.smtp.p" data-i18n-html>Ces paramètres sont partagés entre tous les restaurants. Utilisez un compte Gmail avec un <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener" style="color:#fc8181;">mot de passe d'application</a> (pas votre vrai mot de passe Gmail).</p>
+      <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <input type="checkbox" id="smtp-enabled" style="width:auto;accent-color:var(--wine)">
+        <label for="smtp-enabled" style="margin:0;text-transform:none;letter-spacing:0;font-size:.92rem;color:var(--ink);font-weight:600" data-i18n="sa.smtp.enabled">Activer l’envoi d’emails</label>
+      </div>
       <div class="field">
         <label data-i18n="sa.smtp.host">Serveur SMTP</label>
-        <input type="text" id="smtp-host" placeholder="smtp.gmail.com">
+        <input type="text" id="smtp-host" placeholder="smtp.gmail.com" autocomplete="off">
+      </div>
+      <div class="scan-row" style="margin-bottom:14px">
+        <div class="field">
+          <label data-i18n="sa.smtp.port">Port</label>
+          <input type="number" id="smtp-port" placeholder="587" value="587" min="1" max="65535">
+        </div>
+        <div class="field">
+          <label data-i18n="sa.smtp.secure">Sécurité</label>
+          <select id="smtp-secure" style="width:100%;padding:11px 12px;background:var(--ticket);border:1px solid var(--line);color:var(--ink);font-size:1rem;font-family:var(--font-body);border-radius:var(--radius)">
+            <option value="auto" data-i18n="sa.smtp.secure.auto">Auto (465 → SSL)</option>
+            <option value="tls" data-i18n="sa.smtp.secure.tls">TLS / STARTTLS</option>
+            <option value="ssl" data-i18n="sa.smtp.secure.ssl">SSL</option>
+            <option value="none" data-i18n="sa.smtp.secure.none">Aucune</option>
+          </select>
+        </div>
       </div>
       <div class="field">
-        <label data-i18n="sa.smtp.port">Port</label>
-        <input type="number" id="smtp-port" placeholder="587" value="587">
+        <label data-i18n="sa.smtp.user">Nom d’utilisateur SMTP</label>
+        <input type="text" id="smtp-user" placeholder="moncompte@gmail.com" autocomplete="username">
       </div>
       <div class="field">
-        <label data-i18n="sa.smtp.user">Email (utilisateur SMTP)</label>
-        <input type="email" id="smtp-user" placeholder="moncompte@gmail.com">
+        <label data-i18n="sa.smtp.pass">Mot de passe SMTP</label>
+        <input type="password" id="smtp-pass" placeholder="••••••••" autocomplete="new-password">
       </div>
       <div class="field">
-        <label data-i18n="sa.smtp.pass">Mot de passe d'application</label>
-        <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
+        <label data-i18n="sa.smtp.from">Email expéditeur (From)</label>
+        <input type="email" id="smtp-from" placeholder="noreply@restauwheel.com" autocomplete="off">
+      </div>
+      <div class="field">
+        <label data-i18n="sa.smtp.fromname">Nom d’expéditeur</label>
+        <input type="text" id="smtp-from-name" placeholder="Restau Wheel" autocomplete="off">
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
-        <button class="btn-save-pwd" onclick="saveSMTP()" data-i18n="sa.smtp.save">Enregistrer</button>
-        <button class="btn-save-pwd" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()" data-i18n="sa.smtp.test">Envoyer email test</button>
+        <button class="btn-save-pwd" type="button" onclick="saveSMTP()" data-i18n="sa.smtp.save">Enregistrer</button>
+        <button class="btn-save-pwd" type="button" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);" onclick="testSMTP()" data-i18n="sa.smtp.test">Envoyer email test</button>
       </div>
       <p class="notice" id="smtp-notice"></p>
     </div>
@@ -693,22 +716,31 @@ async function loadSMTP() {
   const res = await fetch('/api/superadmin/smtp');
   if (!res.ok) return;
   const s = await res.json();
+  document.getElementById('smtp-enabled').checked = !!s.smtp_enabled;
   document.getElementById('smtp-host').value = s.smtp_host || '';
   document.getElementById('smtp-port').value = s.smtp_port || '587';
+  document.getElementById('smtp-secure').value = s.smtp_secure || 'auto';
   document.getElementById('smtp-user').value = s.smtp_user || '';
-  document.getElementById('smtp-pass').value = s.smtp_pass ? '••••••••' : '';
+  document.getElementById('smtp-pass').value = (s.smtp_pass_set || s.smtp_pass) ? '••••••••' : '';
+  document.getElementById('smtp-from').value = s.smtp_from || '';
+  document.getElementById('smtp-from-name').value = s.smtp_from_name || '';
 }
 
 async function saveSMTP() {
   const body = {
+    smtp_enabled: document.getElementById('smtp-enabled').checked,
     smtp_host: document.getElementById('smtp-host').value.trim(),
     smtp_port: document.getElementById('smtp-port').value.trim(),
+    smtp_secure: document.getElementById('smtp-secure').value,
     smtp_user: document.getElementById('smtp-user').value.trim(),
+    smtp_from: document.getElementById('smtp-from').value.trim(),
+    smtp_from_name: document.getElementById('smtp-from-name').value.trim(),
   };
   const rawPass = document.getElementById('smtp-pass').value;
   if (rawPass && !rawPass.startsWith('•')) body.smtp_pass = rawPass;
-  const res = await fetch('/api/superadmin/smtp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   const n = document.getElementById('smtp-notice');
+  n.style.color = 'var(--green)';
+  const res = await fetch('/api/superadmin/smtp', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   if (res.ok) { n.textContent=t('sa.smtp.saved'); n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
   else        { n.style.color='#fc8181'; n.textContent=t('sa.smtp.saveerr'); n.style.display='block'; }
 }
@@ -719,9 +751,9 @@ async function testSMTP() {
   const n = document.getElementById('smtp-notice');
   n.style.color='#34d399'; n.textContent=t('sa.smtp.sending'); n.style.display='block';
   const res = await fetch('/api/superadmin/smtp/test', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ to }) });
-  const d = await res.json();
-  if (d.ok) { n.textContent=t('sa.smtp.sent', { to }); }
-  else      { n.style.color='#fc8181'; n.textContent=t('sa.smtp.err', { reason: d.reason }); }
+  const d = await res.json().catch(() => ({}));
+  if (d.ok) { n.style.color = 'var(--green)'; n.textContent=t('sa.smtp.sent', { to }); }
+  else      { n.style.color='#fc8181'; n.textContent=t('sa.smtp.err', { reason: d.reason || d.error || 'error' }); }
   setTimeout(()=>n.style.display='none', 5000);
 }
 
