@@ -1,28 +1,40 @@
 const nodemailer = require('nodemailer');
 const { db } = require('./database');
+const { normalizeSmtpSecure, isSmtpEnabledValue } = require('./lib/smtp');
 
 async function getSetting(key) {
   const r = await db.prepare('SELECT value FROM settings WHERE key=?').get(key);
   return r?.value || '';
 }
 
+async function isSmtpEnabled() {
+  return isSmtpEnabledValue(await getSetting('smtp_enabled'));
+}
+
 // ─── Transporter (construit à la demande pour prendre les settings à jour) ───
 async function getTransporter() {
+  if (!(await isSmtpEnabled())) return null;
   const host = await getSetting('smtp_host');
-  const port = parseInt(await getSetting('smtp_port')) || 587;
+  const port = parseInt(await getSetting('smtp_port'), 10) || 587;
   const user = await getSetting('smtp_user');
   const pass = await getSetting('smtp_pass');
   if (!host || !user || !pass) return null;
+  const secureOpts = normalizeSmtpSecure(await getSetting('smtp_secure'), port);
   return nodemailer.createTransport({
-    host, port,
-    secure: port === 465,
+    host,
+    port,
+    ...secureOpts,
     auth: { user, pass },
   });
 }
 
 async function getFromAddress(restaurant) {
-  const fromName  = restaurant.email_from_name || restaurant.name;
-  const fromEmail = await getSetting('smtp_user');
+  const fromName =
+    (await getSetting('smtp_from_name')) ||
+    restaurant?.email_from_name ||
+    restaurant?.name ||
+    'Restau Wheel';
+  const fromEmail = (await getSetting('smtp_from')) || (await getSetting('smtp_user'));
   return `"${fromName}" <${fromEmail}>`;
 }
 
@@ -174,6 +186,7 @@ async function sendReminderEmail({ customer, spin, prize, restaurant, daysLeft }
 }
 
 async function sendTestEmail(to) {
+  if (!(await isSmtpEnabled())) return { ok: false, reason: 'SMTP désactivé' };
   const transport = await getTransporter();
   if (!transport) return { ok: false, reason: 'SMTP non configuré' };
   try {
@@ -257,4 +270,11 @@ async function sendOutreachEmail({ restaurantName, email, unsubUrl }) {
   }
 }
 
-module.exports = { sendSpinEmail, sendReminderEmail, sendTestEmail, sendProspectEmail, sendOutreachEmail };
+module.exports = {
+  sendSpinEmail,
+  sendReminderEmail,
+  sendTestEmail,
+  sendProspectEmail,
+  sendOutreachEmail,
+  isSmtpEnabled,
+};

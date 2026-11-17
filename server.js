@@ -1240,21 +1240,47 @@ app.get('/api/superadmin/smtp', requireSuperAdmin, async (req, res) => {
     const r = await db.prepare('SELECT value FROM settings WHERE key=?').get(key);
     return r?.value || '';
   };
+  const pass = await get('smtp_pass');
+  const enabled = await get('smtp_enabled');
   res.json({
     smtp_host: await get('smtp_host'),
-    smtp_port: await get('smtp_port'),
+    smtp_port: await get('smtp_port') || '587',
+    smtp_secure: await get('smtp_secure') || 'auto',
     smtp_user: await get('smtp_user'),
-    smtp_pass: await get('smtp_pass'),
+    smtp_pass: pass ? '••••••••' : '',
+    smtp_pass_set: !!pass,
+    smtp_from: await get('smtp_from'),
+    smtp_from_name: await get('smtp_from_name'),
+    smtp_enabled: enabled !== '0' && enabled !== 'false' && enabled !== 'off',
   });
 });
 
 app.put('/api/superadmin/smtp', requireSuperAdmin, async (req, res) => {
-  const { smtp_host, smtp_port, smtp_user, smtp_pass } = req.body;
+  const {
+    smtp_host, smtp_port, smtp_user, smtp_pass,
+    smtp_secure, smtp_from, smtp_from_name, smtp_enabled,
+  } = req.body || {};
   const set = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)');
-  if (smtp_host != null) await set.run('smtp_host', smtp_host);
-  if (smtp_port != null) await set.run('smtp_port', String(smtp_port));
-  if (smtp_user != null) await set.run('smtp_user', smtp_user);
-  if (smtp_pass != null) await set.run('smtp_pass', smtp_pass);
+  if (smtp_host != null) await set.run('smtp_host', String(smtp_host).trim());
+  if (smtp_port != null) {
+    const port = Math.min(65535, Math.max(1, parseInt(smtp_port, 10) || 587));
+    await set.run('smtp_port', String(port));
+  }
+  if (smtp_user != null) await set.run('smtp_user', String(smtp_user).trim());
+  if (smtp_pass != null && !isSecretPlaceholder(smtp_pass)) {
+    await set.run('smtp_pass', String(smtp_pass));
+  }
+  if (smtp_secure != null) {
+    const allowed = new Set(['auto', 'tls', 'ssl', 'none']);
+    const mode = String(smtp_secure).trim().toLowerCase();
+    await set.run('smtp_secure', allowed.has(mode) ? mode : 'auto');
+  }
+  if (smtp_from != null) await set.run('smtp_from', String(smtp_from).trim());
+  if (smtp_from_name != null) await set.run('smtp_from_name', String(smtp_from_name).trim());
+  if (smtp_enabled != null) {
+    const on = !(smtp_enabled === false || smtp_enabled === 0 || smtp_enabled === '0' || smtp_enabled === 'false');
+    await set.run('smtp_enabled', on ? '1' : '0');
+  }
   res.json({ success: true });
 });
 
