@@ -11,29 +11,25 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  /** Répartit les lots sur `target` parts lisibles. Chaque lot a au moins 1 case. */
+  /**
+   * Parts VISUELLES égales par lot (la roue a l’air équitable).
+   * Les probabilités réelles restent gérées uniquement côté serveur.
+   */
   function visualCounts(list, target) {
     const active = (list || []).filter((p) => (p.probability || 0) > 0);
     if (!active.length) return [];
-    const goal = Math.max(target, active.length);
-    const total = active.reduce((s, p) => s + p.probability, 0) || 1;
-    const counts = active.map((p) => ({
+    const n = active.length;
+    const goal = Math.max(target, n);
+    const base = Math.floor(goal / n);
+    let rem = goal - base * n;
+    // Reste réparti de façon stable (ordre d’id) pour rester déterministe
+    const ordered = active
+      .slice()
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    return ordered.map((p, i) => ({
       prize: p,
-      n: Math.max(1, Math.round((p.probability / total) * goal)),
+      n: base + (i < rem ? 1 : 0),
     }));
-    let sum = counts.reduce((s, c) => s + c.n, 0);
-    const fattest = () => counts.reduce((a, b) => (a.n >= b.n ? a : b));
-    while (sum > goal && counts.some((c) => c.n > 1)) {
-      const row = fattest();
-      if (row.n <= 1) break;
-      row.n--;
-      sum--;
-    }
-    while (sum < goal) {
-      fattest().n++;
-      sum++;
-    }
-    return counts;
   }
 
   function circularDist(a, b, n) {
@@ -41,35 +37,9 @@
     return Math.min(d, n - d);
   }
 
-  /** `n` indices régulièrement espacés sur un cercle de taille N (phase choisie). */
-  function evenPositions(N, n, phase) {
-    const pos = [];
-    for (let k = 0; k < n; k++) {
-      pos.push(Math.round(phase + (k * N) / n) % N);
-    }
-    // Dédupliquer collisions d’arrondi en poussant au prochain libre
-    const used = new Set();
-    for (let i = 0; i < pos.length; i++) {
-      let p = pos[i];
-      let guard = 0;
-      while (used.has(p) && guard < N) {
-        p = (p + 1) % N;
-        guard++;
-      }
-      used.add(p);
-      pos[i] = p;
-    }
-    return pos;
-  }
-
   /**
-   * Place les parts pour un enchaînement régulier autour du cercle —
-   * sans changer le nombre de parts par lot.
-   *
-   * 1) Le lot majoritaire (souvent « Rien ») est mis de côté
-   * 2) Les autres lots sont posés sur une grille régulière
-   * 3) Dans cette grille, chaque lot est aussi espacé
-   * 4) Les cases restantes sont remplies par le lot majoritaire
+   * Place les parts en round-robin / residual fair-share autour du cercle.
+   * Avec des comptes égaux → alternance régulière (ex. A B C D A B C D …).
    */
   function spreadSlots(items) {
     if (!items || !items.length) return [];
@@ -81,75 +51,42 @@
     }
     if (piles.size === 1) return items.slice();
 
-    const groups = [...piles.values()].sort((a, b) => {
-      if (a.length !== b.length) return b.length - a.length; // majorité d’abord pour l’identifier
-      return String(a[0].id).localeCompare(String(b[0].id));
-    });
-    const majority = groups[0];
-    const rareGroups = groups
-      .slice(1)
-      .sort((a, b) => {
-        if (a.length !== b.length) return a.length - b.length;
-        return String(a[0].id).localeCompare(String(b[0].id));
-      });
+    const groups = [...piles.entries()]
+      .map(([id, arr]) => ({ id, items: arr, count: arr.length, assigned: 0 }))
+      .sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
-    const rareCount = rareGroups.reduce((s, g) => s + g.length, 0);
-    const out = new Array(N).fill(null);
-
-    // Grille régulière pour tous les lots non majoritaires
-    let bestPhase = 0;
-    let bestMinGap = -1;
-    for (let phase = 0; phase < N; phase++) {
-      const pos = evenPositions(N, rareCount, phase).slice().sort((a, b) => a - b);
-      let minGap = N;
-      for (let i = 0; i < pos.length; i++) {
-        const a = pos[i];
-        const b = pos[(i + 1) % pos.length];
-        const gap = i + 1 === pos.length ? a + N - b : b - a;
-        minGap = Math.min(minGap, gap);
-      }
-      if (minGap > bestMinGap || (minGap === bestMinGap && phase < bestPhase)) {
-        bestMinGap = minGap;
-        bestPhase = phase;
-      }
-    }
-    const rarePositions = evenPositions(N, rareCount, bestPhase).sort((a, b) => a - b);
-
-    // Sur ces positions, placer chaque lot rare de façon espacée
-    const rareSlots = rarePositions.map((p) => ({ p, item: null }));
-    for (const pile of rareGroups) {
-      const m = pile.length;
-      const idxs = evenPositions(rareCount, m, 0);
-      // Choisir un décalage dans la sous-grille qui évite les collisions
-      let placed = false;
-      for (let shift = 0; shift < rareCount && !placed; shift++) {
-        const targets = idxs.map((i) => (i + shift) % rareCount);
-        if (targets.every((t) => rareSlots[t].item === null)) {
-          targets.sort((a, b) => a - b);
-          for (let i = 0; i < m; i++) {
-            rareSlots[targets[i]].item = pile[i];
-          }
-          placed = true;
-        }
-      }
-      if (!placed) {
-        // Fallback : premières cases libres
-        let pi = 0;
-        for (let i = 0; i < rareCount && pi < m; i++) {
-          if (!rareSlots[i].item) rareSlots[i].item = pile[pi++];
-        }
-      }
-    }
-
-    for (const slot of rareSlots) {
-      if (slot.item) out[slot.p] = slot.item;
-    }
-
-    let mi = 0;
+    const out = [];
     for (let i = 0; i < N; i++) {
-      if (!out[i]) out[i] = majority[mi++];
+      let best = null;
+      let bestScore = -Infinity;
+      const lastId = out.length ? out[out.length - 1].id : null;
+      for (const g of groups) {
+        if (g.assigned >= g.count) continue;
+        const ideal = (g.count / N) * (i + 1);
+        let score = ideal - g.assigned;
+        if (lastId !== null && g.id === lastId) score -= 1; // fort: éviter deux mêmes d’affilée
+        const tie = -groups.indexOf(g) * 1e-9;
+        if (score + tie > bestScore) {
+          bestScore = score + tie;
+          best = g;
+        }
+      }
+      if (!best) break;
+      out.push(best.items[best.assigned++]);
     }
-    return out;
+
+    // Rotation qui minimise la suite circulaire du même lot (jonction début/fin)
+    let bestRot = out;
+    let bestRun = maxAdjacentRun(out);
+    for (let rot = 1; rot < N; rot++) {
+      const candidate = out.slice(rot).concat(out.slice(0, rot));
+      const run = maxAdjacentRun(candidate);
+      if (run < bestRun) {
+        bestRun = run;
+        bestRot = candidate;
+      }
+    }
+    return bestRot;
   }
 
   /** Construit le tableau de slots à partir de la liste de lots API. */
