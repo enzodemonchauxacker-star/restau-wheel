@@ -170,6 +170,7 @@ async function initSchema() {
         created_at    TIMESTAMPTZ DEFAULT NOW()
       )
     `;
+    await sql`ALTER TABLE customers ADD COLUMN IF NOT EXISTS privacy_consent_at TIMESTAMPTZ`;
 
     await sql`
       CREATE TABLE IF NOT EXISTS spins (
