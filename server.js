@@ -7,7 +7,7 @@ const cron    = require('node-cron');
 const crypto  = require('crypto');
 const { db, createDefaultPrizes, ensureReady, newPublicCode } = require('./database');
 const { sendSpinEmail, sendReminderEmail, sendProspectEmail, sendOutreachEmail } = require('./mailer');
-const { normalizePhone, sendExpirySms } = require('./sms');
+const { normalizePhone, sendExpirySms, getTwilioConfig } = require('./sms');
 const { scanCity, scanFromSettings, getSetting: getProspectSetting, getSecret: getProspectSecret, secretHint, enrichMissingContacts, sameCity } = require('./prospector');
 const { seriesFromRows } = require('./lib/admin-series');
 const {
@@ -856,18 +856,100 @@ app.put('/api/admin/settings', requireRestaurant, async (req, res) => {
   res.json({ success: true });
 });
 
-// Paramètres email par restaurant
+// Paramètres email / SMS par restaurant
 app.get('/api/admin/email-settings', requireRestaurant, async (req, res) => {
-  const r = await db.prepare('SELECT email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days FROM restaurants WHERE id=?').get(req.session.restaurantId);
-  res.json(r || {});
+  const r = await db.prepare(
+    'SELECT email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days, sms_reminders FROM restaurants WHERE id=?'
+  ).get(req.session.restaurantId);
+  const twilio = await getTwilioConfig();
+  res.json({
+    ...(r || {}),
+    sms_available: !!twilio,
+  });
 });
 
 app.put('/api/admin/email-settings', requireRestaurant, async (req, res) => {
-  const { email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days } = req.body;
+  const { email_from_name, email_reply_to, send_win_email, send_lose_email, reminder_days, sms_reminders } = req.body;
   const rid = req.session.restaurantId;
-  await db.prepare('UPDATE restaurants SET email_from_name=?, email_reply_to=?, send_win_email=?, send_lose_email=?, reminder_days=? WHERE id=?')
-    .run(email_from_name || null, email_reply_to || null, send_win_email ? 1 : 0, send_lose_email ? 1 : 0, parseInt(reminder_days) || 3, rid);
+  const daysParsed = parseInt(reminder_days, 10);
+  const days = Number.isFinite(daysParsed) ? daysParsed : 3;
+  const smsOn = sms_reminders ? 1 : 0;
+  await db.prepare(
+    'UPDATE restaurants SET email_from_name=?, email_reply_to=?, send_win_email=?, send_lose_email=?, reminder_days=?, sms_reminders=? WHERE id=?'
+  ).run(
+    email_from_name || null,
+    email_reply_to || null,
+    send_win_email ? 1 : 0,
+    send_lose_email ? 1 : 0,
+    days,
+    smsOn,
+    rid
+  );
   res.json({ success: true });
+});
+
+/** Relance SMS manuelle depuis la fiche client (lot en attente) */
+app.post('/api/admin/spins/:id/remind-sms', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const spinId = parseInt(req.params.id, 10);
+  if (!Number.isFinite(spinId)) return res.status(400).json({ error: 'Gain invalide' });
+
+  const row = await db.prepare(`
+    SELECT s.*, c.first_name, c.last_name, c.phone, c.email, c.restaurant_id,
+           p.name as prize_name, p.deadline_days
+    FROM spins s
+    JOIN customers c ON s.customer_id=c.id
+    LEFT JOIN prizes p ON s.prize_id=p.id
+    WHERE s.id=? AND c.restaurant_id=?
+  `).get(spinId, rid);
+
+  if (!row) return res.status(404).json({ error: 'Gain introuvable' });
+  if (row.used) return res.status(400).json({ error: 'Ce gain a déjà été utilisé' });
+  if (!row.deadline || Number(row.deadline_days) <= 0) {
+    return res.status(400).json({ error: 'Pas de lot à relancer' });
+  }
+  if (new Date(row.deadline) < new Date()) {
+    return res.status(400).json({ error: 'Ce gain a expiré' });
+  }
+  if (!normalizePhone(row.phone)) {
+    return res.status(400).json({ error: 'Numéro de téléphone invalide' });
+  }
+  if (row.last_reminder_at) {
+    const last = new Date(row.last_reminder_at).getTime();
+    if (Number.isFinite(last) && Date.now() - last < 12 * 3600 * 1000) {
+      return res.status(429).json({ error: 'Relance déjà envoyée récemment. Réessayez dans quelques heures.' });
+    }
+  }
+
+  const restaurant = await db.prepare('SELECT * FROM restaurants WHERE id=?').get(rid);
+  if (!restaurant) return res.status(404).json({ error: 'Restaurant introuvable' });
+
+  const daysLeft = Math.max(1, Math.ceil((new Date(row.deadline) - Date.now()) / 86400000));
+  const result = await sendExpirySms({
+    customer: {
+      first_name: row.first_name,
+      last_name: row.last_name,
+      phone: row.phone,
+      email: row.email,
+    },
+    prize: { name: row.prize_name },
+    restaurant,
+    daysLeft,
+  });
+
+  if (!result.ok) {
+    return res.status(503).json({
+      error: result.reason === 'Twilio non configuré'
+        ? 'SMS non configuré. Activez Twilio (SMS_ENABLED) côté Restau Wheel.'
+        : (result.reason || 'Échec d’envoi SMS'),
+    });
+  }
+
+  await db.prepare(
+    'UPDATE spins SET sms_week_sent=1, last_reminder_at=CURRENT_TIMESTAMP WHERE id=?'
+  ).run(spinId);
+
+  res.json({ success: true, days_left: daysLeft });
 });
 
 // SMTP par restaurant (relances / emails clients)
@@ -1728,7 +1810,7 @@ async function runReminderJob() {
 
   for (const row of smsDue) {
     const restaurant = await db.prepare('SELECT * FROM restaurants WHERE id=? AND active=1').get(row.restaurant_id);
-    if (!restaurant) continue;
+    if (!restaurant || !Number(restaurant.sms_reminders)) continue;
     const daysLeft = Math.ceil((new Date(row.deadline) - now) / 86400000);
     const customer = { first_name: row.first_name, last_name: row.last_name, phone: row.phone, email: row.email };
     const prize = { name: row.prize_name };
