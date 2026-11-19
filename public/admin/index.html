@@ -247,6 +247,48 @@
               <div style="flex:1">Email quand le client ne gagne pas</div>
               <div class="switch" id="toggle-lose" aria-hidden="true"><i></i></div>
             </button>
+            <button type="button" class="toggle" data-act="mail-remind">
+              <div style="flex:1">Relances email (lots non utilisés)</div>
+              <div class="switch on" id="toggle-remind" aria-hidden="true"><i></i></div>
+            </button>
+          </div>
+          <div class="card glass smtp-card">
+            <h3 style="margin:0 0 6px;font-size:16px" data-i18n="admin.set.smtp.h">SMTP — emails &amp; relances</h3>
+            <p class="smtp-help" data-i18n="admin.set.smtp.p">Configurez votre serveur pour les emails de gain et les relances. Sans config, le SMTP global Restau Wheel est utilisé.</p>
+            <button type="button" class="toggle smtp-enable" data-act="smtp-enabled">
+              <div style="flex:1" data-i18n="admin.set.smtp.enabled">Activer l’envoi d’emails SMTP</div>
+              <div class="switch" id="toggle-smtp" aria-hidden="true"><i></i></div>
+            </button>
+            <label class="smtp-lbl" data-i18n="admin.set.smtp.host">Serveur SMTP</label>
+            <input id="smtp-host" type="text" placeholder="smtp.gmail.com" autocomplete="off">
+            <div class="smtp-row">
+              <div>
+                <label class="smtp-lbl" data-i18n="admin.set.smtp.port">Port</label>
+                <input id="smtp-port" type="number" placeholder="587" value="587" min="1" max="65535">
+              </div>
+              <div>
+                <label class="smtp-lbl" data-i18n="admin.set.smtp.secure">Sécurité</label>
+                <select id="smtp-secure">
+                  <option value="auto" data-i18n="admin.set.smtp.secure.auto">Auto (465 → SSL)</option>
+                  <option value="tls" data-i18n="admin.set.smtp.secure.tls">TLS / STARTTLS</option>
+                  <option value="ssl" data-i18n="admin.set.smtp.secure.ssl">SSL</option>
+                  <option value="none" data-i18n="admin.set.smtp.secure.none">Aucune</option>
+                </select>
+              </div>
+            </div>
+            <label class="smtp-lbl" data-i18n="admin.set.smtp.user">Nom d’utilisateur SMTP</label>
+            <input id="smtp-user" type="text" placeholder="moncompte@gmail.com" autocomplete="username">
+            <label class="smtp-lbl" data-i18n="admin.set.smtp.pass">Mot de passe SMTP</label>
+            <input id="smtp-pass" type="password" placeholder="••••••••" autocomplete="new-password">
+            <label class="smtp-lbl" data-i18n="admin.set.smtp.from">Email expéditeur (From)</label>
+            <input id="smtp-from" type="email" placeholder="noreply@monresto.fr" autocomplete="off">
+            <label class="smtp-lbl" data-i18n="admin.set.smtp.fromname">Nom d’expéditeur</label>
+            <input id="smtp-from-name" type="text" placeholder="Mon Restaurant" autocomplete="off">
+            <div class="smtp-actions">
+              <button type="button" class="btn-accent" data-act="smtp-save" data-i18n="admin.set.smtp.save">Enregistrer</button>
+              <button type="button" class="btn-glass glass" data-act="smtp-test" data-i18n="admin.set.smtp.test">Envoyer email test</button>
+            </div>
+            <p class="smtp-notice" id="smtp-notice" hidden></p>
           </div>
           <div class="plan">
             <div><div class="lbl">ABONNEMENT</div><strong>Restau Wheel Pro</strong></div>

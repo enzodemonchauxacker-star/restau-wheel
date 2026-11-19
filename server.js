@@ -870,6 +870,95 @@ app.put('/api/admin/email-settings', requireRestaurant, async (req, res) => {
   res.json({ success: true });
 });
 
+// SMTP par restaurant (relances / emails clients)
+app.get('/api/admin/smtp', requireRestaurant, async (req, res) => {
+  const r = await db.prepare(`
+    SELECT smtp_host, smtp_port, smtp_user, smtp_pass, smtp_secure,
+           smtp_from, smtp_from_name, smtp_enabled
+    FROM restaurants WHERE id=?
+  `).get(req.session.restaurantId);
+  if (!r) return res.status(404).json({ error: 'Restaurant introuvable' });
+  const pass = r.smtp_pass || '';
+  res.json({
+    smtp_host: r.smtp_host || '',
+    smtp_port: r.smtp_port || '587',
+    smtp_secure: r.smtp_secure || 'auto',
+    smtp_user: r.smtp_user || '',
+    smtp_pass: pass ? '••••••••' : '',
+    smtp_pass_set: !!pass,
+    smtp_from: r.smtp_from || '',
+    smtp_from_name: r.smtp_from_name || '',
+    smtp_enabled: !(r.smtp_enabled === 0 || r.smtp_enabled === '0' || r.smtp_enabled === false),
+  });
+});
+
+app.put('/api/admin/smtp', requireRestaurant, async (req, res) => {
+  const rid = req.session.restaurantId;
+  const {
+    smtp_host, smtp_port, smtp_user, smtp_pass,
+    smtp_secure, smtp_from, smtp_from_name, smtp_enabled,
+  } = req.body || {};
+  const current = await db.prepare('SELECT smtp_pass FROM restaurants WHERE id=?').get(rid);
+  if (!current) return res.status(404).json({ error: 'Restaurant introuvable' });
+
+  const host = smtp_host != null ? String(smtp_host).trim() : undefined;
+  let port;
+  if (smtp_port != null) {
+    port = String(Math.min(65535, Math.max(1, parseInt(smtp_port, 10) || 587)));
+  }
+  const user = smtp_user != null ? String(smtp_user).trim() : undefined;
+  let pass;
+  if (smtp_pass != null && !isSecretPlaceholder(smtp_pass)) {
+    pass = String(smtp_pass);
+  }
+  let secure;
+  if (smtp_secure != null) {
+    const allowed = new Set(['auto', 'tls', 'ssl', 'none']);
+    const mode = String(smtp_secure).trim().toLowerCase();
+    secure = allowed.has(mode) ? mode : 'auto';
+  }
+  const from = smtp_from != null ? String(smtp_from).trim() : undefined;
+  const fromName = smtp_from_name != null ? String(smtp_from_name).trim() : undefined;
+  let enabled;
+  if (smtp_enabled != null) {
+    enabled = !(smtp_enabled === false || smtp_enabled === 0 || smtp_enabled === '0' || smtp_enabled === 'false') ? 1 : 0;
+  }
+
+  await db.prepare(`
+    UPDATE restaurants SET
+      smtp_host = COALESCE(?, smtp_host),
+      smtp_port = COALESCE(?, smtp_port),
+      smtp_user = COALESCE(?, smtp_user),
+      smtp_pass = COALESCE(?, smtp_pass),
+      smtp_secure = COALESCE(?, smtp_secure),
+      smtp_from = COALESCE(?, smtp_from),
+      smtp_from_name = COALESCE(?, smtp_from_name),
+      smtp_enabled = COALESCE(?, smtp_enabled)
+    WHERE id=?
+  `).run(
+    host ?? null,
+    port ?? null,
+    user ?? null,
+    pass ?? null,
+    secure ?? null,
+    from ?? null,
+    fromName ?? null,
+    enabled ?? null,
+    rid
+  );
+  res.json({ success: true });
+});
+
+app.post('/api/admin/smtp/test', requireRestaurant, async (req, res) => {
+  const { to } = req.body || {};
+  if (!to) return res.status(400).json({ error: 'Adresse email requise' });
+  const restaurant = await db.prepare('SELECT * FROM restaurants WHERE id=?').get(req.session.restaurantId);
+  if (!restaurant) return res.status(404).json({ error: 'Restaurant introuvable' });
+  const { sendTestEmail } = require('./mailer');
+  const result = await sendTestEmail(to, restaurant);
+  res.json(result);
+});
+
 // QR code — toujours l’URL publique (pas l’URL de déploiement Vercel / SSO)
 function getPublicBaseUrl(req, storedUrl) {
   if (process.env.PUBLIC_BASE_URL) {
