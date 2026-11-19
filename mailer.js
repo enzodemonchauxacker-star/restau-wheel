@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const { db } = require('./database');
-const { normalizeSmtpSecure, isSmtpEnabledValue } = require('./lib/smtp');
+const { normalizeSmtpSecure, isSmtpEnabledValue, restaurantHasOwnSmtp } = require('./lib/smtp');
 
 async function getSetting(key) {
   const r = await db.prepare('SELECT value FROM settings WHERE key=?').get(key);
@@ -11,24 +11,49 @@ async function isSmtpEnabled() {
   return isSmtpEnabledValue(await getSetting('smtp_enabled'));
 }
 
-// ─── Transporter (construit à la demande pour prendre les settings à jour) ───
-async function getTransporter() {
-  if (!(await isSmtpEnabled())) return null;
-  const host = await getSetting('smtp_host');
-  const port = parseInt(await getSetting('smtp_port'), 10) || 587;
-  const user = await getSetting('smtp_user');
-  const pass = await getSetting('smtp_pass');
+function buildTransportFromConfig({ host, port, user, pass, secure }) {
   if (!host || !user || !pass) return null;
-  const secureOpts = normalizeSmtpSecure(await getSetting('smtp_secure'), port);
+  const portNum = parseInt(port, 10) || 587;
+  const secureOpts = normalizeSmtpSecure(secure, portNum);
   return nodemailer.createTransport({
     host,
-    port,
+    port: portNum,
     ...secureOpts,
     auth: { user, pass },
   });
 }
 
+// ─── Transporter (construit à la demande pour prendre les settings à jour) ───
+async function getTransporter(restaurant) {
+  if (restaurantHasOwnSmtp(restaurant)) {
+    return buildTransportFromConfig({
+      host: restaurant.smtp_host,
+      port: restaurant.smtp_port,
+      user: restaurant.smtp_user,
+      pass: restaurant.smtp_pass,
+      secure: restaurant.smtp_secure,
+    });
+  }
+  if (!(await isSmtpEnabled())) return null;
+  return buildTransportFromConfig({
+    host: await getSetting('smtp_host'),
+    port: await getSetting('smtp_port'),
+    user: await getSetting('smtp_user'),
+    pass: await getSetting('smtp_pass'),
+    secure: await getSetting('smtp_secure'),
+  });
+}
+
 async function getFromAddress(restaurant) {
+  if (restaurantHasOwnSmtp(restaurant)) {
+    const fromName =
+      restaurant.smtp_from_name ||
+      restaurant.email_from_name ||
+      restaurant.name ||
+      'Restau Wheel';
+    const fromEmail = restaurant.smtp_from || restaurant.smtp_user;
+    return `"${fromName}" <${fromEmail}>`;
+  }
   const fromName =
     (await getSetting('smtp_from_name')) ||
     restaurant?.email_from_name ||
@@ -133,7 +158,7 @@ function buildReminderEmail({ customerName, prizeName, deadline, restaurantName,
 
 // ─── Envoi ────────────────────────────────────────────────────────────────────
 async function sendSpinEmail({ customer, prize, restaurant, isWin }) {
-  const transport = await getTransporter();
+  const transport = await getTransporter(restaurant);
   if (!transport) return { ok: false, reason: 'SMTP non configuré' };
   if (!restaurant.send_win_email && isWin)   return { ok: false, reason: 'emails désactivés' };
   if (!restaurant.send_lose_email && !isWin) return { ok: false, reason: 'emails désactivés' };
@@ -163,7 +188,7 @@ async function sendSpinEmail({ customer, prize, restaurant, isWin }) {
 }
 
 async function sendReminderEmail({ customer, spin, prize, restaurant, daysLeft }) {
-  const transport = await getTransporter();
+  const transport = await getTransporter(restaurant);
   if (!transport) return;
   const { subject, html } = buildReminderEmail({
     customerName:   `${customer.first_name} ${customer.last_name}`,
@@ -185,13 +210,19 @@ async function sendReminderEmail({ customer, spin, prize, restaurant, daysLeft }
   }
 }
 
-async function sendTestEmail(to) {
-  if (!(await isSmtpEnabled())) return { ok: false, reason: 'SMTP désactivé' };
-  const transport = await getTransporter();
+async function sendTestEmail(to, restaurant) {
+  if (restaurant) {
+    if (!isSmtpEnabledValue(restaurant.smtp_enabled)) {
+      return { ok: false, reason: 'SMTP désactivé' };
+    }
+  } else if (!(await isSmtpEnabled())) {
+    return { ok: false, reason: 'SMTP désactivé' };
+  }
+  const transport = await getTransporter(restaurant || null);
   if (!transport) return { ok: false, reason: 'SMTP non configuré' };
   try {
     await transport.sendMail({
-      from:    await getFromAddress({ name: 'Restau Wheel', email_from_name: null }),
+      from:    await getFromAddress(restaurant || { name: 'Restau Wheel', email_from_name: null }),
       to,
       subject: '✅ Test SMTP — Restau Wheel',
       html:    '<p>La configuration SMTP fonctionne correctement !</p>',
@@ -277,4 +308,5 @@ module.exports = {
   sendProspectEmail,
   sendOutreachEmail,
   isSmtpEnabled,
+  getTransporter,
 };

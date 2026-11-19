@@ -441,6 +441,74 @@ h1.ob-title, .ob-title {
   width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
   padding: 14px 0; min-height: 60px; font-size: 15px; font-weight: 600;
 }
+.smtp-card .smtp-help {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.smtp-card .smtp-enable {
+  padding: 8px 0 14px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+.smtp-card .smtp-lbl {
+  display: block;
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin: 10px 0 6px;
+  text-transform: uppercase;
+}
+.smtp-card input[type="text"],
+.smtp-card input[type="email"],
+.smtp-card input[type="password"],
+.smtp-card input[type="number"],
+.smtp-card select {
+  width: 100%;
+  height: 48px;
+  border-radius: 16px;
+  border: none;
+  background: var(--card2);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 14px;
+}
+.smtp-card select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 20px, calc(100% - 12px) 20px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+.smtp-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+}
+.smtp-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.smtp-actions .btn-accent,
+.smtp-actions .btn-glass {
+  height: 52px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.smtp-notice {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.smtp-notice.ok { color: #0a7a4b; }
+.smtp-notice.err { color: var(--pink, #ff2d6a); }
 .switch { width: 54px; height: 32px; border-radius: 99px; flex: none; padding: 3px; background: var(--card2); transition: background .2s; }
 .switch i { display: block; width: 26px; height: 26px; border-radius: 50%; background: #0a0a0a; transition: transform .2s; }
 .switch.on { background: var(--accent); }

@@ -127,6 +127,14 @@ async function initSchema() {
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS theme_accent TEXT NOT NULL DEFAULT '#FFD700'`;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS public_code TEXT`;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS affiliate_id INTEGER`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_host TEXT DEFAULT ''`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_port TEXT DEFAULT '587'`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_user TEXT DEFAULT ''`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_pass TEXT DEFAULT ''`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_secure TEXT DEFAULT 'auto'`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_from TEXT DEFAULT ''`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_from_name TEXT DEFAULT ''`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_enabled INTEGER NOT NULL DEFAULT 0`;
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS restaurants_public_code_uidx ON restaurants (public_code)`;
     await backfillPublicCodes();
 

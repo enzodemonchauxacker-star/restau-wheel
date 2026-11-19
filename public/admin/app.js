@@ -32,7 +32,19 @@ const S = {
   cooldown: 24,
   mailWin: true,
   mailLose: false,
+  mailRemind: true,
   emailMeta: { email_from_name: '', email_reply_to: '', reminder_days: 3 },
+  smtp: {
+    smtp_enabled: false,
+    smtp_host: '',
+    smtp_port: '587',
+    smtp_secure: 'auto',
+    smtp_user: '',
+    smtp_pass: '',
+    smtp_pass_set: false,
+    smtp_from: '',
+    smtp_from_name: '',
+  },
   theme: 'Clair',
   accent: '#ffd60a',
   rot: 0,
@@ -698,8 +710,31 @@ function paintProfile() {
   });
   $('toggle-win').classList.toggle('on', S.mailWin);
   $('toggle-lose').classList.toggle('on', S.mailLose);
+  $('toggle-remind')?.classList.toggle('on', S.mailRemind);
   $('toggle-win').setAttribute('aria-pressed', S.mailWin ? 'true' : 'false');
   $('toggle-lose').setAttribute('aria-pressed', S.mailLose ? 'true' : 'false');
+  $('toggle-remind')?.setAttribute('aria-pressed', S.mailRemind ? 'true' : 'false');
+  $('toggle-smtp')?.classList.toggle('on', !!S.smtp.smtp_enabled);
+  $('toggle-smtp')?.setAttribute('aria-pressed', S.smtp.smtp_enabled ? 'true' : 'false');
+  const focusId = document.activeElement && document.activeElement.id;
+  const fields = {
+    'smtp-host': S.smtp.smtp_host || '',
+    'smtp-port': S.smtp.smtp_port || '587',
+    'smtp-secure': S.smtp.smtp_secure || 'auto',
+    'smtp-user': S.smtp.smtp_user || '',
+    'smtp-from': S.smtp.smtp_from || '',
+    'smtp-from-name': S.smtp.smtp_from_name || '',
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = $(id);
+    if (!el || focusId === id) return;
+    el.value = val;
+  });
+  const pass = $('smtp-pass');
+  if (pass && focusId !== 'smtp-pass') {
+    pass.value = S.smtp.smtp_pass_set ? '••••••••' : '';
+    pass.placeholder = S.smtp.smtp_pass_set ? '••••••••' : 'Mot de passe SMTP';
+  }
 }
 
 async function loadSettings() {
@@ -724,7 +759,97 @@ async function loadEmail() {
   };
   S.mailWin = e.send_win_email !== 0 && e.send_win_email !== false;
   S.mailLose = !!e.send_lose_email && Number(e.send_lose_email) !== 0;
+  S.mailRemind = Number(e.reminder_days) !== 0;
   paintProfile();
+}
+
+async function loadSmtp() {
+  const s = await api('/api/admin/smtp');
+  S.smtp = {
+    smtp_enabled: !!s.smtp_enabled,
+    smtp_host: s.smtp_host || '',
+    smtp_port: s.smtp_port || '587',
+    smtp_secure: s.smtp_secure || 'auto',
+    smtp_user: s.smtp_user || '',
+    smtp_pass: '',
+    smtp_pass_set: !!s.smtp_pass_set,
+    smtp_from: s.smtp_from || '',
+    smtp_from_name: s.smtp_from_name || '',
+  };
+  paintProfile();
+}
+
+function readSmtpForm() {
+  return {
+    smtp_enabled: !!S.smtp.smtp_enabled,
+    smtp_host: ($('smtp-host')?.value || '').trim(),
+    smtp_port: ($('smtp-port')?.value || '587').trim(),
+    smtp_secure: $('smtp-secure')?.value || 'auto',
+    smtp_user: ($('smtp-user')?.value || '').trim(),
+    smtp_pass: $('smtp-pass')?.value || '',
+    smtp_from: ($('smtp-from')?.value || '').trim(),
+    smtp_from_name: ($('smtp-from-name')?.value || '').trim(),
+  };
+}
+
+function showSmtpNotice(text, ok) {
+  const el = $('smtp-notice');
+  if (!el) return;
+  el.hidden = !text;
+  el.textContent = text || '';
+  el.classList.toggle('ok', !!ok);
+  el.classList.toggle('err', !!text && !ok);
+}
+
+async function saveSmtp() {
+  const body = readSmtpForm();
+  S.smtp.smtp_enabled = body.smtp_enabled;
+  S.smtp.smtp_host = body.smtp_host;
+  S.smtp.smtp_port = body.smtp_port;
+  S.smtp.smtp_secure = body.smtp_secure;
+  S.smtp.smtp_user = body.smtp_user;
+  S.smtp.smtp_from = body.smtp_from;
+  S.smtp.smtp_from_name = body.smtp_from_name;
+  paintProfile();
+  try {
+    await api('/api/admin/smtp', { method: 'PUT', body });
+    if (body.smtp_pass && !/^•+$/.test(body.smtp_pass) && !body.smtp_pass.startsWith('••••')) {
+      S.smtp.smtp_pass_set = true;
+    }
+    showSmtpNotice('✓ Configuration SMTP enregistrée', true);
+    toast('SMTP enregistré');
+  } catch (e) {
+    showSmtpNotice(e.message || 'Erreur lors de la sauvegarde', false);
+    toast(e.message);
+  }
+}
+
+async function testSmtp() {
+  const body = readSmtpForm();
+  // Persist first so the test uses saved credentials (except placeholder pass)
+  try {
+    await api('/api/admin/smtp', { method: 'PUT', body });
+    if (body.smtp_pass && !/^•+$/.test(body.smtp_pass) && !body.smtp_pass.startsWith('••••')) {
+      S.smtp.smtp_pass_set = true;
+    }
+  } catch (e) {
+    showSmtpNotice(e.message || 'Enregistrement impossible', false);
+    return;
+  }
+  const to = window.prompt('Email de test (votre adresse) :', body.smtp_from || body.smtp_user || '');
+  if (!to) return;
+  showSmtpNotice('Envoi en cours…', true);
+  try {
+    const res = await api('/api/admin/smtp/test', { method: 'POST', body: { to } });
+    if (res.ok) {
+      showSmtpNotice(`✓ Email envoyé à ${to}`, true);
+      toast('Email de test envoyé');
+    } else {
+      showSmtpNotice(`Erreur : ${res.reason || 'échec'}`, false);
+    }
+  } catch (e) {
+    showSmtpNotice(e.message || 'Erreur d’envoi', false);
+  }
 }
 
 function scheduleNameSave() {
@@ -761,7 +886,7 @@ async function saveEmail() {
         email_reply_to: S.emailMeta.email_reply_to,
         send_win_email: S.mailWin,
         send_lose_email: S.mailLose,
-        reminder_days: S.emailMeta.reminder_days,
+        reminder_days: S.mailRemind ? (S.emailMeta.reminder_days || 3) : 0,
       },
     });
   } catch (e) { toast(e.message); }
@@ -937,6 +1062,7 @@ async function enterApp() {
     await Promise.all([
       loadSettings().catch((e) => toast(e.message)),
       loadEmail().catch(() => {}),
+      loadSmtp().catch(() => {}),
       loadPrizes().catch((e) => toast(e.message)),
       loadQr().catch(() => {}),
       loadClients(),
@@ -1092,6 +1218,13 @@ function onClick(event) {
   else if (act === 'theme') { S.theme = btn.dataset.theme; applyTheme(); paintProfile(); }
   else if (act === 'mail-win') { S.mailWin = !S.mailWin; saveEmail(); }
   else if (act === 'mail-lose') { S.mailLose = !S.mailLose; saveEmail(); }
+  else if (act === 'mail-remind') { S.mailRemind = !S.mailRemind; saveEmail(); }
+  else if (act === 'smtp-enabled') {
+    S.smtp.smtp_enabled = !S.smtp.smtp_enabled;
+    paintProfile();
+  }
+  else if (act === 'smtp-save') { saveSmtp(); }
+  else if (act === 'smtp-test') { testSmtp(); }
   else if (act === 'logout') doLogout();
 }
 
