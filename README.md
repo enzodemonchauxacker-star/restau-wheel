@@ -18,7 +18,8 @@ Le restaurateur gère tout depuis un dashboard admin : lots, probabilités, dél
 - **Super-admin** : multi-restaurants, SMTP, Twilio
 - **Base de données** : Neon Postgres (persistante sur Vercel) — historique des tirages et statut (en attente / utilisé / expiré)
 - **Paiements** : Stripe Checkout (abonnement Pro)
-- **SMS** : Twilio (optionnel, `SMS_ENABLED=1`)
+- **SMS** : Twilio (optionnel, `SMS_ENABLED=1`) — relances auto J-7 + envoi manuel depuis la fiche client
+- **Relances téléphone** : bouton Appeler (`tel:`) et Relancer par SMS sur chaque fiche client admin
 
 ## Installation
 

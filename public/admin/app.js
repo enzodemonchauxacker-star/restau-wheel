@@ -33,6 +33,8 @@ const S = {
   mailWin: true,
   mailLose: false,
   mailRemind: true,
+  smsRemind: false,
+  smsAvailable: false,
   emailMeta: { email_from_name: '', email_reply_to: '', reminder_days: 3 },
   smtp: {
     smtp_enabled: false,
@@ -711,9 +713,17 @@ function paintProfile() {
   $('toggle-win').classList.toggle('on', S.mailWin);
   $('toggle-lose').classList.toggle('on', S.mailLose);
   $('toggle-remind')?.classList.toggle('on', S.mailRemind);
+  $('toggle-sms-remind')?.classList.toggle('on', S.smsRemind);
   $('toggle-win').setAttribute('aria-pressed', S.mailWin ? 'true' : 'false');
   $('toggle-lose').setAttribute('aria-pressed', S.mailLose ? 'true' : 'false');
   $('toggle-remind')?.setAttribute('aria-pressed', S.mailRemind ? 'true' : 'false');
+  $('toggle-sms-remind')?.setAttribute('aria-pressed', S.smsRemind ? 'true' : 'false');
+  const smsHint = $('sms-hint');
+  if (smsHint) {
+    smsHint.textContent = S.smsAvailable
+      ? 'Rappel automatique J-7 avant expiration + envoi manuel depuis la fiche client.'
+      : 'SMS indisponible : Twilio n’est pas activé côté Restau Wheel (SMS_ENABLED).';
+  }
   $('toggle-smtp')?.classList.toggle('on', !!S.smtp.smtp_enabled);
   $('toggle-smtp')?.setAttribute('aria-pressed', S.smtp.smtp_enabled ? 'true' : 'false');
   const focusId = document.activeElement && document.activeElement.id;
@@ -760,6 +770,8 @@ async function loadEmail() {
   S.mailWin = e.send_win_email !== 0 && e.send_win_email !== false;
   S.mailLose = !!e.send_lose_email && Number(e.send_lose_email) !== 0;
   S.mailRemind = Number(e.reminder_days) !== 0;
+  S.smsRemind = !!e.sms_reminders && Number(e.sms_reminders) !== 0;
+  S.smsAvailable = !!e.sms_available;
   paintProfile();
 }
 
@@ -887,9 +899,21 @@ async function saveEmail() {
         send_win_email: S.mailWin,
         send_lose_email: S.mailLose,
         reminder_days: S.mailRemind ? (S.emailMeta.reminder_days || 3) : 0,
+        sms_reminders: S.smsRemind ? 1 : 0,
       },
     });
   } catch (e) { toast(e.message); }
+}
+
+/** Lien tel: pour un numéro stocké (E.164 ou FR). */
+function telHref(raw) {
+  if (!raw) return '';
+  let d = String(raw).trim().replace(/[\s.\-()]/g, '');
+  if (d.startsWith('00')) d = '+' + d.slice(2);
+  if (d.startsWith('0') && d.length === 10) d = '+33' + d.slice(1);
+  if (!d.startsWith('+') && /^33\d{9}$/.test(d)) d = '+' + d;
+  if (!/^\+[1-9]\d{7,14}$/.test(d)) return '';
+  return 'tel:' + d;
 }
 
 function spinMeta(spin) {
@@ -907,22 +931,29 @@ function renderSheet() {
     if (!c) { body.innerHTML = ''; return; }
     const spins = c.spins || [];
     const wins = spins.filter((s) => spinStatus(s) !== 'lose').length;
+    const call = telHref(c.phone);
     const cards = spins.map((s) => {
       const status = spinStatus(s);
       const b = BADGE[status];
-      const action = status === 'pending'
-        ? `<button type="button" class="btn-mint" data-act="use-spin" data-id="${esc(s.id)}">Valider le gain</button>`
-        : '';
+      let action = '';
+      if (status === 'pending') {
+        action = `<button type="button" class="btn-mint" data-act="use-spin" data-id="${esc(s.id)}">Valider le gain</button>
+        <button type="button" class="btn-glass glass btn-block spin-sms" data-act="remind-sms" data-id="${esc(s.id)}" ${call ? '' : 'disabled'}>Relancer par SMS</button>`;
+      }
       return `<div class="spin-card glass">
         <div class="top"><strong>${esc(s.prize_name || 'Lot')}</strong><div class="badge" style="background:${b[1]};color:${b[2]}">${b[0]}</div></div>
         <div class="when">${esc(spinMeta(s))}</div>
         ${action}
       </div>`;
     }).join('');
+    const callBtn = call
+      ? `<a class="btn-accent btn-block client-call" href="${esc(call)}">Appeler</a>`
+      : `<button type="button" class="btn-glass glass btn-block" disabled>Pas de téléphone</button>`;
     body.innerHTML = `<div class="who-lg">
         <div class="avatar">${esc(initials(c))}</div>
         <div><h3>${esc(c.first_name)} ${esc(c.last_name)}</h3><p>${esc(c.email || '')}${c.phone ? ' · ' + esc(c.phone) : ''}</p></div>
       </div>
+      <div class="client-actions">${callBtn}</div>
       <div class="pills">
         <div class="pill">${spins.length} tirages</div>
         <div class="pill">${wins} gains</div>
@@ -1018,6 +1049,22 @@ async function useSpin(id) {
     renderClients();
     renderSheet();
     loadHome();
+  } catch (e) { toast(e.message); }
+}
+
+async function remindSms(id) {
+  try {
+    await api('/api/admin/spins/' + id + '/remind-sms', { method: 'POST', body: {} });
+    S.customers.forEach((c) => {
+      (c.spins || []).forEach((s) => {
+        if (String(s.id) === String(id)) {
+          s.last_reminder_at = new Date().toISOString();
+          s.sms_week_sent = 1;
+        }
+      });
+    });
+    toast('SMS de relance envoyé');
+    renderSheet();
   } catch (e) { toast(e.message); }
 }
 
@@ -1191,6 +1238,7 @@ function onClick(event) {
     openSheet('client');
   } else if (act === 'close-sheet') closeSheet();
   else if (act === 'use-spin') useSpin(btn.dataset.id);
+  else if (act === 'remind-sms') remindSms(btn.dataset.id);
   else if (act === 'spin' || act === 'respin') spin();
   else if (act === 'covers-up') { S.covers += 10; renderLots(); }
   else if (act === 'covers-down') { S.covers = Math.max(10, S.covers - 10, S.gifts); renderLots(); }
@@ -1219,6 +1267,14 @@ function onClick(event) {
   else if (act === 'mail-win') { S.mailWin = !S.mailWin; saveEmail(); }
   else if (act === 'mail-lose') { S.mailLose = !S.mailLose; saveEmail(); }
   else if (act === 'mail-remind') { S.mailRemind = !S.mailRemind; saveEmail(); }
+  else if (act === 'sms-remind') {
+    if (!S.smsAvailable && !S.smsRemind) {
+      toast('SMS indisponible : Twilio n’est pas activé.');
+      return;
+    }
+    S.smsRemind = !S.smsRemind;
+    saveEmail();
+  }
   else if (act === 'smtp-enabled') {
     S.smtp.smtp_enabled = !S.smtp.smtp_enabled;
     paintProfile();
@@ -1383,6 +1439,6 @@ if (typeof document !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     fmtInt, spinStatus, matchClient, wheelBackground, pickPrizeIndex, spinRotation,
-    winPercent, share, calcTarget, labelColor, clientBadge, initials, phoneInsets,
+    winPercent, share, calcTarget, labelColor, clientBadge, initials, phoneInsets, telHref,
   };
 }
