@@ -609,11 +609,20 @@ h1.ob-title, .ob-title {
 .who-lg .avatar { width: 60px; height: 60px; background: var(--accent); color: var(--ink); font-size: 16px; }
 .who-lg h3 { margin: 0; font-weight: 500; font-size: 20px; letter-spacing: -.02em; }
 .who-lg p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.client-actions { margin: 16px 0 0; }
+.client-actions .client-call {
+  display: flex; align-items: center; justify-content: center;
+  height: 52px; border-radius: 99px; text-decoration: none; color: var(--ink); font-weight: 700;
+}
+.client-actions .btn-glass[disabled],
+.spin-sms[disabled] { opacity: .45; cursor: not-allowed; }
+.toggle-hint { margin-top: 4px; font-size: 12px; color: var(--muted); font-weight: 400; line-height: 1.35; }
 .pills { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
 .pill { font-size: 11px; padding: 8px 12px; border-radius: 99px; background: var(--card); }
 .spin-card { border-radius: 26px; padding: 16px; }
 .spin-card .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .spin-card .when { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.spin-sms { margin-top: 10px; height: 48px; border-radius: 99px; font-size: 14px; font-weight: 600; }
 .btn-mint {
   width: 100%; height: 52px; border-radius: 99px; background: var(--mint); color: var(--ink);
   font-size: 15px; font-weight: 700; margin-top: 14px;

@@ -251,6 +251,13 @@
               <div style="flex:1">Relances email (lots non utilisés)</div>
               <div class="switch on" id="toggle-remind" aria-hidden="true"><i></i></div>
             </button>
+            <button type="button" class="toggle" data-act="sms-remind">
+              <div style="flex:1">
+                Relances SMS (lots non utilisés)
+                <div class="toggle-hint" id="sms-hint">Rappel automatique J-7 avant expiration + envoi manuel depuis la fiche client.</div>
+              </div>
+              <div class="switch" id="toggle-sms-remind" aria-hidden="true"><i></i></div>
+            </button>
           </div>
           <div class="card glass smtp-card">
             <h3 style="margin:0 0 6px;font-size:16px" data-i18n="admin.set.smtp.h">SMTP — emails &amp; relances</h3>

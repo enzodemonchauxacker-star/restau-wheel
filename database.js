@@ -135,6 +135,7 @@ async function initSchema() {
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_from TEXT DEFAULT ''`;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_from_name TEXT DEFAULT ''`;
     await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS smtp_enabled INTEGER NOT NULL DEFAULT 0`;
+    await sql`ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS sms_reminders INTEGER NOT NULL DEFAULT 0`;
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS restaurants_public_code_uidx ON restaurants (public_code)`;
     await backfillPublicCodes();
 
