@@ -4,11 +4,15 @@
     python3 ios/Tools/make-icon.py
 
 Écrit ios/RestauWheel/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+
+Les reflets sont ceux du carré / squircle Apple (bords gauche & droit du
+tile), pas ceux de la roue. Apple applique le masque arrondi à l'affichage ;
+on livre un PNG plein cadre 1024×1024 sans transparence.
 """
 
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 SIZE = 1024
 SUPERSAMPLE = 4  # dessin en 4096 puis réduction : bords lisses sans antialiasing natif
@@ -21,89 +25,56 @@ CYAN = (0, 194, 255)
 
 SEGMENTS = [GOLD, PINK, IVORY, CYAN, GOLD, PINK, IVORY, CYAN]
 
+# Rayon type iOS (~22 % du côté) pour le preview masqué uniquement
+SQUIRCLE_CORNER = 0.2237
 
-def _soft_ellipse(size: int, box, fill, blur: float) -> Image.Image:
-    """Disque / ellipse flou en RGBA."""
+
+def _soft_rect(size: int, box, fill, blur: float) -> Image.Image:
     layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    ImageDraw.Draw(layer).ellipse(box, fill=fill)
-    radius = max(1, int(blur))
-    return layer.filter(ImageFilter.GaussianBlur(radius=radius))
+    ImageDraw.Draw(layer).rectangle(box, fill=fill)
+    return layer.filter(ImageFilter.GaussianBlur(radius=max(1, int(blur))))
 
 
-def _side_crescent(size: int, side: str, strength: int = 200) -> Image.Image:
-    """Reflet en croissant sur le bord gauche ou droit (masque L, pas de fill transparent)."""
-    margin = size * 0.11
-    outer = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(outer).ellipse(
-        (margin, margin, size - margin, size - margin),
-        fill=255,
-    )
-
-    # Disque intérieur décalé : croissant fin sur le bord
-    shift = size * 0.032
-    inset = size * 0.01
-    if side == "left":
-        cut = (
-            margin + shift,
-            margin + inset,
-            size - margin + shift * 0.2,
-            size - margin - inset,
-        )
-    else:
-        cut = (
-            margin - shift * 0.2,
-            margin + inset,
-            size - margin - shift,
-            size - margin - inset,
-        )
-    hole = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(hole).ellipse(cut, fill=255)
-    crescent = ImageChops.subtract(outer, hole)
-
-    # Ne garder que la zone latérale (milieu haut-bas)
-    side_gate = Image.new("L", (size, size), 0)
-    gd = ImageDraw.Draw(side_gate)
-    if side == "left":
-        gd.ellipse((size * 0.05, size * 0.24, size * 0.36, size * 0.76), fill=255)
-    else:
-        gd.ellipse((size * 0.64, size * 0.24, size * 0.95, size * 0.76), fill=255)
-    side_gate = side_gate.filter(ImageFilter.GaussianBlur(radius=int(size * 0.02)))
-    crescent = ImageChops.multiply(crescent, side_gate)
-    crescent = crescent.point(lambda a: min(255, int(a * strength / 255)))
-    crescent = crescent.filter(ImageFilter.GaussianBlur(radius=max(1, int(size * 0.008))))
-
-    layer = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-    layer.putalpha(crescent)
-    return layer
-
-
-def add_side_reflections(image: Image.Image, margin: float) -> Image.Image:
-    """Reflets latéraux en croissant sur les bords gauche et droit."""
+def add_apple_square_reflections(image: Image.Image) -> Image.Image:
+    """Reflets spéculaires sur les côtés du carré d’icône Apple."""
     size = image.size[0]
     base = image.convert("RGBA")
-
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).ellipse(
-        (margin, margin, size - margin, size - margin),
-        fill=255,
-    )
-
     gloss = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    gloss = Image.alpha_composite(gloss, _side_crescent(size, "left", strength=235))
-    gloss = Image.alpha_composite(gloss, _side_crescent(size, "right", strength=210))
 
-    # Petit gloss haut, discret
-    top = _soft_ellipse(
+    # Bande claire verticale — bord gauche du tile
+    left = _soft_rect(
         size,
-        (size * 0.32, size * 0.13, size * 0.68, size * 0.30),
-        (255, 255, 255, 42),
+        (0, size * 0.08, size * 0.14, size * 0.92),
+        (255, 255, 255, 95),
         blur=size * 0.035,
     )
-    gloss = Image.alpha_composite(gloss, top)
+    # Contre-jour — bord droit
+    right = _soft_rect(
+        size,
+        (size * 0.86, size * 0.08, size, size * 0.92),
+        (255, 255, 255, 70),
+        blur=size * 0.035,
+    )
+    # Léger gloss haut (liseré du carré Apple)
+    top = _soft_rect(
+        size,
+        (size * 0.12, 0, size * 0.88, size * 0.10),
+        (255, 255, 255, 45),
+        blur=size * 0.028,
+    )
 
-    clipped = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    clipped.paste(gloss, mask=mask)
-    return Image.alpha_composite(base, clipped)
+    gloss = Image.alpha_composite(gloss, left)
+    gloss = Image.alpha_composite(gloss, right)
+    gloss = Image.alpha_composite(gloss, top)
+    return Image.alpha_composite(base, gloss)
+
+
+def apple_squircle_mask(size: int) -> Image.Image:
+    """Masque arrondi proche du squircle iOS (pour aperçu uniquement)."""
+    mask = Image.new("L", (size, size), 0)
+    r = int(size * SQUIRCLE_CORNER)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size - 1, size - 1), radius=r, fill=255)
+    return mask
 
 
 def build() -> Image.Image:
@@ -133,20 +104,49 @@ def build() -> Image.Image:
         width=int(size * 0.018),
     )
 
-    # Reflets sur les côtés de la roue
-    image = add_side_reflections(image, margin).convert("RGB")
+    # Reflets autour du carré Apple (côtés du tile)
+    image = add_apple_square_reflections(image).convert("RGB")
 
     return image.resize((SIZE, SIZE), Image.LANCZOS)
 
 
-def main() -> None:
-    target = (
-        Path(__file__).resolve().parents[1]
-        / "RestauWheel/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+def preview_on_home_screen(icon: Image.Image) -> Image.Image:
+    """Aperçu : icône masquée en squircle Apple sur fond wallpaper clair."""
+    size = icon.size[0]
+    # Fond type grille iOS (gris chaud léger)
+    canvas = Image.new("RGB", (size + 160, size + 160), (230, 229, 225))
+    masked = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    masked.paste(icon.convert("RGBA"), (0, 0))
+    masked.putalpha(apple_squircle_mask(size))
+    # Ombre douce sous le tile
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    pad = 80
+    r = int(size * SQUIRCLE_CORNER)
+    sd.rounded_rectangle(
+        (pad + 6, pad + 14, pad + size + 6, pad + size + 14),
+        radius=r,
+        fill=(0, 0, 0, 55),
     )
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=18))
+    out = canvas.convert("RGBA")
+    out = Image.alpha_composite(out, shadow)
+    out.paste(masked, (pad, pad), masked)
+    return out.convert("RGB")
+
+
+def main() -> None:
+    root = Path(__file__).resolve().parents[1]
+    target = root / "RestauWheel/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
     target.parent.mkdir(parents=True, exist_ok=True)
-    build().save(target, "PNG")
+    icon = build()
+    icon.save(target, "PNG")
     print(f"→ {target}")
+
+    # Aperçu local (non versionné) pour juger les reflets du carré Apple
+    preview_path = Path("/opt/cursor/artifacts/app-icon-apple-squircle.png")
+    preview_on_home_screen(icon).save(preview_path, "PNG")
+    print(f"→ {preview_path}")
 
 
 if __name__ == "__main__":
